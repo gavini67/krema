@@ -7,8 +7,8 @@
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <!-- Brand primary: Neighbor Black via Fontshare -->
   <link href="https://api.fontshare.com/v2/css?f[]=neighbor@400,700,900&display=swap" rel="stylesheet" />
-  <!-- Brand secondary: Playfair Display (reliable serif stand-in for New Spirit) -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <!-- Brand secondary: Fraunces (free stand-in for New Spirit per brand guideline) -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Brand accent: Bukhari Script via CDNFonts -->
@@ -31,7 +31,7 @@
 
       /* ── Brand Kit Fonts ──────────────────────────────────────────── */
       --font-display: 'Neighbor', system-ui, sans-serif;      /* brand: Neighbor Black */
-      --font-body: 'Playfair Display', Georgia, serif;          /* brand: New Spirit Regular */
+      --font-body: 'Fraunces', Georgia, serif;          /* brand: New Spirit Regular (Fraunces stand-in) */
       --font-script: 'Bukhari Script', cursive;                /* brand: Bukhari Script */
 
       /* shadow recipes — layered for depth */
@@ -1124,26 +1124,20 @@
       padding: 28px 0;
     }
     .kh-footer-mark {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: clamp(110px, 18vw, 224px);
-      letter-spacing: -0.03em;
-      line-height: 0.9;
-      color: var(--accent);
-      font-variation-settings: "opsz" 96;
-      text-shadow:
-        4px 4px 0 rgba(0, 0, 0, 0.5),
-        9px 9px 0 var(--sky-deep),
-        14px 16px 0 rgba(0, 0, 0, 0.35),
-        20px 28px 30px rgba(0, 0, 0, 0.45);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--cream);
+      border-radius: 28px;
+      padding: 28px 48px;
+      box-shadow:
+        7px 9px 0 rgba(0, 0, 0, 0.45),
+        14px 18px 30px rgba(0, 0, 0, 0.4);
     }
-    .kh-footer-mark .kh-footer-k {
-      color: var(--bg);
-      text-shadow:
-        4px 4px 0 rgba(0, 0, 0, 0.5),
-        9px 9px 0 var(--accent),
-        14px 16px 0 rgba(0, 0, 0, 0.35),
-        20px 28px 30px rgba(0, 0, 0, 0.45);
+    .kh-footer-mark img {
+      display: block;
+      width: clamp(240px, 32vw, 420px);
+      height: auto;
     }
     .kh-footer-bot {
       max-width: 1300px;
@@ -1395,7 +1389,8 @@
       .kh-footer-top { flex-direction: column; align-items: flex-start; gap: 16px; }
       .kh-footer-message { font-size: clamp(38px, 12vw, 62px); white-space: pre-line; }
       .kh-footer-mid { padding: 20px 0; }
-      .kh-footer-mark { font-size: clamp(64px, 18vw, 110px); }
+      .kh-footer-mark { padding: 20px 28px; border-radius: 20px; }
+      .kh-footer-mark img { width: clamp(180px, 60vw, 300px); }
       .kh-footer-bot { grid-template-columns: 1fr 1fr; gap: 24px; }
       .kh-footer-base { flex-direction: column; gap: 4px; align-items: flex-start; }
       .kh-newsletter { flex-direction: column; }
@@ -2864,8 +2859,7 @@ function Footer({ palette, scriptFont, vibe }) {
       </div>
       <div className="kh-footer-mid">
         <div className="kh-footer-mark">
-          <span className="kh-footer-k">K</span>
-          <span className="kh-footer-rest">REMA</span>
+          <img src="assets/krema-logo-full.png" alt="Krema Dessert Haus" draggable={false} />
         </div>
       </div>
       <div className="kh-footer-bot">
