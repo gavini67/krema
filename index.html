@@ -2584,7 +2584,8 @@ function Menu({ palette, featuredBingsu, scriptFont }) {
       <div className="kh-feature">
         <div className="kh-feature-art">
           <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 360, aspectRatio: '1/1', borderRadius: 26, overflow: 'hidden', border: '3px solid #2b3a66', boxShadow: '7px 9px 0 #2b3a66, 16px 24px 28px rgba(43,58,102,0.18)' }}>
-            <PhotoSlot label="BINGSU · OVERHEAD SHOT" kind="food" aspect="1/1" radius={22} tint="#fff7e0" />
+            <img src="assets/photo_bingsu_mango.jpg" alt="Mango Magic bingsu — overhead"
+                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           <img src="assets/sticker-blob-walk.png" alt="" draggable={false}
                style={{ position: 'absolute', bottom: -20, right: -20, zIndex: 2, width: 160, height: 'auto',
@@ -2731,12 +2732,12 @@ function Gram({ palette, scriptFont }) {
   // intentional photo slots laid out like an IG grid, with captions hinting
   // at what should go in each tile when real photos arrive.
   const tiles = [
-    { src: 'assets/photo_gram1.jpg', caption: 'serving looks & drinks' },
-    { src: 'assets/photo_gram2.jpg', caption: 'staff who make it happen' },
-    { src: 'assets/photo_gram3.jpg', caption: 'cheers, bestie ✨' },
-    { src: 'assets/photo_gram4.jpg', caption: 'the vibe check passed' },
-    { src: 'assets/photo_gram5.jpg', caption: 'main character energy' },
-    { src: 'assets/photo_gram6.jpg', caption: 'the haus, up close' },
+    { src: 'assets/photo_gram1.jpg', caption: 'the team behind the haus' },
+    { src: 'assets/photo_gram2.jpg', caption: 'cheers, bestie ✨' },
+    { src: 'assets/photo_gram3.jpg', caption: 'golden-hour sips' },
+    { src: 'assets/photo_gram4.jpg', caption: 'bingsu szn, certified' },
+    { src: 'assets/photo_gram5.jpg', caption: 'real-fruit refreshers' },
+    { src: 'assets/photo_gram6.jpg', caption: 'matcha moment ✨' },
   ];
   return (
     <section id="gram" className="kh-gram">
@@ -2807,7 +2808,7 @@ function FindUs({ palette, scriptFont, vibe }) {
       <div className="kh-find-inner">
         <div className="kh-find-stack">
           <div style={{ aspectRatio: '1.2/1', borderRadius: 26, overflow: 'hidden', border: '2.5px solid #2b3a66' }}>
-            <img src="assets/photo_storefront.jpg" alt="Krema Dessert Haus storefront" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src="assets/photo_storefront.jpg" alt="Friends hanging out at Krema Dessert Haus" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           {/* google maps embed */}
           <div className="kh-find-map" style={{ height: 220, padding: 0, overflow: 'hidden' }}>
