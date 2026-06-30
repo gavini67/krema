@@ -1019,6 +1019,55 @@
     .kh-event-rsvp { font-weight: 700; }
     .kh-event-rsvp:hover { text-decoration: underline; }
 
+    /* ── reviews ────────────────────────────────────────────────────── */
+    .kh-reviews {
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      padding: 90px 32px 100px;
+      text-align: center;
+    }
+    .kh-reviews-rating {
+      display: inline-flex; align-items: center; gap: 12px;
+      margin: 8px auto 6px;
+      background: var(--cream);
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      padding: 10px 22px;
+      box-shadow: var(--shadow-hard-sm);
+    }
+    .kh-reviews-rating .kh-rev-score { font-family: var(--font-display); font-size: 30px; line-height: 1; color: var(--ink); }
+    .kh-reviews-rating .kh-rev-stars { color: #f5b400; font-size: 20px; letter-spacing: 2px; }
+    .kh-reviews-rating .kh-rev-count { font-family: var(--font-body); font-size: 14px; color: var(--ink-soft); }
+    .kh-reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px;
+      max-width: 920px;
+      margin: 44px auto 36px;
+    }
+    .kh-review-card {
+      background: var(--cream);
+      border: 2.5px solid var(--ink);
+      border-radius: 22px;
+      padding: 28px 28px 24px;
+      text-align: left;
+      box-shadow: var(--shadow-hard);
+      transform: rotate(var(--rot, 0deg));
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .kh-review-stars { color: #f5b400; font-size: 18px; letter-spacing: 2px; }
+    .kh-review-text { font-family: var(--font-body); font-size: 17px; line-height: 1.55; color: var(--ink); margin: 0; }
+    .kh-review-who { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+    .kh-review-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--accent); color: var(--ink);
+      font-family: var(--font-display); font-size: 18px;
+      border: 2px solid var(--ink); flex: none;
+    }
+    .kh-review-name { font-family: var(--font-display); font-size: 16px; color: var(--ink); line-height: 1.1; }
+    .kh-review-meta { font-family: var(--font-body); font-size: 13px; color: var(--ink-soft); }
+    .kh-reviews-cta { display: inline-flex; margin-top: 4px; }
+
     /* ── find us ────────────────────────────────────────────────────── */
     .kh-find {
       background:
@@ -1376,6 +1425,11 @@
       .kh-happy-title { font-size: clamp(56px, 16vw, 90px); }
       .kh-happy-art { width: 180px; height: 180px; }
       .kh-happy-art img { width: 70%; }
+
+      /* — reviews — */
+      .kh-reviews { padding: 56px 16px 70px; }
+      .kh-reviews-grid { grid-template-columns: 1fr; gap: 18px; margin: 32px auto 28px; }
+      .kh-review-card { transform: none; padding: 22px; }
 
       /* — find us — */
       .kh-find { padding: 56px 16px 70px; }
@@ -2800,6 +2854,60 @@ function Gram({ palette, scriptFont }) {
   );
 }
 
+// ── reviews — real Google reviews ───────────────────────────────────────────
+const GOOGLE_REVIEWS_URL = 'https://www.google.com/maps/place/Krema+Dessert+Haus/@14.5265193,120.9874293,17z/data=!4m6!3m5!1s0x3397cd00225390f1:0xa8a5f55032108053!8m2!3d14.5265193!4d120.9874293!16s%2Fg%2F11mstm8bkp';
+function Reviews({ palette }) {
+  const reviews = [
+    {
+      name: 'Carlynne Inting',
+      meta: 'Local Guide · Google',
+      stars: 5,
+      text: "One of the best bingsu I've tried! Balanced sweetness and beautifully presented. The place has a cozy, aesthetic vibe, perfect for hanging out or ending a meal on a sweet note. Staff were accommodating too.",
+    },
+    {
+      name: 'JB Cuevas',
+      meta: 'Google review',
+      stars: 5,
+      text: "Had such a cozy and satisfying experience at Krema Dessert Haus. The desserts were not too sweet, the drinks paired perfectly, and the whole place had a warm and relaxing vibe.",
+    },
+  ];
+  return (
+    <section id="reviews" className="kh-reviews">
+      <div className="kh-section-eyebrow" style={{ justifyContent: 'center' }}>
+        <Sparkle size={18} color={palette.accent} />
+        <span>what people say</span>
+        <Sparkle size={18} color={palette.skyDeep} />
+      </div>
+      <h2 className="kh-section-title">Loved by the locals.</h2>
+      <div className="kh-reviews-rating">
+        <span className="kh-rev-score">4.7</span>
+        <span className="kh-rev-stars" aria-hidden="true">★★★★★</span>
+        <span className="kh-rev-count">39 Google reviews</span>
+      </div>
+      <div className="kh-reviews-grid">
+        {reviews.map((r, i) => (
+          <div key={i} className="kh-review-card" style={{ '--rot': `${(i % 2 ? 1 : -1) * 1.1}deg` }}>
+            <span className="kh-review-stars" aria-label={`${r.stars} out of 5 stars`}>
+              {'★'.repeat(r.stars)}
+            </span>
+            <p className="kh-review-text">“{r.text}”</p>
+            <div className="kh-review-who">
+              <span className="kh-review-avatar" aria-hidden="true">{r.name.charAt(0)}</span>
+              <span>
+                <span className="kh-review-name">{r.name}</span><br/>
+                <span className="kh-review-meta">{r.meta}</span>
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <a className="kh-btn kh-btn-ghost kh-reviews-cta" href={GOOGLE_REVIEWS_URL} target="_blank" rel="noreferrer">
+        Read all reviews on Google ↗
+      </a>
+    </section>
+  );
+}
+
 // ── find us ───────────────────────────────────────────────────────────────
 function FindUs({ palette, scriptFont, vibe }) {
   const copy = COPY[vibe] || COPY.cheeky;
@@ -2920,6 +3028,7 @@ function App() {
       <Menu palette={palette} featuredBingsu={t.featuredBingsu} scriptFont={t.scriptFont} />
       <Events palette={palette} vibe={t.vibe} />
       <Gram palette={palette} scriptFont={t.scriptFont} />
+      <Reviews palette={palette} />
       <FindUs palette={palette} scriptFont={t.scriptFont} vibe={t.vibe} />
       <Footer palette={palette} scriptFont={t.scriptFont} vibe={t.vibe} />
 
