@@ -2215,7 +2215,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "scriptFont": "Bukhari Script",
   "vibe": "cheeky",
   "showOpenBadge": true,
-  "featuredBingsu": "Mango Magic",
+  "featuredBingsu": "Mango Graham",
   "mascotWiggle": true
 }/*EDITMODE-END*/;
 
@@ -2683,8 +2683,9 @@ function MonthlySpecials({ palette }) {
 }
 
 function Menu({ palette, featuredBingsu, scriptFont }) {
-  const bingsuPrices = { 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
+  const bingsuPrices = { 'Mango Graham': '₱270 – 370', 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
   const bingsuDescs = {
+    'Mango Graham':  "Milky shaved snow piled with real mango, graham crumble, and condensed milk swirl. Sweet, creamy, crunchy — the one everyone orders twice.",
     'Mango Magic':   "Milky shaved snow piled with real mango, condensed milk swirl, and mochi. The one everyone orders twice.",
     'Buko Pandan':   "Shaved snow meets coconut jelly, pandan syrup, and buko strips. Tropical, creamy, completely addictive.",
     'Choco Snow':    "Chocolate shaved milk, fudge drizzle, mochi, and more chocolate. For when you mean it.",
@@ -2718,7 +2719,7 @@ function Menu({ palette, featuredBingsu, scriptFont }) {
       <div className="kh-feature">
         <div className="kh-feature-art">
           <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 360, aspectRatio: '1/1', borderRadius: 26, overflow: 'hidden', border: '3px solid #2b3a66', boxShadow: '7px 9px 0 #2b3a66, 16px 24px 28px rgba(43,58,102,0.18)' }}>
-            <img src="assets/photo_bingsu_mango.jpg" alt="Mango Magic bingsu — overhead"
+            <img src="assets/photo_bingsu_mango.jpg" alt="Mango Graham bingsu — overhead"
                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           <img src="assets/sticker-blob-walk.png" alt="" draggable={false}
@@ -3243,7 +3244,7 @@ function App() {
         <TweakToggle label='"We are open" pill' value={t.showOpenBadge}
                      onChange={(v) => setTweak('showOpenBadge', v)} />
         <TweakSelect label="Featured bingsu" value={t.featuredBingsu}
-                     options={['Mango Magic', 'Buko Pandan', 'Choco Snow', 'Halo Supreme']}
+                     options={['Mango Graham', 'Mango Magic', 'Buko Pandan', 'Choco Snow', 'Halo Supreme']}
                      onChange={(v) => setTweak('featuredBingsu', v)} />
       </TweaksPanel>
     </div>
