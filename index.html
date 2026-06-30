@@ -1400,6 +1400,8 @@
         display: flex !important;
         flex-direction: column;
         position: fixed; inset: 0;
+        grid-column: 1 / -1;            /* full-width grid area → fixed CB spans whole screen */
+        place-self: stretch;
         background: var(--bg);
         z-index: 9999;
         align-items: center; justify-content: center;
@@ -1408,8 +1410,8 @@
         animation: fadeInNav 0.18s ease;
       }
       @keyframes fadeInNav {
-        from { opacity: 0; transform: scale(0.97); }
-        to   { opacity: 1; transform: scale(1); }
+        from { opacity: 0; }
+        to   { opacity: 1; }
       }
       .kh-nav.kh-nav-open a {
         font-family: var(--font-display);
@@ -1465,7 +1467,7 @@
       .kh-card { padding: 14px 14px 18px; border-radius: 18px; }
       .kh-card-title { font-size: 20px; }
       .kh-card-tag { font-size: 18px; }
-      .kh-card-desc { font-size: 12px; }
+      .kh-card-desc { font-size: 13px; line-height: 1.5; }
       .kh-feature {
         grid-template-columns: 1fr;
         padding: 28px 20px 32px;
@@ -1494,8 +1496,11 @@
       .kh-gram { padding: 56px 16px 70px; }
       .kh-gram-head { margin-bottom: 36px; }
       .kh-community-wall { column-count: 1; }
-      .kh-ig-card { transform: none !important; }
-      .kh-community-cta { flex-direction: column; align-items: flex-start; padding: 26px 24px; }
+      .kh-ig-card { transform: none !important; margin-bottom: 18px; }
+      .kh-ig-fb-img { aspect-ratio: 1 / 1; }
+      .kh-ig-fb-cap { font-size: 14px; }
+      .kh-community-cta { flex-direction: column; align-items: flex-start; padding: 26px 22px; }
+      .kh-community-cta .kh-btn { width: 100%; justify-content: center; }
 
       /* — happy hour — */
       .kh-happy { padding: 56px 16px; }
@@ -1528,6 +1533,53 @@
       .kh-newsletter { flex-direction: column; }
       .kh-newsletter input { padding: 10px 12px; }
       .kh-newsletter button { width: 100%; padding: 12px 18px; }
+
+      /* ── MOBILE: card-heavy sections become horizontal swipe carousels ──
+         Turns tall vertical stacks (menu, events, community, reviews) into
+         single swipe-rows — slashes total page height for mobile traffic.
+         Cards bleed edge-to-edge; next card peeks to signal "swipe". */
+      .kh-menu-grid,
+      .kh-events-grid,
+      .kh-reviews-grid,
+      .kh-community-wall {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        column-count: auto !important;
+        align-items: stretch;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: 16px;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -16px;
+        padding: 18px 16px 26px;   /* room so pop-shadows / badges / tape don't clip */
+        scrollbar-width: none;
+      }
+      .kh-menu-grid::-webkit-scrollbar,
+      .kh-events-grid::-webkit-scrollbar,
+      .kh-reviews-grid::-webkit-scrollbar,
+      .kh-community-wall::-webkit-scrollbar { display: none; }
+
+      .kh-menu-grid > *,
+      .kh-events-grid > * {
+        flex: 0 0 80%;
+        scroll-snap-align: start;
+        transform: none !important;
+      }
+      .kh-reviews-grid > * {
+        flex: 0 0 82%;
+        scroll-snap-align: start;
+        transform: none !important;
+      }
+      .kh-community-wall > .kh-ig-card {
+        flex: 0 0 84%;
+        margin-bottom: 0 !important;
+        scroll-snap-align: start;
+        transform: none !important;
+      }
+      /* keep IG fallback image compact inside the swipe card */
+      .kh-ig-fb-img { aspect-ratio: 1 / 1; }
     }
 
     /* ── very small phones (≤ 400px) ───────────────────────────────── */
@@ -1539,6 +1591,41 @@
       .kh-hero-mascot::before { width: clamp(220px, 80vw, 260px); }
       .kh-monthly-specials { padding: 22px 16px; }
       .kh-special-name, .kh-special-price { font-size: 13px; }
+    }
+    /* ── mobile carousel dots + sticky quick-action bar ─────────────── */
+    .kh-dots { display: none; }
+    .kh-mobile-bar { display: none; }
+    @media (max-width: 760px) {
+      .kh-dots {
+        display: flex; justify-content: center; align-items: center;
+        gap: 7px; margin: 2px 0 0;
+      }
+      .kh-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        border: 2px solid var(--ink); background: transparent;
+        opacity: 0.3; cursor: pointer; padding: 0;
+        transition: opacity .2s ease, background .2s ease, transform .2s ease;
+      }
+      .kh-dot.is-active { opacity: 1; background: var(--ink); transform: scale(1.3); }
+
+      .kh-mobile-bar {
+        display: flex; gap: 10px;
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+        padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+        background: var(--cream);
+        border-top: 3px solid var(--ink);
+        box-shadow: 0 -6px 22px rgba(14, 14, 14, 0.14);
+        transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+      }
+      .kh-mobile-bar.is-hidden { transform: translateY(130%); }
+      .kh-mobile-bar .kh-btn {
+        flex: 1; justify-content: center; padding: 13px 12px; font-size: 14px;
+        box-shadow: var(--bevel-top), var(--bevel-bot), 3px 4px 0 var(--ink);
+      }
+      .kh-mobile-bar .kh-btn-ig {
+        box-shadow: var(--bevel-top-dark), var(--bevel-bot-dark), 3px 4px 0 var(--ink);
+      }
+      .kh-mobile-bar .kh-btn:active { transform: translate(2px, 3px); }
     }
   </style>
 </head>
@@ -2455,16 +2542,14 @@ function Header({ palette, showOpenBadge }) {
   // close on any nav link tap
   const closeMenu = () => setMenuOpen(false);
   return (
+    <React.Fragment>
     <header className="kh-header">
       <div className="kh-header-inner">
         <a className="kh-logo" href="#top" style={{ display:'flex', alignItems:'center', textDecoration:'none' }}>
           <img src="assets/krema-logo-full.png" alt="Krema Dessert Haus" draggable={false}
                style={{ height:64, width:'auto', display:'block' }} />
         </a>
-        <nav className={menuOpen ? 'kh-nav kh-nav-open' : 'kh-nav'}>
-          {menuOpen && (
-            <button className="kh-nav-close" onClick={closeMenu} aria-label="Close menu">✕</button>
-          )}
+        <nav className="kh-nav">
           <a href="#menu"   onClick={closeMenu}>Menu</a>
           <a href="#gram"   onClick={closeMenu}>Community</a>
           <a href="#events" onClick={closeMenu}>Follow us</a>
@@ -2486,6 +2571,19 @@ function Header({ palette, showOpenBadge }) {
         </div>
       </div>
     </header>
+    {/* mobile nav overlay — portaled to <body> so it's full-screen (viewport
+        containing block), not constrained by the header grid */}
+    {menuOpen && ReactDOM.createPortal(
+      <div className="kh-nav kh-nav-open" role="dialog" aria-modal="true">
+        <button className="kh-nav-close" onClick={closeMenu} aria-label="Close menu">✕</button>
+        <a href="#menu"   onClick={closeMenu}>Menu</a>
+        <a href="#gram"   onClick={closeMenu}>Community</a>
+        <a href="#events" onClick={closeMenu}>Follow us</a>
+        <a href="#find"   onClick={closeMenu}>Find us</a>
+      </div>,
+      document.body
+    )}
+    </React.Fragment>
   );
 }
 
@@ -2580,7 +2678,7 @@ function MenuCategoryCard({ cat, idx }) {
         {/* header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
           <span style={{ fontSize: 30, lineHeight: 1 }}>{cat.emoji}</span>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div className="kh-card-tag" style={{ marginBottom: 0 }}>{cat.tag}</div>
             <h3 className="kh-card-title" style={{ margin: 0 }}>{cat.name}</h3>
           </div>
@@ -2683,7 +2781,7 @@ function MonthlySpecials({ palette }) {
 }
 
 function Menu({ palette, featuredBingsu, scriptFont }) {
-  const bingsuPrices = { 'Mango Graham': '₱270 – 370', 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
+  const bingsuPrices = { 'Mango Graham': '₱280 – 380', 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
   const bingsuDescs = {
     'Mango Graham':  "Milky shaved snow piled with real mango, graham crumble, and condensed milk swirl. Sweet, creamy, crunchy — the one everyone orders twice.",
     'Mango Magic':   "Milky shaved snow piled with real mango, condensed milk swirl, and mochi. The one everyone orders twice.",
@@ -2919,7 +3017,7 @@ function FallbackPost({ post }) {
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
-        {post.likes && <div className="kh-ig-fb-likes">{post.likes} likes</div>}
+        <div className="kh-ig-fb-likes">{post.likes} likes</div>
         <div className="kh-ig-fb-cap"><b>{post.handle}</b> {fmtCaption(post.caption)}</div>
         <a className="kh-ig-fb-link" href="https://instagram.com/kremadesserthaus" target="_blank" rel="noreferrer">
           View on Instagram <span aria-hidden="true">↗</span>
@@ -3255,6 +3353,95 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 })();
 </script>
+
+  <!-- Mobile enhancers: carousel pagination dots + sticky quick-action bar -->
+  <script>
+  (function () {
+    var DIRECTIONS = 'https://maps.google.com/?q=Krema+Dessert+Haus,+Parqal+Mall,+Aseana+Ave,+Paranaque+City,+Philippines';
+    var IG = 'https://instagram.com/kremadesserthaus';
+    function isMobile() { return window.matchMedia('(max-width: 760px)').matches; }
+    var CAROUSELS = ['.kh-menu-grid', '.kh-events-grid', '.kh-reviews-grid', '.kh-community-wall'];
+
+    // pagination dots under each mobile swipe-row
+    function buildDots() {
+      if (!isMobile()) return;
+      CAROUSELS.forEach(function (sel) {
+        var row = document.querySelector(sel);
+        if (!row || row.__dots) return;
+        var items = row.children;
+        if (items.length < 2) return;
+        var dots = document.createElement('div');
+        dots.className = 'kh-dots';
+        var arr = [];
+        for (var i = 0; i < items.length; i++) {
+          var d = document.createElement('button');
+          d.type = 'button';
+          d.className = 'kh-dot' + (i ? '' : ' is-active');
+          d.setAttribute('aria-label', 'Go to item ' + (i + 1));
+          (function (idx) {
+            d.addEventListener('click', function () {
+              var t = items[idx];
+              row.scrollTo({ left: t.offsetLeft - row.offsetLeft, behavior: 'smooth' });
+            });
+          })(i);
+          dots.appendChild(d);
+          arr.push(d);
+        }
+        row.parentNode.insertBefore(dots, row.nextSibling);
+        var raf = null;
+        function update() {
+          var center = row.scrollLeft + row.clientWidth / 2, best = 0, bd = 1e9;
+          for (var j = 0; j < items.length; j++) {
+            var it = items[j], c = (it.offsetLeft - row.offsetLeft) + it.offsetWidth / 2, dist = Math.abs(c - center);
+            if (dist < bd) { bd = dist; best = j; }
+          }
+          for (var k = 0; k < arr.length; k++) arr[k].classList.toggle('is-active', k === best);
+        }
+        row.addEventListener('scroll', function () {
+          if (raf) cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(update);
+        }, { passive: true });
+        row.__dots = true;
+      });
+    }
+
+    // sticky bottom bar: appears after the hero, hides over the footer
+    function buildBar() {
+      if (document.getElementById('kh-mobile-bar')) return;
+      var pin = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+      var ig = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="6"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>';
+      var bar = document.createElement('div');
+      bar.id = 'kh-mobile-bar';
+      bar.className = 'kh-mobile-bar is-hidden';
+      bar.innerHTML =
+        '<a class="kh-btn kh-btn-sky" href="' + DIRECTIONS + '" target="_blank" rel="noreferrer">' + pin + 'Directions</a>' +
+        '<a class="kh-btn kh-btn-ig" href="' + IG + '" target="_blank" rel="noreferrer">' + ig + 'Message us</a>';
+      document.body.appendChild(bar);
+      var hero = document.querySelector('#top') || document.querySelector('.kh-hero');
+      var footer = document.querySelector('.kh-footer') || document.querySelector('footer');
+      function apply() {
+        if (!isMobile()) { bar.classList.add('is-hidden'); return; }
+        var y = window.scrollY || document.documentElement.scrollTop || 0;
+        var de = document.documentElement;
+        var showAfter = hero ? hero.offsetHeight * 0.55 : 500;
+        var footerZone = footer ? footer.offsetHeight * 0.55 : 220;
+        var nearBottom = (y + window.innerHeight) >= (de.scrollHeight - footerZone);
+        bar.classList.toggle('is-hidden', !(y > showAfter && !nearBottom));
+      }
+      window.addEventListener('scroll', apply, { passive: true });
+      window.addEventListener('resize', apply);
+      apply();
+    }
+
+    function init() { buildDots(); buildBar(); }
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      if (document.querySelector('.kh-menu-grid') || tries > 50) { clearInterval(t); init(); }
+    }, 120);
+    window.addEventListener('resize', buildDots);
+  })();
+  </script>
 
   <!-- Vercel Web Analytics (static-site script method) -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
