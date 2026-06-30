@@ -1356,13 +1356,18 @@
     /* mobile nav overlay close button */
     .kh-nav-close {
       display: none;
-      position: absolute; top: 20px; right: 20px;
+      position: absolute; top: calc(16px + env(safe-area-inset-top, 0px)); right: 18px;
       background: var(--paper); border: 2.5px solid var(--ink);
-      border-radius: 50%; width: 46px; height: 46px;
-      font-size: 20px; cursor: pointer; color: var(--ink);
+      border-radius: 50%; width: 50px; height: 50px;
+      font-size: 21px; cursor: pointer; color: var(--ink);
       align-items: center; justify-content: center;
-      box-shadow: 3px 4px 0 var(--ink);
-      font-weight: 700; line-height: 1;
+      box-shadow: var(--bevel-top), var(--bevel-bot), 4px 5px 0 var(--ink);
+      font-weight: 700; line-height: 1; z-index: 2;
+      transition: transform .14s ease, box-shadow .14s ease;
+    }
+    .kh-nav-close:active {
+      transform: translate(2px, 3px);
+      box-shadow: var(--bevel-top), var(--bevel-bot), 2px 2px 0 var(--ink);
     }
 
     /* ── tablet (≤ 1100px) ──────────────────────────────────────────── */
@@ -1409,27 +1414,54 @@
         display: flex !important;
         flex-direction: column;
         position: fixed; inset: 0;
-        grid-column: 1 / -1;            /* full-width grid area → fixed CB spans whole screen */
-        place-self: stretch;
-        background: var(--bg);
+        background:
+          radial-gradient(circle, rgba(43,58,102,0.05) 1.5px, transparent 1.5px) 0 0 / 22px 22px,
+          radial-gradient(ellipse 120% 62% at 50% 6%, #e6f2fa 0%, var(--bg) 58%);
         z-index: 9999;
         align-items: center; justify-content: center;
-        gap: 36px; padding: 20px;
-        border: none;
+        gap: 0; padding: calc(78px + env(safe-area-inset-top, 0px)) 26px 34px;
+        border: none; overflow: hidden;
         animation: fadeInNav 0.18s ease;
       }
       @keyframes fadeInNav {
         from { opacity: 0; }
         to   { opacity: 1; }
       }
-      .kh-nav.kh-nav-open a {
-        font-family: var(--font-display);
-        font-size: 36px; font-weight: 900;
-        letter-spacing: -0.01em;
-        color: var(--ink); border: none;
-        padding: 4px 0;
+      .kh-nav-eyebrow {
+        font-family: var(--font-body);
+        font-size: 12px; font-weight: 700; letter-spacing: 0.22em;
+        text-transform: uppercase; color: var(--ink-soft); margin-bottom: 22px;
       }
-      .kh-nav.kh-nav-open a:hover { border: none; color: var(--ink-soft); }
+      .kh-nav-list { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 360px; }
+      .kh-nav-list a {
+        display: flex; align-items: center; gap: 14px;
+        background: var(--paper); color: var(--ink);
+        border: 2.5px solid var(--ink); border-radius: 18px;
+        padding: 15px 20px; text-decoration: none;
+        transform: rotate(calc((var(--i) - 1.5) * 0.7deg));
+        transition: transform .14s ease, box-shadow .14s ease;
+      }
+      .kh-nav-list a:nth-child(1) { box-shadow: var(--bevel-top), var(--bevel-bot), 4px 4px 0 var(--accent),   6px 8px 0 var(--ink); }
+      .kh-nav-list a:nth-child(2) { box-shadow: var(--bevel-top), var(--bevel-bot), 4px 4px 0 var(--sky-deep), 6px 8px 0 var(--ink); }
+      .kh-nav-list a:nth-child(3) { box-shadow: var(--bevel-top), var(--bevel-bot), 4px 4px 0 var(--purple),  6px 8px 0 var(--ink); }
+      .kh-nav-list a:nth-child(4) { box-shadow: var(--bevel-top), var(--bevel-bot), 4px 4px 0 var(--accent),   6px 8px 0 var(--ink); }
+      .kh-nav-list a:active {
+        transform: translate(3px, 4px) rotate(0deg);
+        box-shadow: var(--bevel-top), var(--bevel-bot), 2px 3px 0 var(--ink);
+      }
+      .kh-nav-num { font-family: var(--font-body); font-weight: 700; font-size: 13px; color: var(--ink-soft); width: 22px; flex: none; }
+      .kh-nav-label { font-family: var(--font-display); font-weight: 900; font-size: 29px; letter-spacing: -0.01em; line-height: 1; flex: 1; }
+      .kh-nav-arrow { font-family: var(--font-display); font-weight: 900; font-size: 20px; color: var(--ink); opacity: 0.45; }
+
+      .kh-nav-sticker {
+        position: absolute; width: 104px; height: auto; opacity: 0.92;
+        pointer-events: none; filter: drop-shadow(2px 3px 7px rgba(43,58,102,0.18));
+      }
+      .kh-nav-sticker-1 { top: calc(66px + env(safe-area-inset-top, 0px)); left: -16px; transform: rotate(-13deg); }
+      .kh-nav-sticker-2 { bottom: 116px; right: -14px; transform: rotate(11deg); }
+
+      .kh-nav-foot { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 30px; }
+      .kh-nav-tagline { font-family: var(--font-script); font-size: 25px; color: var(--ink); text-align: center; line-height: 1.15; }
       .kh-nav-close { display: inline-flex; }
 
       /* — hero — */
@@ -2585,10 +2617,23 @@ function Header({ palette, showOpenBadge }) {
     {menuOpen && ReactDOM.createPortal(
       <div className="kh-nav kh-nav-open" role="dialog" aria-modal="true">
         <button className="kh-nav-close" onClick={closeMenu} aria-label="Close menu">✕</button>
-        <a href="#menu"   onClick={closeMenu}>Menu</a>
-        <a href="#gram"   onClick={closeMenu}>Community</a>
-        <a href="#events" onClick={closeMenu}>Follow us</a>
-        <a href="#find"   onClick={closeMenu}>Find us</a>
+        <img className="kh-nav-sticker kh-nav-sticker-1" src="assets/sticker-blob-chill.png" alt="" draggable={false} />
+        <img className="kh-nav-sticker kh-nav-sticker-2" src="assets/sticker-boba.png" alt="" draggable={false} />
+        <span className="kh-nav-eyebrow">Parqal · Manila</span>
+        <nav className="kh-nav-list">
+          {[['#menu', 'Menu'], ['#gram', 'Community'], ['#events', 'Follow us'], ['#find', 'Find us']].map(function (item, i) {
+            return (
+              <a key={item[0]} href={item[0]} onClick={closeMenu} style={{ '--i': i }}>
+                <span className="kh-nav-num">{'0' + (i + 1)}</span>
+                <span className="kh-nav-label">{item[1]}</span>
+                <span className="kh-nav-arrow" aria-hidden="true">→</span>
+              </a>
+            );
+          })}
+        </nav>
+        <div className="kh-nav-foot">
+          <span className="kh-nav-tagline">Life's too short to skip dessert.</span>
+        </div>
       </div>,
       document.body
     )}
