@@ -1380,7 +1380,16 @@
     @media (max-width: 760px) {
       /* — viewport meta safety — */
       html { overflow-x: hidden; }
-      body { overflow-x: hidden; }
+      body { overflow-x: hidden; overscroll-behavior-x: none; }
+
+      /* faster ticker on small screens (40s crawls at phone width) */
+      .kh-ribbon-track { animation-duration: 20s; }
+
+      /* keep Instagram's injected iframe inside the card — no horizontal
+         overscroll / white gap on fast left-swipe */
+      .kh-ig-card { max-width: 100%; overflow: hidden; }
+      .kh-ig-card .instagram-media,
+      .kh-ig-card iframe { max-width: 100% !important; }
 
       /* — header — */
       .kh-header-inner {
