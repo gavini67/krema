@@ -108,6 +108,20 @@ begin
     from public.customers c where c.member_code = p_code;
 end $$;
 
+-- ── Get card by phone (anon — returning customer retrieving their card) ──
+--  Returns the card shape WITHOUT the phone (never echo phone to an anon
+--  caller). Zero rows when not found. Does NOT create a customer.
+create or replace function public.customer_lookup(p_phone text)
+  returns table (member_code text, name text, stamps int, goal int,
+                 discount_at int, discount_available boolean, reward_ready boolean)
+  language plpgsql security definer set search_path = public as $$
+begin
+  return query
+    select c.member_code, c.name, c.stamps, krema_goal(), krema_discount_at(),
+           c.discount_available, (c.stamps >= krema_goal())
+    from public.customers c where c.phone = trim(p_phone);
+end $$;
+
 -- ── Staff: add a stamp ──────────────────────────────────────────────────
 --  +1 stamp (capped at goal). Crossing 6 unlocks the 10%-off voucher.
 create or replace function public.add_stamp(p_code text)
@@ -205,6 +219,7 @@ end $$;
 -- ── Permissions: who can call each function ─────────────────────────────
 revoke all on function public.signup_customer(text,text) from public;
 revoke all on function public.get_card(text)             from public;
+revoke all on function public.customer_lookup(text)       from public;
 revoke all on function public.add_stamp(text)            from public;
 revoke all on function public.redeem(text)               from public;
 revoke all on function public.redeem_discount(text)      from public;
@@ -212,6 +227,7 @@ revoke all on function public.staff_lookup(text)         from public;
 
 grant execute on function public.signup_customer(text,text) to anon, authenticated;
 grant execute on function public.get_card(text)             to anon, authenticated;
+grant execute on function public.customer_lookup(text)    to anon, authenticated;
 grant execute on function public.add_stamp(text)            to authenticated;
 grant execute on function public.redeem(text)               to authenticated;
 grant execute on function public.redeem_discount(text)      to authenticated;
