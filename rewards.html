@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.cdnfonts.com/css/bukhari-script" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -88,6 +89,8 @@
         </div>
 
         <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
+
+        <div id="signup-error" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
 
         <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;">first stamp's on us when you join &#10024;</div>
       </div>
@@ -239,34 +242,35 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'krema_rewards_customer';
+  // ── Supabase (public-safe anon key) ─────────────────────────────
+  var SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var MEMBER_KEY = 'krema_member_code';
   var GOAL = 11;
   var MILESTONE = 6;
+  var POLL_MS = 4000;
 
   var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
   var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
   var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8, 4, -6, 7];
 
+  var pollTimer = null;
+  var currentCard = null;
+
   function $(id) { return document.getElementById(id); }
 
-  function loadCustomer() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
+  function getSavedCode() {
+    try { return localStorage.getItem(MEMBER_KEY); } catch (e) { return null; }
   }
 
-  function saveCustomer(c) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
+  function saveCode(code) {
+    try { localStorage.setItem(MEMBER_KEY, code); } catch (e) { /* storage unavailable */ }
   }
 
-  function genMemberCode() {
-    var n = Math.floor(1000 + Math.random() * 9000);
-    return 'KREMA-' + n;
-  }
-
-  function genId() {
-    return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  function clearCode() {
+    try { localStorage.removeItem(MEMBER_KEY); } catch (e) { /* storage unavailable */ }
   }
 
   function renderQR(memberCode) {
@@ -278,12 +282,14 @@
     }
   }
 
-  function renderSlots(container, stamps, cols) {
+  function renderSlots(container, stamps, goal, milestone) {
+    goal = goal || GOAL;
+    milestone = milestone || MILESTONE;
     container.innerHTML = '';
-    for (var i = 0; i < GOAL; i++) {
+    for (var i = 0; i < goal; i++) {
       var filled = i < stamps;
-      var isMile = (i + 1) === MILESTONE;
-      var isFinal = (i + 1) === GOAL;
+      var isMile = (i + 1) === milestone;
+      var isFinal = (i + 1) === goal;
       var slot = document.createElement('div');
       slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
       slot.setAttribute('data-stamp-index', String(i));
@@ -306,39 +312,24 @@
     }
   }
 
-  function renderHistory(history) {
-    var block = $('history-block');
-    var items = $('history-items');
-    var list = (history || []).slice(0, 6);
-    if (list.length === 0) {
-      block.classList.add('hidden');
-      return;
-    }
-    block.classList.remove('hidden');
-    items.innerHTML = '';
-    list.forEach(function (h) {
-      var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:10px;';
-      row.innerHTML = '<img src="' + h.icon + '" alt="" style="width:24px;height:24px;object-fit:contain;flex:none;">' +
-        '<span style="flex:1;min-width:0;font-family:\'Fraunces\',Georgia,serif;font-size:14px;color:#2b3a66;">' + h.label + '</span>' +
-        '<span style="flex:none;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.04em;color:#8695ba;">' + h.when + '</span>';
-      items.appendChild(row);
-    });
-  }
+  // NOTE: server doesn't return a stamp history list, so #history-block
+  // stays hidden — the hook/markup is preserved for a future follow-up.
 
   function renderCard(c) {
     $('view-signup').classList.add('hidden');
     $('view-card').classList.remove('hidden');
 
-    var stamps = Math.max(0, Math.min(GOAL, c.stamps || 0));
-    var isFull = stamps >= GOAL;
-    var discountReady = !!c.discountAvailable && !isFull;
+    var goal = c.goal || GOAL;
+    var milestone = c.discount_at || MILESTONE;
+    var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var isFull = !!c.reward_ready;
+    var discountReady = !!c.discount_available;
 
     $('greet-name').textContent = c.name || 'there';
     $('stamp-counter').setAttribute('data-counter', String(stamps));
     $('stamp-counter').textContent = String(stamps);
 
-    renderSlots($('stamp-grid'), stamps);
+    renderSlots($('stamp-grid'), stamps, goal, milestone);
 
     // reward (full) state
     $('reward-glow').classList.toggle('hidden', !isFull);
@@ -347,39 +338,102 @@
     $('progress-line').classList.toggle('hidden', isFull);
 
     // discount states
-    var isDiscountFresh = discountReady && stamps === MILESTONE;
-    var isDiscountChip = discountReady && stamps > MILESTONE;
+    var isDiscountFresh = discountReady && stamps === milestone;
+    var isDiscountChip = discountReady && stamps > milestone;
     $('discount-fresh').classList.toggle('hidden', !isDiscountFresh);
     $('discount-chip').classList.toggle('hidden', !isDiscountChip);
 
     if (!isFull) {
       var text;
-      if (stamps < MILESTONE && discountReady === false && !c.discountAvailable) {
-        var r = MILESTONE - stamps;
+      if (stamps < milestone) {
+        var r = milestone - stamps;
         text = r === 1 ? "just 1 more till 10% off" : (r + " more till 10% off");
       } else {
-        var remaining = GOAL - stamps;
+        var remaining = goal - stamps;
         text = remaining === 1 ? "just 1 more till your free drink" : (remaining + " more till your free drink");
       }
       $('progress-text').textContent = text;
     }
 
-    $('member-code').setAttribute('data-member-code', c.memberCode);
-    $('member-code').textContent = c.memberCode;
+    $('member-code').setAttribute('data-member-code', c.member_code);
+    $('member-code').textContent = c.member_code;
     $('qr-hint-reward').classList.toggle('hidden', !isFull);
     $('qr-hint-normal').classList.toggle('hidden', isFull);
-    renderQR(c.memberCode);
+    renderQR(c.member_code);
 
-    renderHistory(c.history);
+    $('history-block').classList.add('hidden');
   }
 
   function showSignup() {
+    stopPolling();
+    currentCard = null;
     $('view-card').classList.add('hidden');
     $('view-signup').classList.remove('hidden');
   }
 
+  function showSignupError(msg) {
+    var el = $('signup-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function hideSignupError() {
+    $('signup-error').classList.add('hidden');
+  }
+
+  // ── live updates: poll get_card every few seconds while the card is open,
+  // plus an immediate refresh on visibilitychange/focus so a staff stamp
+  // shows up on the customer's phone within a few seconds ──────────────
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    document.removeEventListener('visibilitychange', onVisibilityRefresh);
+    window.removeEventListener('focus', onFocusRefresh);
+  }
+
+  function startPolling(code) {
+    stopPolling();
+    pollTimer = setInterval(function () { fetchAndRenderCard(code, false); }, POLL_MS);
+    document.addEventListener('visibilitychange', onVisibilityRefresh);
+    window.addEventListener('focus', onFocusRefresh);
+  }
+
+  function onVisibilityRefresh() {
+    if (!document.hidden) {
+      var code = getSavedCode();
+      if (code) fetchAndRenderCard(code, false);
+    }
+  }
+
+  function onFocusRefresh() {
+    var code = getSavedCode();
+    if (code) fetchAndRenderCard(code, false);
+  }
+
+  function fetchAndRenderCard(code, isInitialLoad) {
+    return supabaseClient.rpc('get_card', { p_code: code }).then(function (res) {
+      if (res.error) throw res.error;
+      var rows = res.data;
+      if (!rows || rows.length === 0) {
+        clearCode();
+        showSignup();
+        return;
+      }
+      currentCard = rows[0];
+      renderCard(currentCard);
+      if (!pollTimer) startPolling(code);
+    }).catch(function () {
+      // on initial load a bad/stale code means "start fresh"; on background
+      // polling ticks we just keep the last-known card on screen and retry later
+      if (isInitialLoad) {
+        clearCode();
+        showSignup();
+      }
+    });
+  }
+
   function handleJoin(e) {
     if (e) e.preventDefault();
+    hideSignupError();
     var nameInput = $('cust-name');
     var phoneInput = $('cust-phone');
     var name = (nameInput.value || '').trim();
@@ -388,25 +442,34 @@
       nameInput.style.borderColor = '#c0392b';
       return;
     }
+    nameInput.style.borderColor = '#2b3a66';
     var phone = (phoneInput.value || '').trim();
-    var customer = {
-      id: genId(),
-      name: name,
-      phone: phone,
-      memberCode: genMemberCode(),
-      stamps: 1,
-      discountAvailable: false,
-      discountEverUnlocked: false,
-      lastRedeemDate: null,
-      history: [{ icon: 'assets/sticker-coffee.png', label: "stamp #1 · first one's on us!", when: 'just now' }]
-    };
-    saveCustomer(customer);
-    renderCard(customer);
+
+    var btn = $('btn-join');
+    btn.disabled = true;
+
+    supabaseClient.rpc('signup_customer', { p_name: name, p_phone: phone }).then(function (res) {
+      if (res.error) throw res.error;
+      var rows = res.data;
+      if (!rows || rows.length === 0) throw new Error('signup failed — try again');
+      var card = rows[0];
+      saveCode(card.member_code);
+      currentCard = card;
+      renderCard(card);
+      startPolling(card.member_code);
+    }).catch(function (err) {
+      showSignupError((err && err.message) || 'something went wrong — try again');
+    }).finally(function () {
+      btn.disabled = false;
+    });
   }
 
   function handleStartOver(e) {
     if (e) e.preventDefault();
-    localStorage.removeItem(STORAGE_KEY);
+    stopPolling();
+    clearCode();
+    currentCard = null;
+    hideSignupError();
     var nameInput = $('cust-name');
     var phoneInput = $('cust-phone');
     if (nameInput) { nameInput.value = ''; nameInput.style.borderColor = '#2b3a66'; }
@@ -418,17 +481,9 @@
     $('btn-join').addEventListener('click', handleJoin);
     $('link-start-over').addEventListener('click', handleStartOver);
 
-    // keep in sync if staff.html updates the same customer in another tab
-    window.addEventListener('storage', function (e) {
-      if (e.key === STORAGE_KEY) {
-        var c = loadCustomer();
-        if (c) renderCard(c); else showSignup();
-      }
-    });
-
-    var existing = loadCustomer();
-    if (existing) {
-      renderCard(existing);
+    var savedCode = getSavedCode();
+    if (savedCode) {
+      fetchAndRenderCard(savedCode, true);
     } else {
       showSignup();
     }

@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.cdnfonts.com/css/bukhari-script" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -47,7 +49,9 @@
     <!-- toast -->
     <div id="toast" class="hidden" style="position:absolute;top:50px;left:18px;right:18px;z-index:20;display:flex;align-items:center;gap:10px;background:#2b3a66;color:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;padding:11px 14px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),4px 5px 0 rgba(43,58,102,0.35);animation:kr-pop .3s cubic-bezier(.34,1.56,.64,1) both;">
       <span id="toast-msg" style="flex:1;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:14px;"></span>
-      <button id="btn-undo" data-action="undo" class="hidden" style="flex:none;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.06em;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;padding:6px 13px;cursor:pointer;">undo</button>
+      <!-- undo button removed: the backend has no undo endpoint for add_stamp,
+           so an undo affordance here would be a broken action. Future follow-up:
+           add an undo_stamp RPC if this is needed. -->
     </div>
 
     <div style="padding:14px 22px 34px;display:flex;flex-direction:column;gap:20px;min-height:660px;">
@@ -76,13 +80,13 @@
           <div style="display:flex;flex-direction:column;gap:14px;">
             <label style="display:flex;flex-direction:column;gap:7px;">
               <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">email</span>
-              <input id="staff-email" data-field="email" type="email" placeholder="crew@krema.ph" value="crew@krema.ph" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+              <input id="staff-email" data-field="email" type="email" placeholder="crew@krema.ph" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             </label>
             <label style="display:flex;flex-direction:column;gap:7px;">
               <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">password</span>
-              <input id="staff-password" data-field="password" type="password" placeholder="••••••••" value="krema2025" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+              <input id="staff-password" data-field="password" type="password" placeholder="••••••••" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             </label>
-            <div id="login-error" class="hidden" style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#c0392b;">use crew@krema.ph (any password) for this demo.</div>
+            <div id="login-error" class="hidden" style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#c0392b;"></div>
             <button id="btn-login" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),inset 0 -3px 0 rgba(0,0,0,0.22),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:2px;">log in →</button>
           </div>
         </div>
@@ -101,8 +105,13 @@
           <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;padding:6px 11px;flex:none;">staff</span>
         </div>
 
+        <div style="text-align:right;margin-top:-8px;">
+          <a id="link-logout-scan" data-action="logout" href="#" style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
+        </div>
+
         <!-- camera preview -->
         <div id="camera-preview" data-camera="" style="position:relative;width:100%;aspect-ratio:1;background:#2b3a66;border:3px solid #2b3a66;border-radius:26px;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,0.12),7px 9px 0 #2b3a66;display:flex;align-items:center;justify-content:center;">
+          <div id="qr-reader-region" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden;"></div>
           <video id="camera-video" autoplay playsinline muted class="hidden" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
           <div id="camera-placeholder-bg" style="position:absolute;inset:0;background-image:radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);background-size:18px 18px;"></div>
           <!-- scan reticle -->
@@ -146,6 +155,10 @@
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#4a5a8a;">&#10003; customer found</div>
           <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;padding:6px 11px;">staff</span>
+        </div>
+
+        <div style="text-align:right;margin-top:-10px;">
+          <a id="link-logout-result" data-action="logout" href="#" style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
         </div>
 
         <div style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;">
@@ -203,18 +216,20 @@
     </div>
   </div>
 
-  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">demo mode · not connected to live database yet</div>
+  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">connected · live database</div>
 </div>
 
 <script>
 (function () {
   'use strict';
 
-  var CUSTOMER_KEY = 'krema_rewards_customer';
-  var SESSION_KEY = 'krema_staff_session';
+  // ── Supabase (public-safe anon key) ─────────────────────────────
+  var SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   var GOAL = 11;
   var MILESTONE = 6;
-  var DEMO_EMAIL = 'crew@krema.ph';
 
   var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
   var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
@@ -222,75 +237,65 @@
 
   var todayCount = 0;
   var toastTimer = null;
-  var cameraStream = null;
-  var current = null; // currently-loaded customer object (mirrors localStorage)
+  var current = null; // currently-loaded card object, as returned by the RPCs
+
+  var html5QrCode = null;
+  var qrScanning = false;
 
   function $(id) { return document.getElementById(id); }
-
-  function loadSession() {
-    try {
-      var raw = localStorage.getItem(SESSION_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
-  }
-  function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-
-  function loadCustomer() {
-    try {
-      var raw = localStorage.getItem(CUSTOMER_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
-  }
-  function saveCustomer(c) { localStorage.setItem(CUSTOMER_KEY, JSON.stringify(c)); }
-
-  function todayStr() {
-    var d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-  }
 
   // ── view switching ─────────────────────────────────────────────
   function showView(name) {
     ['login', 'scan', 'result', 'redeemed'].forEach(function (v) {
       $('view-' + v).classList.toggle('hidden', v !== name);
     });
-    if (name !== 'scan') stopCamera(); else startCamera();
+    if (name === 'scan') startScanner(); else stopScanner();
   }
 
-  // ── camera ─────────────────────────────────────────────────────
-  function startCamera() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(function (stream) {
-        cameraStream = stream;
-        var video = $('camera-video');
-        video.srcObject = stream;
-        video.classList.remove('hidden');
-        $('camera-placeholder-bg').classList.add('hidden');
-        $('camera-mascot').classList.add('hidden');
-        $('camera-caption').textContent = 'point at the customer\'s QR';
-      })
-      .catch(function () {
-        // permission denied / unavailable — keep the designed placeholder
-      });
+  // ── camera / QR scanner (html5-qrcode renders into #qr-reader-region,
+  // a child of #camera-preview placed behind the designed reticle/scanline
+  // overlay so the custom UI stays on top) ────────────────────────
+  function startScanner() {
+    if (qrScanning) return;
+    if (typeof Html5Qrcode === 'undefined') return;
+    if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader-region');
+    qrScanning = true;
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: 220 },
+      onScanSuccess,
+      function () { /* no-op: fires every frame without a decodable code */ }
+    ).then(function () {
+      $('camera-placeholder-bg').classList.add('hidden');
+      $('camera-mascot').classList.add('hidden');
+      $('camera-caption').textContent = "point at the customer's QR";
+    }).catch(function () {
+      qrScanning = false;
+      // permission denied / unavailable — keep the designed placeholder
+      $('camera-caption').textContent = 'camera unavailable — use phone lookup below';
+    });
   }
 
-  function stopCamera() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(function (t) { t.stop(); });
-      cameraStream = null;
-    }
-    var video = $('camera-video');
-    video.classList.add('hidden');
-    video.srcObject = null;
+  function stopScanner() {
+    if (!html5QrCode || !qrScanning) return;
+    qrScanning = false;
+    html5QrCode.stop().then(function () {
+      return html5QrCode.clear();
+    }).catch(function () { /* ignore stop errors */ });
     $('camera-placeholder-bg').classList.remove('hidden');
     $('camera-mascot').classList.remove('hidden');
   }
 
+  function onScanSuccess(decodedText) {
+    if (!qrScanning) return;
+    stopScanner();
+    handleScannedCode(decodedText);
+  }
+
   // ── toast ──────────────────────────────────────────────────────
-  function showToast(msg, canUndo) {
+  function showToast(msg) {
     clearTimeout(toastTimer);
     $('toast-msg').textContent = msg;
-    $('btn-undo').classList.toggle('hidden', !canUndo);
     $('toast').classList.remove('hidden');
     toastTimer = setTimeout(hideToast, 4000);
   }
@@ -300,15 +305,17 @@
   }
 
   // ── slot rendering (shared) ───────────────────────────────────
-  function renderSlots(container, stamps, mini) {
+  function renderSlots(container, stamps, goal, milestone) {
+    goal = goal || GOAL;
+    milestone = milestone || MILESTONE;
     container.innerHTML = '';
-    for (var i = 0; i < GOAL; i++) {
+    for (var i = 0; i < goal; i++) {
       var filled = i < stamps;
       var slot = document.createElement('div');
       slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
       slot.setAttribute('data-stamp-index', String(i));
       slot.setAttribute('data-filled', filled ? 'true' : 'false');
-      var edge = ((i + 1) === MILESTONE || (i + 1) === GOAL) ? '#9F8FEA' : '#8695ba';
+      var edge = ((i + 1) === milestone || (i + 1) === goal) ? '#9F8FEA' : '#8695ba';
       if (filled) {
         slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i] + ';border:2px solid #2b3a66;display:flex;align-items:center;justify-content:center;';
         var img = document.createElement('img');
@@ -326,129 +333,145 @@
   // ── result render ──────────────────────────────────────────────
   function renderResult() {
     if (!current) return;
-    var stamps = Math.max(0, Math.min(GOAL, current.stamps || 0));
-    var isFull = stamps >= GOAL;
-    var discountReady = !!current.discountAvailable && !isFull;
-    var redeemedToday = current.lastRedeemDate === todayStr();
+    var goal = current.goal || GOAL;
+    var milestone = current.discount_at || MILESTONE;
+    var stamps = Math.max(0, Math.min(goal, current.stamps || 0));
+    var isFull = !!current.reward_ready;
+    var discountReady = !!current.discount_available;
 
     $('result-name').textContent = current.name;
-    $('result-code').textContent = current.memberCode;
+    $('result-code').textContent = current.member_code;
     $('result-counter').setAttribute('data-counter', String(stamps));
     $('result-counter').textContent = String(stamps);
 
-    renderSlots($('result-grid'), stamps, true);
+    renderSlots($('result-grid'), stamps, goal, milestone);
 
     $('result-discount-banner').classList.toggle('hidden', !discountReady);
     $('result-full-banner').classList.toggle('hidden', !isFull);
-    $('result-already-redeemed').classList.toggle('hidden', !(isFull && redeemedToday));
+    $('result-already-redeemed').classList.add('hidden'); // only flashed transiently on a redeem error
 
     $('btn-redeem-discount').classList.toggle('hidden', !discountReady);
     $('btn-redeem').classList.toggle('hidden', !isFull);
-    $('btn-redeem').disabled = redeemedToday;
-    $('btn-redeem').style.opacity = redeemedToday ? '0.5' : '1';
-    $('btn-redeem').style.cursor = redeemedToday ? 'not-allowed' : 'pointer';
 
     $('btn-add-stamp').disabled = isFull;
     $('btn-add-stamp').style.opacity = isFull ? '0.5' : '1';
     $('btn-add-stamp').style.cursor = isFull ? 'not-allowed' : 'pointer';
   }
 
-  // ── actions ────────────────────────────────────────────────────
+  // ── auth ───────────────────────────────────────────────────────
   function handleLogin(e) {
     if (e) e.preventDefault();
-    var email = ($('staff-email').value || '').trim().toLowerCase();
-    if (email !== DEMO_EMAIL) {
-      $('login-error').classList.remove('hidden');
-      return;
-    }
+    var email = ($('staff-email').value || '').trim();
+    var password = $('staff-password').value || '';
     $('login-error').classList.add('hidden');
-    saveSession({ loggedIn: true });
-    showView('scan');
+
+    supabaseClient.auth.signInWithPassword({ email: email, password: password }).then(function (res) {
+      if (res.error) throw res.error;
+      showView('scan');
+    }).catch(function () {
+      $('login-error').textContent = 'wrong email or password';
+      $('login-error').classList.remove('hidden');
+    });
   }
 
-  function loadCurrentCustomerIntoResult() {
-    var c = loadCustomer();
-    if (!c) {
-      $('scan-not-found').classList.remove('hidden');
-      return;
-    }
-    $('scan-not-found').classList.add('hidden');
-    current = c;
-    renderResult();
-    showView('result');
+  function handleLogout(e) {
+    if (e) e.preventDefault();
+    stopScanner();
+    supabaseClient.auth.signOut().catch(function () { /* ignore */ });
+    current = null;
+    showView('login');
+  }
+
+  // ── customer lookup ────────────────────────────────────────────
+  function handleScannedCode(code) {
+    supabaseClient.rpc('get_card', { p_code: code }).then(function (res) {
+      if (res.error) throw res.error;
+      var rows = res.data;
+      if (!rows || rows.length === 0) {
+        showToast('card not found');
+        showView('scan');
+        return;
+      }
+      $('scan-not-found').classList.add('hidden');
+      current = rows[0];
+      renderResult();
+      showView('result');
+    }).catch(function (err) {
+      showToast((err && err.message) || 'scan failed');
+      showView('scan');
+    });
   }
 
   function handleScan(e) {
     if (e) e.preventDefault();
-    loadCurrentCustomerIntoResult();
+    // manual retry in case the scanner stopped after a failed permission prompt
+    startScanner();
   }
 
   function handleFind(e) {
     if (e) e.preventDefault();
-    // Phase 1: phone lookup just loads the single mock customer (no real DB yet).
-    loadCurrentCustomerIntoResult();
-  }
+    var phone = ($('staff-phone-lookup').value || '').trim();
+    $('scan-not-found').classList.add('hidden');
 
-  function handleAddStamp() {
-    if (!current || current.stamps >= GOAL) return;
-    current.stamps = Math.min(GOAL, (current.stamps || 0) + 1);
-    if (current.stamps >= MILESTONE && !current.discountAvailable) {
-      current.discountAvailable = true;
-      current.discountEverUnlocked = true;
-    }
-    current.history = current.history || [];
-    current.history.unshift({
-      icon: STAMP_ICONS[(current.stamps - 1) % STAMP_ICONS.length],
-      label: 'stamp #' + current.stamps,
-      when: 'just now'
+    supabaseClient.rpc('staff_lookup', { p_phone: phone }).then(function (res) {
+      if (res.error) throw res.error;
+      var rows = res.data;
+      if (!rows || rows.length === 0) {
+        $('scan-not-found').textContent = 'customer not found';
+        $('scan-not-found').classList.remove('hidden');
+        return;
+      }
+      current = rows[0];
+      renderResult();
+      showView('result');
+    }).catch(function (err) {
+      $('scan-not-found').textContent = (err && err.message) || 'customer not found';
+      $('scan-not-found').classList.remove('hidden');
     });
-    saveCustomer(current);
-    todayCount++;
-    $('today-count').textContent = String(todayCount);
-    renderResult();
-    showToast('+1 stamp for ' + current.name + ' ✓', true);
   }
 
-  function handleUndo() {
-    if (!current || !current.history || current.history.length === 0) {
-      hideToast();
-      return;
-    }
-    current.stamps = Math.max(0, (current.stamps || 0) - 1);
-    current.history.shift();
-    // if undo drops us back below the milestone, re-lock the discount that was just granted
-    if (current.stamps < MILESTONE) current.discountAvailable = false;
-    saveCustomer(current);
-    todayCount = Math.max(0, todayCount - 1);
-    $('today-count').textContent = String(todayCount);
-    renderResult();
-    hideToast();
+  // ── stamp / redeem actions ─────────────────────────────────────
+  function handleAddStamp() {
+    if (!current) return;
+    supabaseClient.rpc('add_stamp', { p_code: current.member_code }).then(function (res) {
+      if (res.error) throw res.error;
+      current = res.data[0];
+      todayCount++;
+      $('today-count').textContent = String(todayCount);
+      renderResult();
+      showToast('+1 stamp for ' + current.name + ' ✓');
+    }).catch(function (err) {
+      showToast((err && err.message) || 'could not add stamp');
+    });
   }
 
   function handleRedeemDiscount() {
-    if (!current || !current.discountAvailable) return;
-    current.discountAvailable = false;
-    current.history = current.history || [];
-    current.history.unshift({ icon: 'assets/sticker-blob-walk.png', label: '10% off redeemed', when: 'just now' });
-    saveCustomer(current);
-    renderResult();
-    showToast('10% off applied for ' + current.name + ' ✓', false);
+    if (!current) return;
+    supabaseClient.rpc('redeem_discount', { p_code: current.member_code }).then(function (res) {
+      if (res.error) throw res.error;
+      current = res.data[0];
+      renderResult();
+      showToast('10% off applied');
+    }).catch(function (err) {
+      showToast((err && err.message) || 'could not apply discount');
+    });
   }
 
   function handleRedeem() {
-    if (!current || current.stamps < GOAL) return;
-    if (current.lastRedeemDate === todayStr()) {
-      showToast('already redeemed today — come back tomorrow', false);
-      return;
-    }
-    current.stamps = 0;
-    current.discountAvailable = false;
-    current.lastRedeemDate = todayStr();
-    current.history = current.history || [];
-    current.history.unshift({ icon: 'assets/sticker-coffee.png', label: 'free drink redeemed 🎉', when: 'just now' });
-    saveCustomer(current);
-    $('redeemed-name').textContent = current.name;
-    showView('redeemed');
+    if (!current) return;
+    supabaseClient.rpc('redeem', { p_code: current.member_code }).then(function (res) {
+      if (res.error) throw res.error;
+      current = res.data[0];
+      $('redeemed-name').textContent = current.name;
+      showView('redeemed');
+    }).catch(function (err) {
+      var msg = (err && err.message) || 'could not redeem';
+      showToast(msg);
+      if (/already redeemed/i.test(msg)) {
+        $('result-already-redeemed').textContent = msg;
+        $('result-already-redeemed').classList.remove('hidden');
+      }
+    });
   }
 
   function handleScanNext() {
@@ -459,24 +482,33 @@
   }
 
   function init() {
-    var session = loadSession();
-    if (session && session.loggedIn) {
-      showView('scan');
-    } else {
-      showView('login');
-    }
-
     $('btn-login').addEventListener('click', handleLogin);
+    $('link-logout-scan').addEventListener('click', handleLogout);
+    $('link-logout-result').addEventListener('click', handleLogout);
     $('btn-scan').addEventListener('click', handleScan);
     $('btn-find').addEventListener('click', handleFind);
     $('btn-add-stamp').addEventListener('click', handleAddStamp);
-    $('btn-undo').addEventListener('click', handleUndo);
     $('btn-redeem-discount').addEventListener('click', handleRedeemDiscount);
     $('btn-redeem').addEventListener('click', handleRedeem);
     $('btn-scan-next').addEventListener('click', handleScanNext);
     $('btn-redeem-done').addEventListener('click', handleScanNext);
 
-    window.addEventListener('beforeunload', stopCamera);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        stopScanner();
+      } else if (!$('view-scan').classList.contains('hidden')) {
+        startScanner();
+      }
+    });
+    window.addEventListener('pagehide', stopScanner);
+    window.addEventListener('beforeunload', stopScanner);
+
+    supabaseClient.auth.getSession().then(function (res) {
+      var session = res && res.data ? res.data.session : null;
+      showView(session ? 'scan' : 'login');
+    }).catch(function () {
+      showView('login');
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
