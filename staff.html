@@ -32,6 +32,13 @@
   @keyframes kr-scanline { 0%, 100% { top: 8%; } 50% { top: 88%; } }
   @keyframes kr-burst { 0% { transform: translate(0,0) rotate(0deg) scale(0.4); opacity: 0; } 12% { opacity: 1; transform: translate(calc(var(--tx,0px) * 0.3), calc(var(--ty,0px) * 0.3)) rotate(90deg) scale(1); } 100% { transform: translate(var(--tx,0px), calc(var(--ty,0px) + 46px)) rotate(320deg) scale(0.8); opacity: 0; } }
   .hidden { display: none !important; }
+  /* html5-qrcode injects its own <video> (and a hidden scan <canvas>) into
+     #qr-reader-region and sizes the video to the camera's native aspect ratio,
+     which leaves the navy container showing on one side. Force it to cover the
+     square preview so the live camera fills the whole box. */
+  #qr-reader-region { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
+  #qr-reader-region video { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+  #qr-reader-region canvas { display: none !important; }
 </style>
 </head>
 <body>
@@ -262,7 +269,7 @@
     qrScanning = true;
     html5QrCode.start(
       { facingMode: 'environment' },
-      { fps: 10, qrbox: 220 },
+      { fps: 10 },  // no qrbox: the designed reticle is the guide; scan the full frame
       onScanSuccess,
       function () { /* no-op: fires every frame without a decodable code */ }
     ).then(function () {
