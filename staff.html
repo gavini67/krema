@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krema Rewards · Staff</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link href="https://api.fontshare.com/v2/css?f[]=neighbor@400,700,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.cdnfonts.com/css/bukhari-script" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Fraunces', Georgia, serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
+  a { color: #2b3a66; text-decoration: none; }
+  a:hover { color: #4a5a8a; }
+  input { font-family: 'Fraunces', Georgia, serif; }
+  input:focus { border-color: #2b3a66 !important; background: #ffffff !important; box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 0 0 3px rgba(157,143,234,0.35) !important; }
+  ::placeholder { color: rgba(74,90,138,0.55); }
+  button { font: inherit; }
+  @keyframes kr-pulse { 50% { box-shadow: 0 0 0 8px rgba(78,201,122,0.10); } }
+  @keyframes kr-pop { 0% { transform: scale(0.4) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.12) rotate(3deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+  @keyframes kr-float { 0%,100% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(-5px) rotate(calc(var(--r,0deg) + 2deg)); } }
+  @keyframes kr-glow { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.06); } }
+  @keyframes kr-bob { 0%,100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-5px); } }
+  @keyframes kr-confetti { 0% { transform: translateY(-24px) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 82% { opacity: 1; } 100% { transform: translateY(430px) rotate(340deg); opacity: 0; } }
+  @keyframes kr-twinkle { 0%,100% { transform: scale(0.55) rotate(0deg); opacity: 0.45; } 50% { transform: scale(1.15) rotate(22deg); opacity: 1; } }
+  @keyframes kr-scanline { 0%, 100% { top: 8%; } 50% { top: 88%; } }
+  @keyframes kr-burst { 0% { transform: translate(0,0) rotate(0deg) scale(0.4); opacity: 0; } 12% { opacity: 1; transform: translate(calc(var(--tx,0px) * 0.3), calc(var(--ty,0px) * 0.3)) rotate(90deg) scale(1); } 100% { transform: translate(var(--tx,0px), calc(var(--ty,0px) + 46px)) rotate(320deg) scale(0.8); opacity: 0; } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
+
+  <!-- ══ PHONE ══ -->
+  <div style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
+    <!-- status bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 26px 4px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:13px;color:#2b3a66;">
+      <span>9:41</span>
+      <span style="display:inline-flex;gap:5px;align-items:center;font-size:11px;letter-spacing:0.5px;">&#9639; &#9602; &#11044;</span>
+    </div>
+
+    <!-- toast -->
+    <div id="toast" class="hidden" style="position:absolute;top:50px;left:18px;right:18px;z-index:20;display:flex;align-items:center;gap:10px;background:#2b3a66;color:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;padding:11px 14px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),4px 5px 0 rgba(43,58,102,0.35);animation:kr-pop .3s cubic-bezier(.34,1.56,.64,1) both;">
+      <span id="toast-msg" style="flex:1;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:14px;"></span>
+      <button id="btn-undo" data-action="undo" class="hidden" style="flex:none;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.06em;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;padding:6px 13px;cursor:pointer;">undo</button>
+    </div>
+
+    <div style="padding:14px 22px 34px;display:flex;flex-direction:column;gap:20px;min-height:660px;">
+
+      <!-- ════════════════ LOGIN ════════════════ -->
+      <div id="view-login" style="display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <img src="assets/krema-brandmark.png" alt="Krema" style="width:48px;height:48px;object-fit:contain;transform:rotate(-4deg);">
+          <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;padding:7px 13px;box-shadow:3px 4px 0 #2b3a66;">staff only</span>
+        </div>
+
+        <div style="margin-top:6px;">
+          <div style="font-family:'Bukhari Script',cursive;font-size:22px;color:#4a5a8a;line-height:1;">welcome back —</div>
+          <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:36px;line-height:0.9;letter-spacing:-0.01em;">BARISTA LOG IN</div>
+        </div>
+
+        <div style="position:relative;background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:46px 20px 22px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;margin-top:20px;">
+          <div style="position:absolute;top:13px;left:50%;transform:translateX(-50%);width:66px;height:13px;background:#d4e8f5;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 3px rgba(43,58,102,0.25);"></div>
+          <div style="position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:8px;height:28px;background:#9F8FEA;border:2px solid #2b3a66;border-radius:4px;"></div>
+          <img src="assets/sticker-blob-chill.png" alt="" style="position:absolute;top:-34px;right:12px;width:64px;height:64px;object-fit:contain;transform:rotate(4deg);pointer-events:none;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
+            <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#4a5a8a;">crew badge</span>
+            <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <label style="display:flex;flex-direction:column;gap:7px;">
+              <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">email</span>
+              <input id="staff-email" data-field="email" type="email" placeholder="crew@krema.ph" value="crew@krema.ph" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px;">
+              <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">password</span>
+              <input id="staff-password" data-field="password" type="password" placeholder="••••••••" value="krema2025" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+            </label>
+            <div id="login-error" class="hidden" style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#c0392b;">use crew@krema.ph (any password) for this demo.</div>
+            <button id="btn-login" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),inset 0 -3px 0 rgba(0,0,0,0.22),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:2px;">log in →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ SCAN ════════════════ -->
+      <div id="view-scan" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="assets/sticker-coffee.png" alt="" style="width:46px;height:46px;object-fit:contain;transform:rotate(-6deg);flex:none;">
+            <div>
+              <div style="font-family:'Bukhari Script',cursive;font-size:19px;color:#4a5a8a;line-height:1;">let's go —</div>
+              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:28px;line-height:0.9;">SCAN CUSTOMER</div>
+            </div>
+          </div>
+          <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;padding:6px 11px;flex:none;">staff</span>
+        </div>
+
+        <!-- camera preview -->
+        <div id="camera-preview" data-camera="" style="position:relative;width:100%;aspect-ratio:1;background:#2b3a66;border:3px solid #2b3a66;border-radius:26px;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,0.12),7px 9px 0 #2b3a66;display:flex;align-items:center;justify-content:center;">
+          <video id="camera-video" autoplay playsinline muted class="hidden" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+          <div id="camera-placeholder-bg" style="position:absolute;inset:0;background-image:radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);background-size:18px 18px;"></div>
+          <!-- scan reticle -->
+          <div style="position:relative;width:56%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;">
+            <div style="position:absolute;top:0;left:0;width:34px;height:34px;border-top:4px solid #FCEC60;border-left:4px solid #FCEC60;border-radius:8px 0 0 0;"></div>
+            <div style="position:absolute;top:0;right:0;width:34px;height:34px;border-top:4px solid #FCEC60;border-right:4px solid #FCEC60;border-radius:0 8px 0 0;"></div>
+            <div style="position:absolute;bottom:0;left:0;width:34px;height:34px;border-bottom:4px solid #FCEC60;border-left:4px solid #FCEC60;border-radius:0 0 0 8px;"></div>
+            <div style="position:absolute;bottom:0;right:0;width:34px;height:34px;border-bottom:4px solid #FCEC60;border-right:4px solid #FCEC60;border-radius:0 0 8px 0;"></div>
+            <div id="camera-ghost-qr" style="width:64px;height:64px;background:repeating-linear-gradient(0deg,#FEFFE6 0 6px,transparent 6px 12px),repeating-linear-gradient(90deg,#FEFFE6 0 6px,transparent 6px 12px);opacity:0.14;border-radius:6px;"></div>
+          </div>
+          <!-- scan beam -->
+          <div style="position:absolute;left:9%;right:9%;top:8%;height:4px;background:linear-gradient(90deg,transparent,#FCEC60 30%,#FCEC60 70%,transparent);border-radius:999px;box-shadow:0 0 14px rgba(252,236,96,0.75);animation:kr-scanline 3.2s ease-in-out infinite;z-index:2;"></div>
+          <!-- mascot peeking in -->
+          <img id="camera-mascot" src="assets/sticker-boba.png" alt="" style="position:absolute;bottom:-14px;right:-8px;width:86px;height:86px;object-fit:contain;transform:rotate(-9deg);pointer-events:none;">
+          <div id="camera-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:rgba(255,255,255,0.7);">point at the customer's QR</div>
+        </div>
+
+        <button id="btn-scan" data-action="scan" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#128247; scan customer QR</button>
+
+        <div style="display:flex;align-items:center;gap:12px;color:#4a5a8a;">
+          <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
+          <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.12em;">OR</span>
+          <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
+        </div>
+
+        <label style="display:flex;flex-direction:column;gap:7px;">
+          <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">look up by phone</span>
+          <div style="display:flex;gap:9px;">
+            <input id="staff-phone-lookup" data-field="phone-fallback" type="tel" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 15px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+            <button id="btn-find" data-action="find" style="flex:none;padding:0 20px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">find</button>
+          </div>
+        </label>
+
+        <div id="scan-not-found" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;">no customer found yet — ask them to join on rewards.html first.</div>
+
+        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#4a5a8a;">stamps given today: <b id="today-count" style="font-style:normal;color:#2b3a66;">0</b></div>
+      </div>
+
+      <!-- ════════════════ RESULT ════════════════ -->
+      <div id="view-result" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#4a5a8a;">&#10003; customer found</div>
+          <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;padding:6px 11px;">staff</span>
+        </div>
+
+        <div style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <div style="flex:none;width:48px;height:48px;border-radius:50%;background:#dcebf7;border:2.5px solid #2b3a66;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:3px 4px 0 #2b3a66;"><img src="assets/sticker-boba.png" alt="" style="width:88%;height:88%;object-fit:contain;transform:translateY(2px);"></div>
+            <div style="min-width:0;">
+              <div id="result-name" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1;"></div>
+              <div id="result-code" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#4a5a8a;"></div>
+            </div>
+            <div style="margin-left:auto;text-align:right;">
+              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:1;color:#2b3a66;"><span id="result-counter" data-counter="0">0</span><span style="font-size:18px;color:#4a5a8a;"> / 11</span></div>
+              <div style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#4a5a8a;">stamps</div>
+            </div>
+          </div>
+
+          <!-- mini grid -->
+          <div id="result-grid" style="display:grid;grid-template-columns:repeat(11,1fr);gap:5px;"></div>
+        </div>
+
+        <!-- discount ready banner -->
+        <div id="result-discount-banner" class="hidden" style="background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:20px;padding:13px 16px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:17px;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),5px 6px 0 #2b3a66;">6 stamps — 10% off ready!</div>
+        <!-- full banner -->
+        <div id="result-full-banner" class="hidden" style="background:#FCEC60;border:2.5px solid #2b3a66;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.5),5px 6px 0 #2b3a66;animation:kr-bob 2.4s ease-in-out infinite;">card full — free drink ready!<img src="assets/sticker-blob-walk.png" alt="" style="height:28px;width:auto;object-fit:contain;flex:none;"></div>
+
+        <div id="result-already-redeemed" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;">already redeemed today — come back tomorrow.</div>
+
+        <button id="btn-add-stamp" data-action="add-stamp" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">+ add stamp</button>
+
+        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">apply 10% off</button>
+
+        <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free drink</button>
+
+        <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
+
+        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#4a5a8a;">1 redemption per customer per day</div>
+      </div>
+
+      <!-- ════════════════ REDEEMED CELEBRATION ════════════════ -->
+      <div id="view-redeemed" class="hidden" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:560px;text-align:center;">
+        <img src="assets/sticker-coffee.png" alt="" style="position:absolute;top:26px;left:6px;width:62px;height:62px;object-fit:contain;--r:-10deg;animation:kr-float 4.2s ease-in-out infinite;pointer-events:none;">
+        <img src="assets/sticker-croissant.png" alt="" style="position:absolute;top:60px;right:2px;width:56px;height:56px;object-fit:contain;--r:9deg;animation:kr-float 5.1s ease-in-out infinite;pointer-events:none;">
+        <img src="assets/sticker-boba.png" alt="" style="position:absolute;bottom:110px;left:2px;width:58px;height:58px;object-fit:contain;--r:7deg;animation:kr-float 4.7s ease-in-out infinite;pointer-events:none;">
+        <div style="position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center;">
+          <div style="position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle, rgba(252,236,96,0.9) 0%, rgba(252,236,96,0) 68%);animation:kr-glow 2.4s ease-in-out infinite;"></div>
+          <img src="assets/krema-brandmark.png" alt="Krema" style="position:relative;width:130px;height:130px;object-fit:contain;animation:kr-bob 2.6s ease-in-out infinite;">
+        </div>
+        <div>
+          <div style="font-family:'Bukhari Script',cursive;font-size:24px;color:#4a5a8a;line-height:1;margin-bottom:6px;">yay bestie —</div>
+          <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:40px;line-height:0.92;letter-spacing:-0.01em;color:#2b3a66;">FREE DRINK<br>REDEEMED!</div>
+        </div>
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;max-width:250px;line-height:1.45;"><span id="redeemed-name"></span>'s card is reset — the next 11 start now.</div>
+        <button id="btn-redeem-done" data-action="redeem-done" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;max-width:300px;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:8px;">scan next customer →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">demo mode · not connected to live database yet</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var CUSTOMER_KEY = 'krema_rewards_customer';
+  var SESSION_KEY = 'krema_staff_session';
+  var GOAL = 11;
+  var MILESTONE = 6;
+  var DEMO_EMAIL = 'crew@krema.ph';
+
+  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
+  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
+  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8, 4, -6, 7];
+
+  var todayCount = 0;
+  var toastTimer = null;
+  var cameraStream = null;
+  var current = null; // currently-loaded customer object (mirrors localStorage)
+
+  function $(id) { return document.getElementById(id); }
+
+  function loadSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function saveSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+
+  function loadCustomer() {
+    try {
+      var raw = localStorage.getItem(CUSTOMER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function saveCustomer(c) { localStorage.setItem(CUSTOMER_KEY, JSON.stringify(c)); }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  // ── view switching ─────────────────────────────────────────────
+  function showView(name) {
+    ['login', 'scan', 'result', 'redeemed'].forEach(function (v) {
+      $('view-' + v).classList.toggle('hidden', v !== name);
+    });
+    if (name !== 'scan') stopCamera(); else startCamera();
+  }
+
+  // ── camera ─────────────────────────────────────────────────────
+  function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(function (stream) {
+        cameraStream = stream;
+        var video = $('camera-video');
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        $('camera-placeholder-bg').classList.add('hidden');
+        $('camera-mascot').classList.add('hidden');
+        $('camera-caption').textContent = 'point at the customer\'s QR';
+      })
+      .catch(function () {
+        // permission denied / unavailable — keep the designed placeholder
+      });
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function (t) { t.stop(); });
+      cameraStream = null;
+    }
+    var video = $('camera-video');
+    video.classList.add('hidden');
+    video.srcObject = null;
+    $('camera-placeholder-bg').classList.remove('hidden');
+    $('camera-mascot').classList.remove('hidden');
+  }
+
+  // ── toast ──────────────────────────────────────────────────────
+  function showToast(msg, canUndo) {
+    clearTimeout(toastTimer);
+    $('toast-msg').textContent = msg;
+    $('btn-undo').classList.toggle('hidden', !canUndo);
+    $('toast').classList.remove('hidden');
+    toastTimer = setTimeout(hideToast, 4000);
+  }
+  function hideToast() {
+    clearTimeout(toastTimer);
+    $('toast').classList.add('hidden');
+  }
+
+  // ── slot rendering (shared) ───────────────────────────────────
+  function renderSlots(container, stamps, mini) {
+    container.innerHTML = '';
+    for (var i = 0; i < GOAL; i++) {
+      var filled = i < stamps;
+      var slot = document.createElement('div');
+      slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
+      slot.setAttribute('data-stamp-index', String(i));
+      slot.setAttribute('data-filled', filled ? 'true' : 'false');
+      var edge = ((i + 1) === MILESTONE || (i + 1) === GOAL) ? '#9F8FEA' : '#8695ba';
+      if (filled) {
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i] + ';border:2px solid #2b3a66;display:flex;align-items:center;justify-content:center;';
+        var img = document.createElement('img');
+        img.src = STAMP_ICONS[i];
+        img.alt = 'stamp';
+        img.style.cssText = 'width:92%;height:92%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i] + 'deg);';
+        slot.appendChild(img);
+      } else {
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.4);border:2px dashed ' + edge + ';';
+      }
+      container.appendChild(slot);
+    }
+  }
+
+  // ── result render ──────────────────────────────────────────────
+  function renderResult() {
+    if (!current) return;
+    var stamps = Math.max(0, Math.min(GOAL, current.stamps || 0));
+    var isFull = stamps >= GOAL;
+    var discountReady = !!current.discountAvailable && !isFull;
+    var redeemedToday = current.lastRedeemDate === todayStr();
+
+    $('result-name').textContent = current.name;
+    $('result-code').textContent = current.memberCode;
+    $('result-counter').setAttribute('data-counter', String(stamps));
+    $('result-counter').textContent = String(stamps);
+
+    renderSlots($('result-grid'), stamps, true);
+
+    $('result-discount-banner').classList.toggle('hidden', !discountReady);
+    $('result-full-banner').classList.toggle('hidden', !isFull);
+    $('result-already-redeemed').classList.toggle('hidden', !(isFull && redeemedToday));
+
+    $('btn-redeem-discount').classList.toggle('hidden', !discountReady);
+    $('btn-redeem').classList.toggle('hidden', !isFull);
+    $('btn-redeem').disabled = redeemedToday;
+    $('btn-redeem').style.opacity = redeemedToday ? '0.5' : '1';
+    $('btn-redeem').style.cursor = redeemedToday ? 'not-allowed' : 'pointer';
+
+    $('btn-add-stamp').disabled = isFull;
+    $('btn-add-stamp').style.opacity = isFull ? '0.5' : '1';
+    $('btn-add-stamp').style.cursor = isFull ? 'not-allowed' : 'pointer';
+  }
+
+  // ── actions ────────────────────────────────────────────────────
+  function handleLogin(e) {
+    if (e) e.preventDefault();
+    var email = ($('staff-email').value || '').trim().toLowerCase();
+    if (email !== DEMO_EMAIL) {
+      $('login-error').classList.remove('hidden');
+      return;
+    }
+    $('login-error').classList.add('hidden');
+    saveSession({ loggedIn: true });
+    showView('scan');
+  }
+
+  function loadCurrentCustomerIntoResult() {
+    var c = loadCustomer();
+    if (!c) {
+      $('scan-not-found').classList.remove('hidden');
+      return;
+    }
+    $('scan-not-found').classList.add('hidden');
+    current = c;
+    renderResult();
+    showView('result');
+  }
+
+  function handleScan(e) {
+    if (e) e.preventDefault();
+    loadCurrentCustomerIntoResult();
+  }
+
+  function handleFind(e) {
+    if (e) e.preventDefault();
+    // Phase 1: phone lookup just loads the single mock customer (no real DB yet).
+    loadCurrentCustomerIntoResult();
+  }
+
+  function handleAddStamp() {
+    if (!current || current.stamps >= GOAL) return;
+    current.stamps = Math.min(GOAL, (current.stamps || 0) + 1);
+    if (current.stamps >= MILESTONE && !current.discountAvailable) {
+      current.discountAvailable = true;
+      current.discountEverUnlocked = true;
+    }
+    current.history = current.history || [];
+    current.history.unshift({
+      icon: STAMP_ICONS[(current.stamps - 1) % STAMP_ICONS.length],
+      label: 'stamp #' + current.stamps,
+      when: 'just now'
+    });
+    saveCustomer(current);
+    todayCount++;
+    $('today-count').textContent = String(todayCount);
+    renderResult();
+    showToast('+1 stamp for ' + current.name + ' ✓', true);
+  }
+
+  function handleUndo() {
+    if (!current || !current.history || current.history.length === 0) {
+      hideToast();
+      return;
+    }
+    current.stamps = Math.max(0, (current.stamps || 0) - 1);
+    current.history.shift();
+    // if undo drops us back below the milestone, re-lock the discount that was just granted
+    if (current.stamps < MILESTONE) current.discountAvailable = false;
+    saveCustomer(current);
+    todayCount = Math.max(0, todayCount - 1);
+    $('today-count').textContent = String(todayCount);
+    renderResult();
+    hideToast();
+  }
+
+  function handleRedeemDiscount() {
+    if (!current || !current.discountAvailable) return;
+    current.discountAvailable = false;
+    current.history = current.history || [];
+    current.history.unshift({ icon: 'assets/sticker-blob-walk.png', label: '10% off redeemed', when: 'just now' });
+    saveCustomer(current);
+    renderResult();
+    showToast('10% off applied for ' + current.name + ' ✓', false);
+  }
+
+  function handleRedeem() {
+    if (!current || current.stamps < GOAL) return;
+    if (current.lastRedeemDate === todayStr()) {
+      showToast('already redeemed today — come back tomorrow', false);
+      return;
+    }
+    current.stamps = 0;
+    current.discountAvailable = false;
+    current.lastRedeemDate = todayStr();
+    current.history = current.history || [];
+    current.history.unshift({ icon: 'assets/sticker-coffee.png', label: 'free drink redeemed 🎉', when: 'just now' });
+    saveCustomer(current);
+    $('redeemed-name').textContent = current.name;
+    showView('redeemed');
+  }
+
+  function handleScanNext() {
+    hideToast();
+    current = null;
+    $('scan-not-found').classList.add('hidden');
+    showView('scan');
+  }
+
+  function init() {
+    var session = loadSession();
+    if (session && session.loggedIn) {
+      showView('scan');
+    } else {
+      showView('login');
+    }
+
+    $('btn-login').addEventListener('click', handleLogin);
+    $('btn-scan').addEventListener('click', handleScan);
+    $('btn-find').addEventListener('click', handleFind);
+    $('btn-add-stamp').addEventListener('click', handleAddStamp);
+    $('btn-undo').addEventListener('click', handleUndo);
+    $('btn-redeem-discount').addEventListener('click', handleRedeemDiscount);
+    $('btn-redeem').addEventListener('click', handleRedeem);
+    $('btn-scan-next').addEventListener('click', handleScanNext);
+    $('btn-redeem-done').addEventListener('click', handleScanNext);
+
+    window.addEventListener('beforeunload', stopCamera);
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
+</body>
+</html>

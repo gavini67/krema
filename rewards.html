@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krema Rewards · Your Punch Card</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link href="https://api.fontshare.com/v2/css?f[]=neighbor@400,700,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.cdnfonts.com/css/bukhari-script" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Fraunces', Georgia, serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
+  a { color: #2b3a66; text-decoration: none; }
+  a:hover { color: #4a5a8a; }
+  input { font-family: 'Fraunces', Georgia, serif; }
+  input:focus { border-color: #2b3a66 !important; background: #ffffff !important; box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 0 0 3px rgba(157,143,234,0.35) !important; }
+  ::placeholder { color: rgba(74,90,138,0.55); }
+  button { font: inherit; }
+  @keyframes kr-pulse { 50% { box-shadow: 0 0 0 8px rgba(78,201,122,0.10); } }
+  @keyframes kr-pop { 0% { transform: scale(0.4) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.12) rotate(3deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+  @keyframes kr-float { 0%,100% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(-5px) rotate(calc(var(--r,0deg) + 2deg)); } }
+  @keyframes kr-glow { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.06); } }
+  @keyframes kr-bob { 0%,100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-5px); } }
+  @keyframes kr-confetti { 0% { transform: translateY(-24px) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 82% { opacity: 1; } 100% { transform: translateY(430px) rotate(340deg); opacity: 0; } }
+  @keyframes kr-twinkle { 0%,100% { transform: scale(0.55) rotate(0deg); opacity: 0.45; } 50% { transform: scale(1.15) rotate(22deg); opacity: 1; } }
+  @keyframes kr-scanline { 0%, 100% { top: 8%; } 50% { top: 88%; } }
+  @keyframes kr-burst { 0% { transform: translate(0,0) rotate(0deg) scale(0.4); opacity: 0; } 12% { opacity: 1; transform: translate(calc(var(--tx,0px) * 0.3), calc(var(--ty,0px) * 0.3)) rotate(90deg) scale(1); } 100% { transform: translate(var(--tx,0px), calc(var(--ty,0px) + 46px)) rotate(320deg) scale(0.8); opacity: 0; } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
+
+  <!-- ══ PHONE ══ -->
+  <div style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
+    <!-- status bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 26px 4px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:13px;color:#2b3a66;">
+      <span>9:41</span>
+      <span style="display:inline-flex;gap:5px;align-items:center;font-size:11px;letter-spacing:0.5px;">&#9639; &#9602; &#11044;</span>
+    </div>
+
+    <div style="padding:14px 22px 34px;display:flex;flex-direction:column;gap:20px;min-height:660px;">
+
+      <!-- ════════════════ SIGNUP ════════════════ -->
+      <div id="view-signup" style="display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;align-items:center;gap:11px;">
+          <img src="assets/krema-brandmark.png" alt="Krema" style="width:52px;height:52px;object-fit:contain;transform:rotate(-4deg);">
+          <div>
+            <div style="font-family:'Bukhari Script',cursive;font-size:20px;color:#4a5a8a;line-height:1;">tara, bestie —</div>
+            <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:34px;line-height:0.9;letter-spacing:-0.01em;">KREMA REWARDS</div>
+          </div>
+        </div>
+
+        <div style="position:relative;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:22px;padding:18px 20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),5px 6px 0 #2b3a66;">
+          <img src="assets/sticker-boba.png" alt="" style="position:absolute;top:-42px;right:-10px;width:78px;height:78px;object-fit:contain;transform:rotate(12deg);filter:drop-shadow(2px 3px 0 rgba(43,58,102,0.4));pointer-events:none;">
+          <div style="position:absolute;inset:7px;border:2px dashed rgba(252,236,96,0.3);border-radius:15px;pointer-events:none;"></div>
+          <div style="position:relative;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1.05;max-width:240px;">6 stamps = 10% off. 11 = free drink.</div>
+          <div style="position:relative;font-family:'Fraunces',Georgia,serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit. one card, all the treats.</div>
+          <div style="position:relative;display:flex;align-items:center;gap:6px;margin-top:13px;">
+            <div style="width:18px;height:18px;border-radius:50%;background:#FCEC60;border:2px solid #FCEC60;display:flex;align-items:center;justify-content:center;flex:none;"><div style="width:9px;height:9px;background:#2b3a66;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);"></div></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+            <span style="font-family:'Fraunces',Georgia,serif;font-size:11px;font-style:italic;color:#cdd6ef;margin-left:4px;">№1 is on us</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">your name</span>
+            <input id="cust-name" data-field="name" type="text" placeholder="e.g. Bea" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">phone number</span>
+            <input id="cust-phone" data-field="phone" type="tel" placeholder="09XX XXX XXXX" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+          </label>
+        </div>
+
+        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
+
+        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;">first stamp's on us when you join &#10024;</div>
+      </div>
+
+      <!-- ════════════════ PUNCH CARD ════════════════ -->
+      <div id="view-card" class="hidden" style="display:flex;flex-direction:column;gap:18px;position:relative;">
+
+        <!-- greeting -->
+        <div style="display:flex;align-items:center;gap:11px;">
+          <img src="assets/krema-brandmark.png" alt="Krema" style="width:46px;height:46px;object-fit:contain;transform:rotate(-4deg);">
+          <div style="min-width:0;">
+            <div style="font-family:'Bukhari Script',cursive;font-size:20px;color:#4a5a8a;line-height:1;">hi <span id="greet-name">there</span> —</div>
+            <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:24px;line-height:0.92;letter-spacing:-0.01em;">YOUR PUNCH CARD</div>
+          </div>
+        </div>
+
+        <!-- the card -->
+        <div style="position:relative;background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:22px 20px 24px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;">
+
+          <!-- reward glow (shown only when full) -->
+          <div id="reward-glow" class="hidden" style="position:absolute;inset:0;border-radius:26px;overflow:hidden;pointer-events:none;z-index:2;">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 42%, rgba(252,236,96,0.85) 0%, rgba(252,236,96,0.0) 62%);animation:kr-glow 2.4s ease-in-out infinite;"></div>
+            <div style="position:absolute;top:-24px;left:6%;width:9px;height:9px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:2px;animation:kr-confetti 3.2s linear infinite;"></div>
+            <div style="position:absolute;top:-24px;left:17%;width:7px;height:7px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:50%;animation:kr-confetti 4.1s linear infinite;animation-delay:0.8s;"></div>
+            <div style="position:absolute;top:-24px;left:30%;width:4px;height:13px;background:#7db9dd;border:1.5px solid #2b3a66;border-radius:3px;animation:kr-confetti 3.6s linear infinite;animation-delay:1.6s;"></div>
+            <div style="position:absolute;top:-24px;left:45%;width:9px;height:9px;background:#f0d820;border:1.5px solid #2b3a66;border-radius:2px;animation:kr-confetti 4.4s linear infinite;animation-delay:0.4s;"></div>
+            <div style="position:absolute;top:-24px;left:57%;width:7px;height:7px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:2px;animation:kr-confetti 3.4s linear infinite;animation-delay:2.1s;"></div>
+            <div style="position:absolute;top:-24px;left:69%;width:6px;height:6px;background:#7db9dd;border:1.5px solid #2b3a66;border-radius:50%;animation:kr-confetti 4s linear infinite;animation-delay:1.2s;"></div>
+            <div style="position:absolute;top:-24px;left:81%;width:4px;height:12px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:3px;animation:kr-confetti 3.8s linear infinite;animation-delay:0.2s;"></div>
+            <div style="position:absolute;top:-24px;left:91%;width:8px;height:8px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:50%;animation:kr-confetti 4.3s linear infinite;animation-delay:1.8s;"></div>
+          </div>
+          <div id="reward-twinkles" class="hidden">
+            <div style="position:absolute;top:12px;left:14px;width:24px;height:24px;background:#f0d820;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.2s ease-in-out infinite;pointer-events:none;z-index:3;"></div>
+            <div style="position:absolute;top:16px;right:16px;width:17px;height:17px;background:#9F8FEA;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.8s ease-in-out infinite;animation-delay:0.7s;pointer-events:none;z-index:3;"></div>
+            <div style="position:absolute;top:52px;right:34px;width:10px;height:10px;background:#7db9dd;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2s ease-in-out infinite;animation-delay:1.3s;pointer-events:none;z-index:3;"></div>
+          </div>
+
+          <!-- counter -->
+          <div style="position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:4px;">
+            <span id="stamp-counter" data-counter="0" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:56px;line-height:1;letter-spacing:-0.02em;color:#2b3a66;text-shadow:2px 3px 0 rgba(252,236,96,0.9);">0</span>
+            <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:26px;color:#4a5a8a;">/ 11</span>
+            <span style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:13px;color:#4a5a8a;align-self:flex-end;margin-bottom:8px;">stamps</span>
+          </div>
+
+          <!-- stamp grid -->
+          <div id="stamp-grid" style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0 6px;"></div>
+
+          <!-- reward ticket (full) -->
+          <div id="reward-ticket" class="hidden" style="position:relative;margin-top:16px;">
+            <div style="position:absolute;top:-14px;left:7%;width:20px;height:20px;background:#f0d820;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.4s ease-in-out infinite;z-index:2;"></div>
+            <div style="position:absolute;top:-16px;right:10%;width:14px;height:14px;background:#9F8FEA;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 3s ease-in-out infinite;animation-delay:0.9s;z-index:2;"></div>
+            <div style="position:absolute;bottom:-12px;right:22%;width:12px;height:12px;background:#7db9dd;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.1s ease-in-out infinite;animation-delay:0.4s;z-index:2;"></div>
+            <div style="position:relative;background:#2b3a66;border:2.5px solid #2b3a66;border-radius:18px;padding:15px 30px 16px;transform:rotate(-1.5deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.16),5px 7px 0 rgba(43,58,102,0.32);overflow:hidden;animation:kr-bob 3.2s ease-in-out infinite;">
+              <div style="position:absolute;inset:6px;border:2px dashed rgba(252,236,96,0.45);border-radius:12px;pointer-events:none;"></div>
+              <div style="position:absolute;top:50%;left:-13px;width:24px;height:24px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:absolute;top:50%;right:-13px;width:24px;height:24px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:14px;">
+                <img src="assets/krema-brandmark.png" alt="" style="width:52px;height:52px;object-fit:contain;flex:none;transform:rotate(-6deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));">
+                <div style="text-align:left;min-width:0;">
+                  <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · golden ticket</div>
+                  <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:29px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);">FREE DRINK<br>UNLOCKED!</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;margin-top:12px;">treat yo' self, bestie — you earned it.</div>
+          </div>
+
+          <!-- discount just-unlocked (one-shot burst, stamps === 6) -->
+          <div id="discount-fresh" class="hidden">
+            <div style="position:relative;height:0;"><div style="position:absolute;left:50%;top:44px;z-index:5;pointer-events:none;">
+              <span style="position:absolute;width:9px;height:9px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:2px;--tx:-74px;--ty:-58px;animation:kr-burst 1.9s cubic-bezier(.2,.7,.4,1) 0.35s both;"></span>
+              <span style="position:absolute;width:7px;height:7px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:50%;--tx:62px;--ty:-70px;animation:kr-burst 2.1s cubic-bezier(.2,.7,.4,1) 0.45s both;"></span>
+              <span style="position:absolute;width:4px;height:12px;background:#e6dff8;border:1.5px solid #2b3a66;border-radius:3px;--tx:-38px;--ty:-84px;animation:kr-burst 1.7s cubic-bezier(.2,.7,.4,1) 0.4s both;"></span>
+              <span style="position:absolute;width:8px;height:8px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:50%;--tx:84px;--ty:-38px;animation:kr-burst 2s cubic-bezier(.2,.7,.4,1) 0.55s both;"></span>
+              <span style="position:absolute;width:9px;height:9px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:2px;--tx:-88px;--ty:-20px;animation:kr-burst 1.8s cubic-bezier(.2,.7,.4,1) 0.5s both;"></span>
+              <span style="position:absolute;width:6px;height:6px;background:#e6dff8;border:1.5px solid #2b3a66;border-radius:50%;--tx:40px;--ty:-92px;animation:kr-burst 2.2s cubic-bezier(.2,.7,.4,1) 0.6s both;"></span>
+              <span style="position:absolute;width:4px;height:11px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:3px;--tx:14px;--ty:-100px;animation:kr-burst 1.9s cubic-bezier(.2,.7,.4,1) 0.42s both;"></span>
+              <span style="position:absolute;width:7px;height:7px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:2px;--tx:-16px;--ty:-96px;animation:kr-burst 2s cubic-bezier(.2,.7,.4,1) 0.65s both;"></span>
+            </div></div>
+            <div style="position:relative;background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:16px;padding:11px 22px;margin-top:14px;transform:rotate(1deg);animation:kr-pop .55s cubic-bezier(.34,1.56,.64,1) 0.25s both;box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),4px 5px 0 rgba(43,58,102,0.32);overflow:hidden;">
+              <div style="position:absolute;inset:5px;border:2px dashed rgba(254,255,230,0.5);border-radius:11px;pointer-events:none;"></div>
+              <div style="position:absolute;top:50%;left:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:absolute;top:50%;right:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:relative;text-align:center;">
+                <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#2b3a66;opacity:0.7;margin-bottom:2px;">milestone reward</div>
+                <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:21px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF UNLOCKED — show at counter</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- progress line (not yet at reward) -->
+          <div id="progress-line" style="position:relative;text-align:center;margin-top:8px;font-family:'Fraunces',Georgia,serif;font-size:15px;color:#4a5a8a;">
+            <b id="progress-text" style="color:#2b3a66;"></b>
+          </div>
+        </div>
+
+        <!-- unused discount voucher chip (unlocked earlier, still spendable) -->
+        <div id="discount-chip" class="hidden" style="position:relative;background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 26px;transform:rotate(-1deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),5px 6px 0 #2b3a66;overflow:hidden;">
+          <div style="position:absolute;inset:5px;border:2px dashed rgba(254,255,230,0.5);border-radius:13px;pointer-events:none;"></div>
+          <div style="position:absolute;top:50%;left:-12px;width:22px;height:22px;border-radius:50%;background:#f8f4e6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+          <div style="position:absolute;top:50%;right:-12px;width:22px;height:22px;border-radius:50%;background:#f8f4e6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+          <div style="position:relative;display:flex;align-items:center;gap:12px;">
+            <span style="flex:none;width:22px;height:22px;background:#FEFFE6;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.6s ease-in-out infinite;"></span>
+            <div style="min-width:0;">
+              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF — still yours!</div>
+              <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#2b3a66;margin-top:3px;">show this at the counter on your next order</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR block -->
+        <div style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;display:flex;flex-direction:column;align-items:center;gap:12px;">
+          <div id="qr-container" data-qr="" style="position:relative;width:168px;height:168px;background:#ffffff;border:3px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),4px 5px 0 #2b3a66;display:flex;align-items:center;justify-content:center;">
+            <div style="position:absolute;top:12px;left:12px;width:38px;height:38px;border:6px solid #2b3a66;border-radius:8px;pointer-events:none;"></div>
+            <div style="position:absolute;top:12px;right:12px;width:38px;height:38px;border:6px solid #2b3a66;border-radius:8px;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:12px;left:12px;width:38px;height:38px;border:6px solid #2b3a66;border-radius:8px;pointer-events:none;"></div>
+            <canvas id="qr-canvas" width="104" height="104" style="width:104px;height:104px;border-radius:4px;"></canvas>
+            <div style="position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);background:#FCEC60;border:2px solid #2b3a66;border-radius:999px;padding:2px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.1em;">QR CODE</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;margin-bottom:2px;">member code</div>
+            <div id="member-code" data-member-code="" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em;color:#2b3a66;"></div>
+          </div>
+          <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#4a5a8a;line-height:1.4;max-width:230px;">
+            <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free drink</span>
+            <span id="qr-hint-normal">show this to the barista to collect a stamp</span>
+          </div>
+        </div>
+
+        <!-- recent stamps -->
+        <div id="history-block" class="hidden" style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:18px 20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;display:flex;flex-direction:column;gap:11px;">
+          <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;">recent stamps</div>
+          <div id="history-items" style="display:flex;flex-direction:column;gap:11px;"></div>
+        </div>
+
+        <div style="text-align:center;">
+          <a id="link-start-over" data-action="start-over" href="#">start over</a>
+          <style>#link-start-over { font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:13px;color:#4a5a8a;border-bottom:2px dashed #8695ba;padding-bottom:1px; }</style>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">Krema Rewards · 6 stamps = 10% off · 11 = free drink</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'krema_rewards_customer';
+  var GOAL = 11;
+  var MILESTONE = 6;
+
+  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
+  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
+  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8, 4, -6, 7];
+
+  function $(id) { return document.getElementById(id); }
+
+  function loadCustomer() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function saveCustomer(c) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
+  }
+
+  function genMemberCode() {
+    var n = Math.floor(1000 + Math.random() * 9000);
+    return 'KREMA-' + n;
+  }
+
+  function genId() {
+    return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function renderQR(memberCode) {
+    var canvas = $('qr-canvas');
+    if (window.QRCode && canvas) {
+      QRCode.toCanvas(canvas, memberCode, { width: 104, margin: 0, color: { dark: '#2b3a66', light: '#ffffff' } }, function (err) {
+        if (err) console.error('QR render failed', err);
+      });
+    }
+  }
+
+  function renderSlots(container, stamps, cols) {
+    container.innerHTML = '';
+    for (var i = 0; i < GOAL; i++) {
+      var filled = i < stamps;
+      var isMile = (i + 1) === MILESTONE;
+      var isFinal = (i + 1) === GOAL;
+      var slot = document.createElement('div');
+      slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
+      slot.setAttribute('data-stamp-index', String(i));
+      slot.setAttribute('data-filled', filled ? 'true' : 'false');
+      if (filled) {
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i] + ';border:2.5px solid #2b3a66;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),3px 4px 0 rgba(43,58,102,0.28);animation:kr-pop .45s cubic-bezier(.34,1.56,.64,1) both;overflow:visible;';
+        var img = document.createElement('img');
+        img.src = STAMP_ICONS[i];
+        img.alt = 'stamp';
+        img.style.cssText = 'width:96%;height:96%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i] + 'deg);filter:drop-shadow(1px 2px 0 rgba(43,58,102,0.3));';
+        slot.appendChild(img);
+      } else {
+        var edge = (isMile || isFinal) ? '#9F8FEA' : '#8695ba';
+        var fs = (isMile || isFinal) ? 11 : 19;
+        var label = isMile ? '10% off' : (isFinal ? 'free drink' : String(i + 1));
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.35);border:2.5px dashed ' + edge + ';display:flex;align-items:center;justify-content:center;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:' + fs + 'px;color:' + edge + ';text-align:center;line-height:1.05;';
+        slot.textContent = label;
+      }
+      container.appendChild(slot);
+    }
+  }
+
+  function renderHistory(history) {
+    var block = $('history-block');
+    var items = $('history-items');
+    var list = (history || []).slice(0, 6);
+    if (list.length === 0) {
+      block.classList.add('hidden');
+      return;
+    }
+    block.classList.remove('hidden');
+    items.innerHTML = '';
+    list.forEach(function (h) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      row.innerHTML = '<img src="' + h.icon + '" alt="" style="width:24px;height:24px;object-fit:contain;flex:none;">' +
+        '<span style="flex:1;min-width:0;font-family:\'Fraunces\',Georgia,serif;font-size:14px;color:#2b3a66;">' + h.label + '</span>' +
+        '<span style="flex:none;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.04em;color:#8695ba;">' + h.when + '</span>';
+      items.appendChild(row);
+    });
+  }
+
+  function renderCard(c) {
+    $('view-signup').classList.add('hidden');
+    $('view-card').classList.remove('hidden');
+
+    var stamps = Math.max(0, Math.min(GOAL, c.stamps || 0));
+    var isFull = stamps >= GOAL;
+    var discountReady = !!c.discountAvailable && !isFull;
+
+    $('greet-name').textContent = c.name || 'there';
+    $('stamp-counter').setAttribute('data-counter', String(stamps));
+    $('stamp-counter').textContent = String(stamps);
+
+    renderSlots($('stamp-grid'), stamps);
+
+    // reward (full) state
+    $('reward-glow').classList.toggle('hidden', !isFull);
+    $('reward-twinkles').classList.toggle('hidden', !isFull);
+    $('reward-ticket').classList.toggle('hidden', !isFull);
+    $('progress-line').classList.toggle('hidden', isFull);
+
+    // discount states
+    var isDiscountFresh = discountReady && stamps === MILESTONE;
+    var isDiscountChip = discountReady && stamps > MILESTONE;
+    $('discount-fresh').classList.toggle('hidden', !isDiscountFresh);
+    $('discount-chip').classList.toggle('hidden', !isDiscountChip);
+
+    if (!isFull) {
+      var text;
+      if (stamps < MILESTONE && discountReady === false && !c.discountAvailable) {
+        var r = MILESTONE - stamps;
+        text = r === 1 ? "just 1 more till 10% off" : (r + " more till 10% off");
+      } else {
+        var remaining = GOAL - stamps;
+        text = remaining === 1 ? "just 1 more till your free drink" : (remaining + " more till your free drink");
+      }
+      $('progress-text').textContent = text;
+    }
+
+    $('member-code').setAttribute('data-member-code', c.memberCode);
+    $('member-code').textContent = c.memberCode;
+    $('qr-hint-reward').classList.toggle('hidden', !isFull);
+    $('qr-hint-normal').classList.toggle('hidden', isFull);
+    renderQR(c.memberCode);
+
+    renderHistory(c.history);
+  }
+
+  function showSignup() {
+    $('view-card').classList.add('hidden');
+    $('view-signup').classList.remove('hidden');
+  }
+
+  function handleJoin(e) {
+    if (e) e.preventDefault();
+    var nameInput = $('cust-name');
+    var phoneInput = $('cust-phone');
+    var name = (nameInput.value || '').trim();
+    if (!name) {
+      nameInput.focus();
+      nameInput.style.borderColor = '#c0392b';
+      return;
+    }
+    var phone = (phoneInput.value || '').trim();
+    var customer = {
+      id: genId(),
+      name: name,
+      phone: phone,
+      memberCode: genMemberCode(),
+      stamps: 1,
+      discountAvailable: false,
+      discountEverUnlocked: false,
+      lastRedeemDate: null,
+      history: [{ icon: 'assets/sticker-coffee.png', label: "stamp #1 · first one's on us!", when: 'just now' }]
+    };
+    saveCustomer(customer);
+    renderCard(customer);
+  }
+
+  function handleStartOver(e) {
+    if (e) e.preventDefault();
+    localStorage.removeItem(STORAGE_KEY);
+    var nameInput = $('cust-name');
+    var phoneInput = $('cust-phone');
+    if (nameInput) { nameInput.value = ''; nameInput.style.borderColor = '#2b3a66'; }
+    if (phoneInput) phoneInput.value = '';
+    showSignup();
+  }
+
+  function init() {
+    $('btn-join').addEventListener('click', handleJoin);
+    $('link-start-over').addEventListener('click', handleStartOver);
+
+    // keep in sync if staff.html updates the same customer in another tab
+    window.addEventListener('storage', function (e) {
+      if (e.key === STORAGE_KEY) {
+        var c = loadCustomer();
+        if (c) renderCard(c); else showSignup();
+      }
+    });
+
+    var existing = loadCustomer();
+    if (existing) {
+      renderCard(existing);
+    } else {
+      showSignup();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
+</body>
+</html>
