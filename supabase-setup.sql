@@ -4,7 +4,7 @@
 --  Safe to re-run (uses "if not exists" / "create or replace").
 --
 --  Mechanic: 11 stamps = free drink · 6 stamps = 10% off voucher ·
---            first stamp free on signup · 1 free-drink redeem per day.
+--            empty card on signup · 1 free-drink redeem per day.
 -- ════════════════════════════════════════════════════════════════════════
 
 -- ── Tables ──────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ end $$;
 --   member_code, name, stamps, goal, discount_at, discount_available,
 --   reward_ready (stamps >= goal)
 
--- ── Customer signup (anon) — first stamp free ───────────────────────────
+-- ── Customer signup (anon) — empty card ─────────────────────────────────
 create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  discount_at int, discount_available boolean, reward_ready boolean)
@@ -87,7 +87,7 @@ begin
   if v_code is null then
     v_code := krema_new_code();
     insert into public.customers (member_code, name, phone, stamps, lifetime)
-    values (v_code, p_name, p_phone, 1, 1);            -- first stamp free
+    values (v_code, p_name, p_phone, 0, 0);            -- empty card; staff add the first stamp
   end if;
 
   return query
@@ -106,6 +106,20 @@ begin
     select c.member_code, c.name, c.stamps, krema_goal(), krema_discount_at(),
            c.discount_available, (c.stamps >= krema_goal())
     from public.customers c where c.member_code = p_code;
+end $$;
+
+-- ── Get card by phone (anon — returning customer retrieving their card) ──
+--  Returns the card shape WITHOUT the phone (never echo phone to an anon
+--  caller). Zero rows when not found. Does NOT create a customer.
+create or replace function public.customer_lookup(p_phone text)
+  returns table (member_code text, name text, stamps int, goal int,
+                 discount_at int, discount_available boolean, reward_ready boolean)
+  language plpgsql security definer set search_path = public as $$
+begin
+  return query
+    select c.member_code, c.name, c.stamps, krema_goal(), krema_discount_at(),
+           c.discount_available, (c.stamps >= krema_goal())
+    from public.customers c where c.phone = trim(p_phone);
 end $$;
 
 -- ── Staff: add a stamp ──────────────────────────────────────────────────
@@ -205,6 +219,7 @@ end $$;
 -- ── Permissions: who can call each function ─────────────────────────────
 revoke all on function public.signup_customer(text,text) from public;
 revoke all on function public.get_card(text)             from public;
+revoke all on function public.customer_lookup(text)       from public;
 revoke all on function public.add_stamp(text)            from public;
 revoke all on function public.redeem(text)               from public;
 revoke all on function public.redeem_discount(text)      from public;
@@ -212,6 +227,7 @@ revoke all on function public.staff_lookup(text)         from public;
 
 grant execute on function public.signup_customer(text,text) to anon, authenticated;
 grant execute on function public.get_card(text)             to anon, authenticated;
+grant execute on function public.customer_lookup(text)    to anon, authenticated;
 grant execute on function public.add_stamp(text)            to authenticated;
 grant execute on function public.redeem(text)               to authenticated;
 grant execute on function public.redeem_discount(text)      to authenticated;

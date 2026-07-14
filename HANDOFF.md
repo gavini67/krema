@@ -29,11 +29,12 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
 
 **Mechanic (locked):**
 - 11-slot card. Counter shows `X / 11`.
-- **First stamp free** on signup.
+- **Empty card** on signup (0/11); staff add the first stamp on the first purchase.
 - **6 stamps** → 10% off voucher unlocked (spendable until redeemed).
 - **11 stamps** → free drink. Staff redeems → card resets to 0, cycle repeats.
 - **1 free-drink redeem per customer per day** (discount has no daily limit).
 - Only **staff** can add stamps / redeem. Enforced server-side (see §5).
+- Returning customers retrieve their card by **phone number** (`customer_lookup` anon RPC) or a bookmarkable `rewards.html?c=KREMA-XXXX` link — no password/PIN (see the login design spec).
 
 **Customer flow:** open `/rewards.html` → sign up (name + phone) → get a card with a QR + member code (e.g. `KREMA-1234`), remembered on the phone (localStorage stores only the member code). Card auto-refreshes every 4s + on focus, so staff stamps show up live.
 
