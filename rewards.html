@@ -229,6 +229,7 @@
             <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free drink</span>
             <span id="qr-hint-normal">show this to the barista to collect a stamp</span>
           </div>
+          <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:11px;font-style:italic;color:#8695ba;margin-top:10px;">tip: bookmark this page so your card is always one tap away</div>
         </div>
 
         <!-- recent stamps -->
@@ -274,6 +275,13 @@
 
   function getSavedCode() {
     try { return localStorage.getItem(MEMBER_KEY); } catch (e) { return null; }
+  }
+
+  function getCodeFromUrl() {
+    try {
+      var m = (window.location.search || '').match(/[?&]c=([^&]+)/);
+      return m ? decodeURIComponent(m[1]).toUpperCase() : null;
+    } catch (e) { return null; }
   }
 
   function saveCode(code) {
@@ -529,9 +537,11 @@
     $('btn-lookup').addEventListener('click', handleLookup);
     $('link-start-over').addEventListener('click', handleStartOver);
 
-    var savedCode = getSavedCode();
-    if (savedCode) {
-      fetchAndRenderCard(savedCode, true);
+    var urlCode = getCodeFromUrl();
+    var code = urlCode || getSavedCode();
+    if (code) {
+      if (urlCode) saveCode(urlCode);
+      fetchAndRenderCard(code, true);
     } else {
       showSignup();
     }
