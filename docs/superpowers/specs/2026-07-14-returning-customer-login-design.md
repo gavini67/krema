@@ -87,13 +87,9 @@ Precedence on page load: `?c=` URL param → else saved `localStorage` code → 
 
 `customer_lookup` and the `?c=` link are anonymous and enumerable — anyone can query a phone number or guess a 4-digit member code and see a **name + stamp count**. This is the accepted, low-stakes exposure (no reward theft possible). If it ever matters: lengthen member codes and/or add SMS verification. Documented, not fixed, in v1.
 
-## 9. Open question for the shop owner
+## 9. Reward thresholds — RESOLVED
 
-Removing the free signup stamp makes the rewards **one purchase harder** to reach:
-- Free drink: was effectively the **10th** purchase (1 free + 10) → now the **11th**.
-- Discount: was the **5th** → now the **6th**.
-
-**Decide:** keep thresholds at 11 / 6, or lower `krema_goal()` / `krema_discount_at()` (e.g. 10 / 5) to preserve the current effective effort? Default in this spec: **keep 11 / 6** unless you say otherwise.
+**Keep thresholds at 11 / 6** (`krema_goal()` = 11, `krema_discount_at()` = 6), confirmed by the owner 2026-07-14. With the empty-card signup, the 10%-off unlocks on the **6th** real purchase and the free drink on the **11th**. No change to the config functions.
 
 ## 10. Testing
 
