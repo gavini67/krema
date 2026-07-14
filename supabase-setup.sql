@@ -118,16 +118,16 @@ declare v_id uuid; v_stamps int;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
 
-  select id, stamps into v_id, v_stamps
-    from public.customers where member_code = p_code;
+  select c.id, c.stamps into v_id, v_stamps
+    from public.customers c where c.member_code = p_code;
   if v_id is null then raise exception 'card not found'; end if;
   if v_stamps >= krema_goal() then raise exception 'card already full — redeem first'; end if;
 
-  update public.customers
-     set stamps   = stamps + 1,
-         lifetime = lifetime + 1,
-         discount_available = discount_available or (stamps + 1 >= krema_discount_at())
-   where id = v_id;
+  update public.customers c
+     set stamps   = c.stamps + 1,
+         lifetime = c.lifetime + 1,
+         discount_available = c.discount_available or (c.stamps + 1 >= krema_discount_at())
+   where c.id = v_id;
 
   return query
     select c.member_code, c.name, c.stamps, krema_goal(), krema_discount_at(),
@@ -145,8 +145,8 @@ declare v_id uuid; v_stamps int;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
 
-  select id, stamps into v_id, v_stamps
-    from public.customers where member_code = p_code;
+  select c.id, c.stamps into v_id, v_stamps
+    from public.customers c where c.member_code = p_code;
   if v_id is null then raise exception 'card not found'; end if;
   if v_stamps < krema_goal() then raise exception 'card not full yet'; end if;
   if exists (select 1 from public.redemptions
@@ -175,8 +175,8 @@ declare v_id uuid; v_avail boolean;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
 
-  select id, discount_available into v_id, v_avail
-    from public.customers where member_code = p_code;
+  select c.id, c.discount_available into v_id, v_avail
+    from public.customers c where c.member_code = p_code;
   if v_id is null then raise exception 'card not found'; end if;
   if not v_avail then raise exception 'no discount available'; end if;
 

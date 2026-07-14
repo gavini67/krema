@@ -50,13 +50,15 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
 **Schema:** `supabase-setup.sql` (in this repo) — already run once in the SQL Editor. Tables: `customers`, `redemptions`, `staff`. All tables have RLS on with **no policies** → no direct client access; every read/write goes through `SECURITY DEFINER` functions:
 `signup_customer`, `get_card` (anon) · `add_stamp`, `redeem`, `redeem_discount`, `staff_lookup` (staff-only, checked via `is_staff()` = uid present in `public.staff`).
 
-**Staff login setup (REQUIRED for staff.html to work — verify this is done):**
-1. Supabase → Authentication → Users → Add user → email `crew@krema.ph` + password, **Auto Confirm** on.
-2. Copy that user's UID → SQL Editor:
-   ```sql
-   insert into public.staff (uid) values ('THE-UID');
-   ```
-Only uids in `public.staff` can stamp/redeem.
+**Staff login setup (DONE — staff account is live):**
+- The active staff account is **`keionchua@gmail.com`** (uid `5b4440bf-ef19-4a1d-a669-fa48b892e3c5`), confirmed present in `public.staff`. `crew@krema.ph` was never created — ignore references to it below.
+- To add another barista: Supabase → Authentication → Users → Add user (email + password, **Auto Confirm** on), then in SQL Editor:
+  ```sql
+  insert into public.staff (uid)
+  select id from auth.users where email = 'THEIR-EMAIL' on conflict (uid) do nothing;
+  ```
+  Only uids in `public.staff` can stamp/redeem. Being logged in alone is NOT enough — `get_card`/QR lookup is anon, but `add_stamp`/`redeem`/`redeem_discount`/`staff_lookup` all require `is_staff()`.
+- ⚠️ **Production TODO:** replace the personal Gmail staff account with a dedicated `crew@krema.ph` (or per-barista logins) before going fully live.
 
 ## 5. State of play — DONE
 - Main site: brand fonts/colors, real photoshoot photos, 39 Google reviews, real Google review cards, community section with 6 REAL tagged Instagram embeds, TikTok `@kremaph`, "Mango Graham" featured bingsu, Vercel Analytics, mobile redesign (hamburger nav), mobile ticker 20s + overscroll fix.
@@ -66,15 +68,17 @@ Only uids in `public.staff` can stamp/redeem.
 Latest commit: `478ad8b` (QR fix). Recent: `e4c6a71` supabase wire · `2b21e8c` rewards frontend · `1054835` mobile nav.
 
 ## 6. State of play — PENDING / TODO
-- [ ] **Verify the QR is now scannable on a phone** (just fixed; awaiting confirmation). If the QR box is *blank* white → the `qrcode@1.5.4` lib isn't loading; check the CDN path / add a fallback. Member code + phone-lookup are the backups.
-- [ ] **Confirm staff auth user exists** in Supabase (§4). Without it, staff login fails.
+- [ ] **Apply the RPC ambiguity fix for `redeem` + `redeem_discount` in the live DB.** On 2026-07-14 `add_stamp`/`redeem`/`redeem_discount` were found to throw `column reference "stamps" is ambiguous` — the `SELECT … INTO` (and `add_stamp`'s `UPDATE`) referenced bare column names that collide with the `RETURNS TABLE` output columns. Fix = qualify every ref with the `c.` alias (done in `supabase-setup.sql`). **`add_stamp` was re-run in Supabase and works; `redeem` + `redeem_discount` still need their corrected definitions run in the SQL Editor** (editing the file does NOT update the live DB — you must `create or replace` in Supabase). Verify a function's live body with `select pg_get_functiondef('public.redeem(text)'::regprocedure);`.
+- [x] **QR blank-box bug FIXED** — was the `qrcode@1.5.4` 404 (see §7); repinned to `1.5.1`. Still worth a real phone camera-scan on the live site to confirm decode.
+- [x] **Staff auth confirmed** — `keionchua@gmail.com` is in `public.staff` (§4).
 - [ ] **"Rewards" nav link** on the main site (`index.html`) — not added yet; `/rewards.html` is currently only reachable by direct URL.
 - [ ] **Undo stamp** — not implemented (no server undo RPC; the button was removed). If wanted: add an `undo_stamp` SECURITY DEFINER function (careful with the discount recompute) + re-add the button.
 - [ ] **Customer "recent stamps" history** — hidden; the RPCs don't return history yet.
 - [ ] Real camera QR *decode* is wired (html5-qrcode) but only tested statically — verify on a phone (needs HTTPS + camera permission; Vercel gives HTTPS).
 
 ## 7. GOTCHAS / house rules (important)
-- **CDN PINNING — never use `@latest` / unpinned.** On 2026-06-26 an unpinned `@babel/standalone` auto-upgraded to Babel 8 and blanked the whole site (Babel 8 injects ES imports illegal in `text/babel`). Pinned versions in use: Babel `7.26.4`, React/ReactDOM `18.3.1`, `@supabase/supabase-js@2.45.4`, `html5-qrcode@2.3.8`, `qrcode@1.5.4`.
+- **CDN PINNING — never use `@latest` / unpinned.** On 2026-06-26 an unpinned `@babel/standalone` auto-upgraded to Babel 8 and blanked the whole site (Babel 8 injects ES imports illegal in `text/babel`). Pinned versions in use: Babel `7.26.4`, React/ReactDOM `18.3.1`, `@supabase/supabase-js@2.45.4`, `html5-qrcode@2.3.8`, `qrcode@1.5.1`.
+  - ⚠️ **`qrcode` must be `1.5.1`, NOT 1.5.3/1.5.4.** The maintainer removed the browser bundle `build/qrcode.min.js` after 1.5.1 — on 1.5.3/1.5.4 that path 404s, `window.QRCode` never loads, and the customer card shows a **blank white QR box**. `1.5.1` ships the UMD build with the same `QRCode.toCanvas` API. (Fixed 2026-07-14.)
 - **Claude Design exports regress the same fixes every time.** When applying a new `*.dc.html` / design export over `index.html`, it re-exports from an older base and wipes: (1) featuredBingsu → resets to "Mango Magic" (should be **Mango Graham**, +price/desc), (2) community Instagram → fabricates FAKE posts (real handles: `rib.onn_`, `anna_marssss`, `chayincafes`, `thefoodieatty`, `mitchyko78`, `meagannochii` with real `instagram.com/p/...` permalinks), (3) mobile ticker → resets 20s→40s, (4) drops the `overscroll-behavior-x:none` + IG-iframe clamp. Always `git diff` a fresh export and treat everything except the intended change as a regression to revert.
 - **Preview/screenshot tools are network-isolated** — they can't load Google Fonts, jsdelivr, Supabase, or Instagram embeds, so screenshots hang and backend calls fail *in the tool*. Verify via DOM checks or on the live site / a real browser.
 - **Model routing preference:** plan/debug on Opus, delegate big mechanical builds to a Sonnet subagent, do tiny edits inline. (This is in the user's global CLAUDE.md.)
