@@ -4,7 +4,7 @@
 --  Safe to re-run (uses "if not exists" / "create or replace").
 --
 --  Mechanic: 11 stamps = free drink · 6 stamps = 10% off voucher ·
---            first stamp free on signup · 1 free-drink redeem per day.
+--            empty card on signup · 1 free-drink redeem per day.
 -- ════════════════════════════════════════════════════════════════════════
 
 -- ── Tables ──────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ end $$;
 --   member_code, name, stamps, goal, discount_at, discount_available,
 --   reward_ready (stamps >= goal)
 
--- ── Customer signup (anon) — first stamp free ───────────────────────────
+-- ── Customer signup (anon) — empty card ─────────────────────────────────
 create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  discount_at int, discount_available boolean, reward_ready boolean)
@@ -87,7 +87,7 @@ begin
   if v_code is null then
     v_code := krema_new_code();
     insert into public.customers (member_code, name, phone, stamps, lifetime)
-    values (v_code, p_name, p_phone, 1, 1);            -- first stamp free
+    values (v_code, p_name, p_phone, 0, 0);            -- empty card; staff add the first stamp
   end if;
 
   return query
