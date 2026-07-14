@@ -16,10 +16,10 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { font-family: 'Fraunces', Georgia, serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'futura-100-book', system-ui, sans-serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
   a { color: #2b3a66; text-decoration: none; }
   a:hover { color: #4a5a8a; }
-  input { font-family: 'Fraunces', Georgia, serif; }
+  input { font-family: 'futura-100-book', system-ui, sans-serif; }
   input:focus { border-color: #2b3a66 !important; background: #ffffff !important; box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 0 0 3px rgba(157,143,234,0.35) !important; }
   ::placeholder { color: rgba(74,90,138,0.55); }
   button { font: inherit; }
@@ -51,7 +51,7 @@
 </head>
 <body>
 
-<div class="kr-page" style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
+<div class="kr-page" style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'futura-100-book',system-ui,sans-serif;color:#2b3a66;">
 
   <!-- ══ PHONE ══ -->
   <div class="kr-phone" style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
@@ -63,7 +63,7 @@
 
     <!-- toast -->
     <div id="toast" class="hidden" style="position:absolute;top:50px;left:18px;right:18px;z-index:20;display:flex;align-items:center;gap:10px;background:#2b3a66;color:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;padding:11px 14px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),4px 5px 0 rgba(43,58,102,0.35);animation:kr-pop .3s cubic-bezier(.34,1.56,.64,1) both;">
-      <span id="toast-msg" style="flex:1;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:14px;"></span>
+      <span id="toast-msg" style="flex:1;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:14px;"></span>
       <!-- undo button removed: the backend has no undo endpoint for add_stamp,
            so an undo affordance here would be a broken action. Future follow-up:
            add an undo_stamp RPC if this is needed. -->
@@ -94,15 +94,15 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:14px;">
             <label style="display:flex;flex-direction:column;gap:7px;">
-              <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">email</span>
+              <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">email</span>
               <input id="staff-email" data-field="email" type="email" placeholder="crew@krema.ph" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             </label>
             <label style="display:flex;flex-direction:column;gap:7px;">
-              <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">password</span>
+              <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">password</span>
               <input id="staff-password" data-field="password" type="password" placeholder="••••••••" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             </label>
-            <div id="login-error" class="hidden" style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#c0392b;"></div>
-            <button id="btn-login" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),inset 0 -3px 0 rgba(0,0,0,0.22),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:2px;">log in →</button>
+            <div id="login-error" class="hidden" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#c0392b;"></div>
+            <button id="btn-login" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),inset 0 -3px 0 rgba(0,0,0,0.22),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:2px;">log in →</button>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@
         </div>
 
         <div style="text-align:right;margin-top:-8px;">
-          <a id="link-logout-scan" data-action="logout" href="#" style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
+          <a id="link-logout-scan" data-action="logout" href="#" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
         </div>
 
         <!-- camera preview -->
@@ -141,10 +141,10 @@
           <div style="position:absolute;left:9%;right:9%;top:8%;height:4px;background:linear-gradient(90deg,transparent,#FCEC60 30%,#FCEC60 70%,transparent);border-radius:999px;box-shadow:0 0 14px rgba(252,236,96,0.75);animation:kr-scanline 3.2s ease-in-out infinite;z-index:2;"></div>
           <!-- mascot peeking in -->
           <img id="camera-mascot" src="assets/sticker-boba.png" alt="" style="position:absolute;bottom:-14px;right:-8px;width:86px;height:86px;object-fit:contain;transform:rotate(-9deg);pointer-events:none;">
-          <div id="camera-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:rgba(255,255,255,0.7);">point at the customer's QR</div>
+          <div id="camera-caption" style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:rgba(255,255,255,0.7);">point at the customer's QR</div>
         </div>
 
-        <button id="btn-scan" data-action="scan" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#128247; scan customer QR</button>
+        <button id="btn-scan" data-action="scan" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#128247; scan customer QR</button>
 
         <div style="display:flex;align-items:center;gap:12px;color:#4a5a8a;">
           <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
@@ -153,16 +153,16 @@
         </div>
 
         <label style="display:flex;flex-direction:column;gap:7px;">
-          <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">look up by phone</span>
+          <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">look up by phone</span>
           <div style="display:flex;gap:9px;">
             <input id="staff-phone-lookup" data-field="phone-fallback" type="tel" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 15px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
-            <button id="btn-find" data-action="find" style="flex:none;padding:0 20px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">find</button>
+            <button id="btn-find" data-action="find" style="flex:none;padding:0 20px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">find</button>
           </div>
         </label>
 
-        <div id="scan-not-found" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;">no customer found yet — ask them to join on rewards.html first.</div>
+        <div id="scan-not-found" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;">no customer found yet — ask them to join on rewards.html first.</div>
 
-        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#4a5a8a;">stamps given today: <b id="today-count" style="font-style:normal;color:#2b3a66;">0</b></div>
+        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#4a5a8a;">stamps given today: <b id="today-count" style="font-style:normal;color:#2b3a66;">0</b></div>
       </div>
 
       <!-- ════════════════ RESULT ════════════════ -->
@@ -173,7 +173,7 @@
         </div>
 
         <div style="text-align:right;margin-top:-10px;">
-          <a id="link-logout-result" data-action="logout" href="#" style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
+          <a id="link-logout-result" data-action="logout" href="#" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
         </div>
 
         <div style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;">
@@ -185,7 +185,7 @@
             </div>
             <div style="margin-left:auto;text-align:right;">
               <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:1;color:#2b3a66;"><span id="result-counter" data-counter="0">0</span><span style="font-size:18px;color:#4a5a8a;"> / 11</span></div>
-              <div style="font-family:'Fraunces',Georgia,serif;font-size:11px;color:#4a5a8a;">stamps</div>
+              <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;color:#4a5a8a;">stamps</div>
             </div>
           </div>
 
@@ -198,17 +198,17 @@
         <!-- full banner -->
         <div id="result-full-banner" class="hidden" style="background:#FCEC60;border:2.5px solid #2b3a66;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.5),5px 6px 0 #2b3a66;animation:kr-bob 2.4s ease-in-out infinite;">card full — free drink ready!<img src="assets/sticker-blob-walk.png" alt="" style="height:28px;width:auto;object-fit:contain;flex:none;"></div>
 
-        <div id="result-already-redeemed" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;">already redeemed today — come back tomorrow.</div>
+        <div id="result-already-redeemed" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;">already redeemed today — come back tomorrow.</div>
 
-        <button id="btn-add-stamp" data-action="add-stamp" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">+ add stamp</button>
+        <button id="btn-add-stamp" data-action="add-stamp" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">+ add stamp</button>
 
-        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">apply 10% off</button>
+        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">apply 10% off</button>
 
-        <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free drink</button>
+        <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free drink</button>
 
-        <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
+        <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
 
-        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#4a5a8a;">1 redemption per customer per day</div>
+        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;">1 redemption per customer per day</div>
       </div>
 
       <!-- ════════════════ REDEEMED CELEBRATION ════════════════ -->
@@ -224,14 +224,14 @@
           <div style="font-family:'Bukhari Script',cursive;font-size:24px;color:#4a5a8a;line-height:1;margin-bottom:6px;">yay bestie —</div>
           <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:40px;line-height:0.92;letter-spacing:-0.01em;color:#2b3a66;">FREE DRINK<br>REDEEMED!</div>
         </div>
-        <div style="font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;max-width:250px;line-height:1.45;"><span id="redeemed-name"></span>'s card is reset — the next 11 start now.</div>
-        <button id="btn-redeem-done" data-action="redeem-done" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;max-width:300px;padding:16px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:8px;">scan next customer →</button>
+        <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;max-width:250px;line-height:1.45;"><span id="redeemed-name"></span>'s card is reset — the next 11 start now.</div>
+        <button id="btn-redeem-done" data-action="redeem-done" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;max-width:300px;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:8px;">scan next customer →</button>
       </div>
 
     </div>
   </div>
 
-  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">connected · live database</div>
+  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;color:#3f5580;opacity:0.65;">connected · live database</div>
 </div>
 
 <script>

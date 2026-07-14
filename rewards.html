@@ -16,10 +16,10 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { font-family: 'Fraunces', Georgia, serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'futura-100-book', system-ui, sans-serif; color: #2b3a66; -webkit-font-smoothing: antialiased; }
   a { color: #2b3a66; text-decoration: none; }
   a:hover { color: #4a5a8a; }
-  input { font-family: 'Fraunces', Georgia, serif; }
+  input { font-family: 'futura-100-book', system-ui, sans-serif; }
   input:focus { border-color: #2b3a66 !important; background: #ffffff !important; box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 0 0 3px rgba(157,143,234,0.35) !important; }
   ::placeholder { color: rgba(74,90,138,0.55); }
   button { font: inherit; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-<div class="kr-page" style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
+<div class="kr-page" style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'futura-100-book',system-ui,sans-serif;color:#2b3a66;">
 
   <!-- ══ PHONE ══ -->
   <div class="kr-phone" style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
@@ -70,7 +70,7 @@
           <img src="assets/sticker-boba.png" alt="" style="position:absolute;top:-42px;right:-10px;width:78px;height:78px;object-fit:contain;transform:rotate(12deg);filter:drop-shadow(2px 3px 0 rgba(43,58,102,0.4));pointer-events:none;">
           <div style="position:absolute;inset:7px;border:2px dashed rgba(252,236,96,0.3);border-radius:15px;pointer-events:none;"></div>
           <div style="position:relative;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1.05;max-width:240px;">6 stamps = 10% off. 11 = free drink.</div>
-          <div style="position:relative;font-family:'Fraunces',Georgia,serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit. one card, all the treats.</div>
+          <div style="position:relative;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit. one card, all the treats.</div>
           <div style="position:relative;display:flex;align-items:center;gap:6px;margin-top:13px;">
             <div style="width:18px;height:18px;border-radius:50%;background:#FCEC60;border:2px solid #FCEC60;display:flex;align-items:center;justify-content:center;flex:none;"><div style="width:9px;height:9px;background:#2b3a66;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);"></div></div>
             <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
@@ -86,20 +86,20 @@
 
         <div style="display:flex;flex-direction:column;gap:14px;">
           <label style="display:flex;flex-direction:column;gap:7px;">
-            <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">your name</span>
+            <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">your name</span>
             <input id="cust-name" data-field="name" type="text" placeholder="e.g. Bea" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
           </label>
           <label style="display:flex;flex-direction:column;gap:7px;">
-            <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">phone number</span>
+            <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">phone number</span>
             <input id="cust-phone" data-field="phone" type="tel" placeholder="09XX XXX XXXX" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
           </label>
         </div>
 
-        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
+        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
 
-        <div id="signup-error" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <div id="signup-error" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
 
-        <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
+        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
 
         <!-- returning customer: phone-only "welcome back" lookup -->
         <div style="display:flex;align-items:center;gap:12px;margin-top:2px;">
@@ -108,12 +108,12 @@
           <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:9px;">
-          <span style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">already have a card?</span>
+          <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">already have a card?</span>
           <div style="display:flex;gap:10px;">
             <input id="lookup-phone" type="tel" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
-            <button id="btn-lookup" style="flex:none;padding:0 20px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:15px;background:#dcebf7;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6),4px 5px 0 #2b3a66;cursor:pointer;">find</button>
+            <button id="btn-lookup" style="flex:none;padding:0 20px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;background:#dcebf7;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6),4px 5px 0 #2b3a66;cursor:pointer;">find</button>
           </div>
-          <div id="lookup-error" class="hidden" style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
+          <div id="lookup-error" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
         </div>
       </div>
 
@@ -154,7 +154,7 @@
           <div style="position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:4px;">
             <span id="stamp-counter" data-counter="0" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:56px;line-height:1;letter-spacing:-0.02em;color:#2b3a66;text-shadow:2px 3px 0 rgba(252,236,96,0.9);">0</span>
             <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:26px;color:#4a5a8a;">/ 11</span>
-            <span style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:13px;color:#4a5a8a;align-self:flex-end;margin-bottom:8px;">stamps</span>
+            <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:600;font-size:13px;color:#4a5a8a;align-self:flex-end;margin-bottom:8px;">stamps</span>
           </div>
 
           <!-- stamp grid -->
@@ -172,12 +172,12 @@
               <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:14px;">
                 <img src="assets/krema-brandmark.png" alt="" style="width:52px;height:52px;object-fit:contain;flex:none;transform:rotate(-6deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));">
                 <div style="text-align:left;min-width:0;">
-                  <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · golden ticket</div>
+                  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · golden ticket</div>
                   <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:29px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);">FREE DRINK<br>UNLOCKED!</div>
                 </div>
               </div>
             </div>
-            <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:14px;font-style:italic;color:#4a5a8a;margin-top:12px;">treat yo' self, bestie — you earned it.</div>
+            <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;margin-top:12px;">treat yo' self, bestie — you earned it.</div>
           </div>
 
           <!-- discount just-unlocked (one-shot burst, stamps === 6) -->
@@ -197,14 +197,14 @@
               <div style="position:absolute;top:50%;left:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
               <div style="position:absolute;top:50%;right:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
               <div style="position:relative;text-align:center;">
-                <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#2b3a66;opacity:0.7;margin-bottom:2px;">milestone reward</div>
+                <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#2b3a66;opacity:0.7;margin-bottom:2px;">milestone reward</div>
                 <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:21px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF UNLOCKED — show at counter</div>
               </div>
             </div>
           </div>
 
           <!-- progress line (not yet at reward) -->
-          <div id="progress-line" style="position:relative;text-align:center;margin-top:8px;font-family:'Fraunces',Georgia,serif;font-size:15px;color:#4a5a8a;">
+          <div id="progress-line" style="position:relative;text-align:center;margin-top:8px;font-family:'futura-100-book',system-ui,sans-serif;font-size:15px;color:#4a5a8a;">
             <b id="progress-text" style="color:#2b3a66;"></b>
           </div>
         </div>
@@ -218,7 +218,7 @@
             <span style="flex:none;width:22px;height:22px;background:#FEFFE6;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.6s ease-in-out infinite;"></span>
             <div style="min-width:0;">
               <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF — still yours!</div>
-              <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;font-style:italic;color:#2b3a66;margin-top:3px;">show this at the counter on your next order</div>
+              <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#2b3a66;margin-top:3px;">show this at the counter on your next order</div>
             </div>
           </div>
         </div>
@@ -230,32 +230,32 @@
             <div style="position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);background:#FCEC60;border:2px solid #2b3a66;border-radius:999px;padding:2px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.1em;">QR CODE</div>
           </div>
           <div style="text-align:center;">
-            <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;margin-bottom:2px;">member code</div>
+            <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;margin-bottom:2px;">member code</div>
             <div id="member-code" data-member-code="" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em;color:#2b3a66;"></div>
           </div>
-          <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:13px;font-style:italic;color:#4a5a8a;line-height:1.4;max-width:230px;">
+          <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#4a5a8a;line-height:1.4;max-width:230px;">
             <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free drink</span>
             <span id="qr-hint-normal">show this to the barista to collect a stamp</span>
           </div>
-          <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-size:11px;font-style:italic;color:#8695ba;margin-top:10px;">tip: bookmark this page so your card is always one tap away</div>
+          <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-top:10px;">tip: bookmark this page so your card is always one tap away</div>
         </div>
 
         <!-- recent stamps -->
         <div id="history-block" class="hidden" style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:18px 20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;display:flex;flex-direction:column;gap:11px;">
-          <div style="font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;">recent stamps</div>
+          <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#4a5a8a;">recent stamps</div>
           <div id="history-items" style="display:flex;flex-direction:column;gap:11px;"></div>
         </div>
 
         <div style="text-align:center;">
           <a id="link-start-over" data-action="start-over" href="#">start over</a>
-          <style>#link-start-over { font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:13px;color:#4a5a8a;border-bottom:2px dashed #8695ba;padding-bottom:1px; }</style>
+          <style>#link-start-over { font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:13px;color:#4a5a8a;border-bottom:2px dashed #8695ba;padding-bottom:1px; }</style>
         </div>
       </div>
 
     </div>
   </div>
 
-  <div style="font-family:'Fraunces',Georgia,serif;font-size:12px;color:#3f5580;opacity:0.65;">Krema Rewards · 6 stamps = 10% off · 11 = free drink</div>
+  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;color:#3f5580;opacity:0.65;">Krema Rewards · 6 stamps = 10% off · 11 = free drink</div>
 </div>
 
 <script>
