@@ -39,16 +39,22 @@
   #qr-reader-region { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
   #qr-reader-region video { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
   #qr-reader-region canvas { display: none !important; }
+  /* On real phones, drop the decorative phone-frame chrome so the app is full-bleed */
+  @media (max-width: 480px) {
+    .kr-page { padding: 0 !important; }
+    .kr-phone { width: 100% !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; min-height: 100vh; }
+    .kr-statusbar { display: none !important; }
+  }
 </style>
 </head>
 <body>
 
-<div style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
+<div class="kr-page" style="min-height:100vh;background:radial-gradient(ellipse 120% 60% at 50% -5%, #eaf5fc 0%, #c3e2f3 55%, #9ccce6 100%);padding:26px 16px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;font-family:'Fraunces',Georgia,serif;color:#2b3a66;">
 
   <!-- ══ PHONE ══ -->
-  <div style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
+  <div class="kr-phone" style="width:min(412px,100%);background:#d4e8f5;border:3px solid #2b3a66;border-radius:40px;box-shadow:10px 14px 0 #2b3a66, 0 34px 60px rgba(14,14,14,0.30);overflow:hidden;position:relative;">
     <!-- status bar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 26px 4px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:13px;color:#2b3a66;">
+    <div class="kr-statusbar" style="display:flex;align-items:center;justify-content:space-between;padding:12px 26px 4px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:13px;color:#2b3a66;">
       <span>9:41</span>
       <span style="display:inline-flex;gap:5px;align-items:center;font-size:11px;letter-spacing:0.5px;">&#9639; &#9602; &#11044;</span>
     </div>
