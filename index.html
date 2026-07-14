@@ -400,52 +400,14 @@
       font-weight: 900;
       font-size: clamp(56px, 8vw, 120px);
       line-height: 0.92;
-      color: var(--ink);
+      color: #FCEC60;                    /* yellow fill */
+      -webkit-text-stroke: 3px #2b3a66;  /* navy outline */
+      paint-order: stroke fill;
       margin: 0 0 22px;
       letter-spacing: 0.005em;
-      text-shadow:
-        -1px -1px 0 rgba(255,255,255,0.6),
-        1px -1px 0 rgba(255,255,255,0.6),
-        -1px 1px 0 rgba(255,255,255,0.6),
-        1px 1px 0 rgba(255,255,255,0.6),
-        5px 6px 0 var(--ink),
-        10px 14px 22px rgba(14, 14, 14, 0.22);
+      text-shadow: 3px 7px 14px rgba(14, 14, 14, 0.38);  /* soft depth */
     }
 
-    /* ── Hero style picker variants (PRIVATE — remove once a look is chosen) ── */
-    /* ── Hero picker: COLOR axis (each sets --hero-ink for the depth axis) ── */
-    body[data-hero="navy"] .kh-hero-title      { color: #2b3a66;     -webkit-text-stroke: 2px  #ffffff; paint-order: stroke fill; --hero-ink: #ffffff; }
-    body[data-hero="cream"] .kh-hero-title     { color: #FEFFE6;     -webkit-text-stroke: 3px  #0E0E0E; paint-order: stroke fill; --hero-ink: #0E0E0E; }
-    body[data-hero="creamnavy"] .kh-hero-title { color: #FEFFE6;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="yellow"] .kh-hero-title    { color: #FCEC60;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="purple"] .kh-hero-title    { color: #9F8FEA;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="ghost"] .kh-hero-title     { color: transparent; -webkit-text-stroke: 2.5px #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    /* ── Hero picker: DEPTH axis (flat baseline, then treatments — after color) ── */
-    body[data-hero] .kh-hero-title            { text-shadow: none; }
-    body[data-depth="hard"] .kh-hero-title    { text-shadow: 6px 7px 0 var(--hero-ink, #2b3a66); }
-    body[data-depth="soft"] .kh-hero-title    { text-shadow: 3px 7px 14px rgba(14,14,14,0.38); }
-    body[data-depth="long"] .kh-hero-title    { text-shadow: 2px 2px 0 var(--hero-ink,#2b3a66), 4px 4px 0 var(--hero-ink,#2b3a66), 6px 6px 0 var(--hero-ink,#2b3a66), 8px 8px 0 var(--hero-ink,#2b3a66), 10px 10px 0 var(--hero-ink,#2b3a66), 12px 12px 0 var(--hero-ink,#2b3a66), 14px 14px 0 var(--hero-ink,#2b3a66); }
-    body[data-depth="sticker"] .kh-hero-title { text-shadow: 0 -6px 0 #fff, 4px -4px 0 #fff, 6px 0 0 #fff, 4px 4px 0 #fff, 0 6px 0 #fff, -4px 4px 0 #fff, -6px 0 0 #fff, -4px -4px 0 #fff; }
-    #hero-picker {
-      position: fixed; top: 12px; right: 12px; z-index: 200;
-      display: flex; flex-direction: column; gap: 6px;
-      background: rgba(255,255,255,0.94); border: 2px solid #2b3a66;
-      border-radius: 14px; padding: 8px 10px;
-      box-shadow: 3px 4px 0 rgba(43,58,102,0.3);
-      font-family: system-ui, sans-serif; color: #2b3a66;
-    }
-    #hero-picker .hp-row { display: flex; gap: 6px; align-items: center; }
-    #hero-picker .hp-label { width: 40px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; }
-    #hero-picker button { cursor: pointer; padding: 0; }
-    #hero-picker .hp-color { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #2b3a66; font-size: 0; }
-    #hero-picker .hp-depth { height: 22px; padding: 0 9px; border-radius: 999px; border: 2px solid #2b3a66; background: #FEFFE6; font-size: 10px; font-weight: 700; color: #2b3a66; }
-    #hero-picker .hp-color[data-v="navy"]      { background: #2b3a66; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="cream"]     { background: #FEFFE6; border-color: #0E0E0E; }
-    #hero-picker .hp-color[data-v="creamnavy"] { background: #FEFFE6; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="yellow"]    { background: #FCEC60; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="purple"]    { background: #9F8FEA; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="ghost"]     { background: #ffffff; border-style: dashed; }
-    #hero-picker button[aria-pressed="true"]   { outline: 3px solid #9F8FEA; outline-offset: 2px; }
     .kh-hero-title em {
       font-style: normal;
       color: var(--accent-deep);
@@ -1518,13 +1480,8 @@
       .kh-speech { font-size: 20px; top: 10px; right: -12px; padding: 8px 14px 6px; }
       .kh-hero-title {
         font-size: clamp(44px, 13vw, 64px);
-        text-shadow:
-          -1px -1px 0 rgba(255,255,255,0.6),
-          1px -1px 0 rgba(255,255,255,0.6),
-          -1px 1px 0 rgba(255,255,255,0.6),
-          1px 1px 0 rgba(255,255,255,0.6),
-          4px 5px 0 var(--ink),
-          8px 12px 18px rgba(14,14,14,0.18);
+        -webkit-text-stroke-width: 2px;
+        text-shadow: 2px 5px 10px rgba(14, 14, 14, 0.38);
       }
       .kh-hero-sub { font-size: 15px; margin-bottom: 20px; }
       .kh-hero-ctas { flex-direction: column; gap: 10px; }
@@ -3537,60 +3494,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   <!-- Vercel Web Analytics (static-site script method) -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
-  <script>
-  /* Hero style picker — PRIVATE (remove once a look is chosen). Lives outside
-     the React root and drives body[data-hero], so React never touches it. */
-  (function () {
-    var CKEY = 'kh_hero_style', DKEY = 'kh_hero_depth';
-    var COLORS = [
-      { v: 'navy',      label: 'Navy + white outline' },
-      { v: 'cream',     label: 'Cream + black outline' },
-      { v: 'creamnavy', label: 'Cream + navy outline' },
-      { v: 'yellow',    label: 'Yellow + navy outline' },
-      { v: 'purple',    label: 'Purple + navy outline' },
-      { v: 'ghost',     label: 'Ghost (outline only)' }
-    ];
-    var DEPTHS = [
-      { v: 'flat',    label: 'Flat' },
-      { v: 'hard',    label: '3D' },
-      { v: 'soft',    label: 'Soft' },
-      { v: 'long',    label: 'Long' },
-      { v: 'sticker', label: 'Sticker' }
-    ];
-    var picker = document.createElement('div');
-    picker.id = 'hero-picker';
-    function makeRow(label) {
-      var r = document.createElement('div'); r.className = 'hp-row';
-      var l = document.createElement('span'); l.className = 'hp-label'; l.textContent = label;
-      r.appendChild(l); return r;
-    }
-    function mark(row, v) {
-      Array.prototype.forEach.call(row.querySelectorAll('button'), function (b) {
-        b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
-      });
-    }
-    var colorRow = makeRow('color'), depthRow = makeRow('depth');
-    function applyColor(v) { document.body.setAttribute('data-hero', v); try { localStorage.setItem(CKEY, v); } catch (e) {} mark(colorRow, v); }
-    function applyDepth(v) { document.body.setAttribute('data-depth', v); try { localStorage.setItem(DKEY, v); } catch (e) {} mark(depthRow, v); }
-    COLORS.forEach(function (s) {
-      var b = document.createElement('button'); b.className = 'hp-color';
-      b.setAttribute('data-v', s.v); b.title = s.label; b.setAttribute('aria-label', s.label);
-      b.addEventListener('click', function () { applyColor(s.v); });
-      colorRow.appendChild(b);
-    });
-    DEPTHS.forEach(function (s) {
-      var b = document.createElement('button'); b.className = 'hp-depth';
-      b.setAttribute('data-v', s.v); b.textContent = s.label; b.title = s.label;
-      b.addEventListener('click', function () { applyDepth(s.v); });
-      depthRow.appendChild(b);
-    });
-    picker.appendChild(colorRow); picker.appendChild(depthRow);
-    document.body.appendChild(picker);
-    var c = 'navy', d = 'flat';
-    try { c = localStorage.getItem(CKEY) || 'navy'; d = localStorage.getItem(DKEY) || 'flat'; } catch (e) {}
-    applyColor(c); applyDepth(d);
-  })();
-  </script>
 
 </body>
 </html>
