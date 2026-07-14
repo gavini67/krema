@@ -411,6 +411,43 @@
         5px 6px 0 var(--ink),
         10px 14px 22px rgba(14, 14, 14, 0.22);
     }
+
+    /* ── Hero style picker variants (PRIVATE — remove once a look is chosen) ── */
+    body[data-hero="cream"] .kh-hero-title {
+      color: #FEFFE6;
+      -webkit-text-stroke: 3px #0E0E0E;
+      paint-order: stroke fill;
+      text-shadow: 6px 7px 0 #0E0E0E;
+    }
+    body[data-hero="yellow"] .kh-hero-title {
+      color: #FCEC60;
+      -webkit-text-stroke: 3px #2b3a66;
+      paint-order: stroke fill;
+      text-shadow: 6px 7px 0 #2b3a66;
+    }
+    body[data-hero="ghost"] .kh-hero-title {
+      color: transparent;
+      -webkit-text-stroke: 2.5px #2b3a66;
+      paint-order: stroke fill;
+      text-shadow: none;
+    }
+    #hero-picker {
+      position: fixed; top: 12px; right: 12px; z-index: 200;
+      display: flex; gap: 6px; align-items: center;
+      background: rgba(255,255,255,0.92); border: 2px solid #2b3a66;
+      border-radius: 999px; padding: 6px 10px;
+      box-shadow: 3px 4px 0 rgba(43,58,102,0.3);
+      font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; color: #2b3a66;
+    }
+    #hero-picker button {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #2b3a66; cursor: pointer; padding: 0; font-size: 0;
+    }
+    #hero-picker button[data-v="navy"]   { background: #2b3a66; }
+    #hero-picker button[data-v="cream"]  { background: #FEFFE6; }
+    #hero-picker button[data-v="yellow"] { background: #FCEC60; }
+    #hero-picker button[data-v="ghost"]  { background: #fff; border-style: dashed; }
+    #hero-picker button[aria-pressed="true"] { outline: 3px solid #9F8FEA; outline-offset: 1px; }
     .kh-hero-title em {
       font-style: normal;
       color: var(--accent-deep);
@@ -3502,6 +3539,42 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   <!-- Vercel Web Analytics (static-site script method) -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
+  <script>
+  /* Hero style picker — PRIVATE (remove once a look is chosen). Lives outside
+     the React root and drives body[data-hero], so React never touches it. */
+  (function () {
+    var KEY = 'kh_hero_style';
+    var styles = [
+      { v: 'navy',   label: 'Navy (current)' },
+      { v: 'cream',  label: 'Cream + black outline' },
+      { v: 'yellow', label: 'Yellow pop' },
+      { v: 'ghost',  label: 'Ghost outline' }
+    ];
+    var picker = document.createElement('div');
+    picker.id = 'hero-picker';
+    picker.appendChild(document.createTextNode('hero'));
+    function apply(v) {
+      if (v && v !== 'navy') document.body.setAttribute('data-hero', v);
+      else document.body.removeAttribute('data-hero');
+      try { localStorage.setItem(KEY, v); } catch (e) {}
+      Array.prototype.forEach.call(picker.querySelectorAll('button'), function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
+      });
+    }
+    styles.forEach(function (s) {
+      var b = document.createElement('button');
+      b.setAttribute('data-v', s.v);
+      b.title = s.label;
+      b.setAttribute('aria-label', s.label);
+      b.addEventListener('click', function () { apply(s.v); });
+      picker.appendChild(b);
+    });
+    document.body.appendChild(picker);
+    var saved = 'navy';
+    try { saved = localStorage.getItem(KEY) || 'navy'; } catch (e) {}
+    apply(saved);
+  })();
+  </script>
 
 </body>
 </html>
