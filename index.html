@@ -244,10 +244,16 @@
     /* ── hero ────────────────────────────────────────────────────────── */
     .kh-hero {
       position: relative;
-      background: radial-gradient(ellipse 90% 70% at 68% 48%, #eef6fb 0%, #d4e8f5 45%, #76B3D0 100%);
+      background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFDF2 0%, #FEFFE6 45%, #EFE4C4 100%);
       overflow: hidden;
       padding-bottom: 0;
     }
+    /* ── Hero picker: BACKGROUND axis ── */
+    body[data-bg="beige"] .kh-hero  { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFDF2 0%, #FEFFE6 45%, #EFE4C4 100%); }
+    body[data-bg="sand"] .kh-hero   { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFBEF 0%, #F7EFD9 45%, #E3D2A8 100%); }
+    body[data-bg="flat"] .kh-hero   { background: #FEFFE6; }
+    body[data-bg="blue"] .kh-hero   { background: radial-gradient(ellipse 90% 70% at 68% 48%, #eef6fb 0%, #d4e8f5 45%, #76B3D0 100%); }
+    body[data-bg="butter"] .kh-hero { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFEF0 0%, #FDF6C8 45%, #F5E48A 100%); }
     .kh-hero::before {
       content: '';
       position: absolute;
@@ -400,7 +406,7 @@
       font-weight: 900;
       font-size: clamp(56px, 8vw, 120px);
       line-height: 0.92;
-      color: #FEFFE6;                    /* beige/cream fill */
+      color: #FCEC60;                    /* yellow fill */
       -webkit-text-stroke: 3px #2b3a66;  /* navy outline */
       paint-order: stroke fill;
       margin: 0 0 22px;
@@ -440,6 +446,12 @@
     #hero-picker .hp-color[data-v="yellow"]    { background: #FCEC60; border-color: #2b3a66; }
     #hero-picker .hp-color[data-v="purple"]    { background: #9F8FEA; border-color: #2b3a66; }
     #hero-picker .hp-color[data-v="ghost"]     { background: #ffffff; border-style: dashed; }
+    #hero-picker .hp-bg { width: 22px; height: 22px; border-radius: 6px; border: 2.5px solid #2b3a66; font-size: 0; }
+    #hero-picker .hp-bg[data-v="beige"]        { background: #FEFFE6; }
+    #hero-picker .hp-bg[data-v="sand"]         { background: #EFE0BE; }
+    #hero-picker .hp-bg[data-v="flat"]         { background: #FEFFE6; border-style: dotted; }
+    #hero-picker .hp-bg[data-v="blue"]         { background: #A8D3E8; }
+    #hero-picker .hp-bg[data-v="butter"]       { background: #FAF0A8; }
     #hero-picker button[aria-pressed="true"]   { outline: 3px solid #9F8FEA; outline-offset: 2px; }
 
     .kh-hero-title em {
@@ -3537,12 +3549,19 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   /* Hero style picker — PRIVATE (remove once a look is locked). Lives outside
      the React root and drives body[data-hero] / [data-depth]. */
   (function () {
-    var CKEY = 'kh_hero_c2', DKEY = 'kh_hero_d2';
+    var CKEY = 'kh_hero_c2', DKEY = 'kh_hero_d2', BKEY = 'kh_hero_bg1';
+    var BGS = [
+      { v: 'beige',  label: 'Beige gradient' },
+      { v: 'sand',   label: 'Sand (warmer)' },
+      { v: 'flat',   label: 'Flat cream' },
+      { v: 'butter', label: 'Butter (soft yellow)' },
+      { v: 'blue',   label: 'Blue (original)' }
+    ];
     var COLORS = [
-      { v: 'creamnavy', label: 'Beige + navy outline' },
-      { v: 'cream',     label: 'Beige + black outline' },
       { v: 'yellow',    label: 'Yellow + navy outline' },
       { v: 'navy',      label: 'Navy + white outline' },
+      { v: 'creamnavy', label: 'Beige + navy outline' },
+      { v: 'cream',     label: 'Beige + black outline' },
       { v: 'purple',    label: 'Purple + navy outline' },
       { v: 'ghost',     label: 'Ghost (outline only)' }
     ];
@@ -3565,9 +3584,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
         b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
       });
     }
-    var colorRow = makeRow('color'), depthRow = makeRow('depth');
+    var bgRow = makeRow('bg'), colorRow = makeRow('text'), depthRow = makeRow('depth');
+    function applyBg(v) { document.body.setAttribute('data-bg', v); try { localStorage.setItem(BKEY, v); } catch (e) {} mark(bgRow, v); }
     function applyColor(v) { document.body.setAttribute('data-hero', v); try { localStorage.setItem(CKEY, v); } catch (e) {} mark(colorRow, v); }
     function applyDepth(v) { document.body.setAttribute('data-depth', v); try { localStorage.setItem(DKEY, v); } catch (e) {} mark(depthRow, v); }
+    BGS.forEach(function (s) {
+      var b = document.createElement('button'); b.className = 'hp-bg';
+      b.setAttribute('data-v', s.v); b.title = s.label; b.setAttribute('aria-label', s.label);
+      b.addEventListener('click', function () { applyBg(s.v); });
+      bgRow.appendChild(b);
+    });
     COLORS.forEach(function (s) {
       var b = document.createElement('button'); b.className = 'hp-color';
       b.setAttribute('data-v', s.v); b.title = s.label; b.setAttribute('aria-label', s.label);
@@ -3580,11 +3606,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
       b.addEventListener('click', function () { applyDepth(s.v); });
       depthRow.appendChild(b);
     });
-    picker.appendChild(colorRow); picker.appendChild(depthRow);
+    picker.appendChild(bgRow); picker.appendChild(colorRow); picker.appendChild(depthRow);
     document.body.appendChild(picker);
-    var c = 'creamnavy', d = 'soft';
-    try { c = localStorage.getItem(CKEY) || 'creamnavy'; d = localStorage.getItem(DKEY) || 'soft'; } catch (e) {}
-    applyColor(c); applyDepth(d);
+    var bg = 'beige', c = 'yellow', d = 'soft';
+    try {
+      bg = localStorage.getItem(BKEY) || 'beige';
+      c = localStorage.getItem(CKEY) || 'yellow';
+      d = localStorage.getItem(DKEY) || 'soft';
+    } catch (e) {}
+    applyBg(bg); applyColor(c); applyDepth(d);
   })();
   </script>
 
