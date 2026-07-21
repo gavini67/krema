@@ -1668,6 +1668,28 @@
       }
       .kh-mobile-bar .kh-btn:active { transform: translate(2px, 3px); }
     }
+
+    /* ── Logo picker (PRIVATE — remove once a version is chosen) ── */
+    body[data-logo="black"] .kh-logo img { content: url("assets/svg/wordmark2-black.svg"); }
+    body[data-logo="white"] .kh-logo img { content: url("assets/svg/wordmark-white-1.svg"); }
+    body[data-logo="navy"]  .kh-logo img { content: url("assets/svg/wordmark-white-1.svg"); }
+    body[data-logo="navy"]  .kh-header { background: #2b3a66 !important; border-bottom-color: #2b3a66; }
+    body[data-logo="navy"]  .kh-nav a { color: #FEFFE6; }
+    body[data-logo="navy"]  .kh-nav a:hover { border-bottom-color: #FEFFE6; }
+    #logo-picker {
+      position: fixed; bottom: 14px; right: 14px; z-index: 200;
+      display: flex; gap: 6px; align-items: center;
+      background: rgba(255,255,255,0.94); border: 2px solid #2b3a66;
+      border-radius: 999px; padding: 6px 10px;
+      box-shadow: 3px 4px 0 rgba(43,58,102,0.3);
+      font-family: system-ui, sans-serif; font-size: 10px; font-weight: 700; color: #2b3a66;
+    }
+    #logo-picker button {
+      height: 22px; padding: 0 10px; border-radius: 999px;
+      border: 2px solid #2b3a66; background: #FEFFE6;
+      font-size: 10px; font-weight: 700; color: #2b3a66; cursor: pointer;
+    }
+    #logo-picker button[aria-pressed="true"] { outline: 3px solid #9F8FEA; outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -3501,5 +3523,36 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
 
+  <script>
+  /* Logo picker — PRIVATE (remove once a version is chosen). */
+  (function () {
+    var KEY = 'kh_logo1';
+    var OPTS = [
+      { v: 'black', label: 'Black' },
+      { v: 'white', label: 'White' },
+      { v: 'navy',  label: 'White + navy bar' }
+    ];
+    var p = document.createElement('div'); p.id = 'logo-picker';
+    var lab = document.createElement('span'); lab.textContent = 'logo'; p.appendChild(lab);
+    function apply(v) {
+      document.body.setAttribute('data-logo', v);
+      try { localStorage.setItem(KEY, v); } catch (e) {}
+      Array.prototype.forEach.call(p.querySelectorAll('button'), function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
+      });
+    }
+    OPTS.forEach(function (o) {
+      var b = document.createElement('button');
+      b.setAttribute('data-v', o.v); b.textContent = o.label; b.title = o.label;
+      b.addEventListener('click', function () { apply(o.v); });
+      p.appendChild(b);
+    });
+    document.body.appendChild(p);
+    var s = 'black';
+    try { s = localStorage.getItem(KEY) || 'black'; } catch (e) {}
+    if (!/^(black|white|navy)$/.test(s)) s = 'black';
+    apply(s);
+  })();
+  </script>
 </body>
 </html>
