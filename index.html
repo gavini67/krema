@@ -1691,13 +1691,14 @@
     }
     #logo-picker button[aria-pressed="true"] { outline: 3px solid #9F8FEA; outline-offset: 2px; }
 
-    /* ── Shrink-on-scroll header ── */
-    .kh-header-inner { transition: padding 0.22s cubic-bezier(0.22,1,0.36,1); }
-    .kh-logo img { transition: height 0.22s cubic-bezier(0.22,1,0.36,1); }
-    body[data-scrolled="1"] .kh-header-inner { padding-top: 2px; padding-bottom: 2px; }
-    body[data-scrolled="1"] .kh-logo img { height: 60px !important; }
-    @media (prefers-reduced-motion: reduce) {
-      .kh-header-inner, .kh-logo img { transition: none; }
+    /* ── Shrink-on-scroll header (progressive: --hdr goes 0 -> 1 with scroll) ── */
+    .kh-logo img { height: calc(128px - 68px * var(--hdr, 0)) !important; }
+    .kh-header-inner {
+      padding-top: calc(4px - 2px * var(--hdr, 0));
+      padding-bottom: calc(4px - 2px * var(--hdr, 0));
+    }
+    @media (max-width: 760px) {
+      .kh-logo img { height: calc(78px - 26px * var(--hdr, 0)) !important; }
     }
   </style>
 </head>
@@ -3564,11 +3565,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   })();
   </script>
   <script>
-  /* Shrink-on-scroll header — sets body[data-scrolled] so React is untouched. */
+  /* Shrink-on-scroll header — writes a 0..1 progress var so the logo scales
+     continuously with scroll instead of snapping between two sizes. */
   (function () {
-    var ticking = false;
+    var RANGE = 150, ticking = false, last = -1;
     function update() {
-      document.body.setAttribute('data-scrolled', window.scrollY > 40 ? '1' : '0');
+      var p = window.scrollY / RANGE;
+      p = p < 0 ? 0 : (p > 1 ? 1 : p);
+      p = p * p * (3 - 2 * p);            /* smoothstep — eases both ends */
+      if (Math.abs(p - last) > 0.002) {
+        document.body.style.setProperty('--hdr', p.toFixed(3));
+        last = p;
+      }
       ticking = false;
     }
     window.addEventListener('scroll', function () {
