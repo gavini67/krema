@@ -244,16 +244,10 @@
     /* ── hero ────────────────────────────────────────────────────────── */
     .kh-hero {
       position: relative;
-      background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFDF2 0%, #FEFFE6 45%, #EFE4C4 100%);
+      background: #FEFFE6;             /* flat cream */
       overflow: hidden;
       padding-bottom: 0;
     }
-    /* ── Hero picker: BACKGROUND axis ── */
-    body[data-bg="beige"] .kh-hero  { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFDF2 0%, #FEFFE6 45%, #EFE4C4 100%); }
-    body[data-bg="sand"] .kh-hero   { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFBEF 0%, #F7EFD9 45%, #E3D2A8 100%); }
-    body[data-bg="flat"] .kh-hero   { background: #FEFFE6; }
-    body[data-bg="blue"] .kh-hero   { background: radial-gradient(ellipse 90% 70% at 68% 48%, #eef6fb 0%, #d4e8f5 45%, #76B3D0 100%); }
-    body[data-bg="butter"] .kh-hero { background: radial-gradient(ellipse 90% 70% at 68% 48%, #FFFEF0 0%, #FDF6C8 45%, #F5E48A 100%); }
     .kh-hero::before {
       content: '';
       position: absolute;
@@ -406,61 +400,14 @@
       font-weight: 900;
       font-size: clamp(56px, 8vw, 120px);
       line-height: 0.92;
-      color: #FCEC60;                    /* yellow fill */
+      color: #A8D3E8;                    /* light Krema blue fill */
       -webkit-text-stroke: 3px #2b3a66;  /* navy outline */
       paint-order: stroke fill;
       margin: 0 0 22px;
       letter-spacing: 0.005em;
-      text-shadow: 3px 7px 14px rgba(14, 14, 14, 0.38);  /* soft depth */
+      text-shadow: 1px 3px 6px rgba(14, 14, 14, 0.30);   /* lift depth */
     }
 
-    /* ── Hero picker: COLOR axis (each sets --hero-ink for the depth axis) ── */
-    body[data-hero="navy"] .kh-hero-title      { color: #2b3a66;     -webkit-text-stroke: 2px  #ffffff; paint-order: stroke fill; --hero-ink: #ffffff; }
-    body[data-hero="cream"] .kh-hero-title     { color: #FEFFE6;     -webkit-text-stroke: 3px  #0E0E0E; paint-order: stroke fill; --hero-ink: #0E0E0E; }
-    body[data-hero="creamnavy"] .kh-hero-title { color: #FEFFE6;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="yellow"] .kh-hero-title    { color: #FCEC60;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="purple"] .kh-hero-title    { color: #9F8FEA;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="kblue"] .kh-hero-title     { color: #76B3D0;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="kbluelt"] .kh-hero-title   { color: #A8D3E8;     -webkit-text-stroke: 3px  #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    body[data-hero="ghost"] .kh-hero-title     { color: transparent; -webkit-text-stroke: 2.5px #2b3a66; paint-order: stroke fill; --hero-ink: #2b3a66; }
-    /* ── Hero picker: DEPTH axis (flat baseline, then treatments — after color) ── */
-    body[data-hero] .kh-hero-title            { text-shadow: none; }
-    body[data-depth="lift"] .kh-hero-title    { text-shadow: 1px 3px 6px rgba(14,14,14,0.30); }
-    body[data-depth="soft"] .kh-hero-title    { text-shadow: 3px 7px 14px rgba(14,14,14,0.38); }
-    body[data-depth="deep"] .kh-hero-title    { text-shadow: 5px 14px 30px rgba(14,14,14,0.45); }
-    body[data-depth="glow"] .kh-hero-title    { text-shadow: 0 0 18px currentColor, 0 0 38px currentColor; }
-    body[data-depth="emboss"] .kh-hero-title  { text-shadow: -1px -1px 0 rgba(255,255,255,0.8), 2px 3px 4px rgba(14,14,14,0.38); }
-    body[data-depth="echo"] .kh-hero-title    { text-shadow: 10px 12px 0 rgba(43,58,102,0.18); }
-    body[data-depth="long"] .kh-hero-title    { text-shadow: 2px 2px 0 var(--hero-ink,#2b3a66), 4px 4px 0 var(--hero-ink,#2b3a66), 6px 6px 0 var(--hero-ink,#2b3a66), 8px 8px 0 var(--hero-ink,#2b3a66), 10px 10px 0 var(--hero-ink,#2b3a66), 12px 12px 0 var(--hero-ink,#2b3a66), 14px 14px 0 var(--hero-ink,#2b3a66); }
-    body[data-depth="sticker"] .kh-hero-title { text-shadow: 0 -6px 0 #fff, 4px -4px 0 #fff, 6px 0 0 #fff, 4px 4px 0 #fff, 0 6px 0 #fff, -4px 4px 0 #fff, -6px 0 0 #fff, -4px -4px 0 #fff; }
-    #hero-picker {
-      position: fixed; top: 12px; right: 12px; z-index: 200;
-      display: flex; flex-direction: column; gap: 6px;
-      background: rgba(255,255,255,0.94); border: 2px solid #2b3a66;
-      border-radius: 14px; padding: 8px 10px;
-      box-shadow: 3px 4px 0 rgba(43,58,102,0.3);
-      font-family: system-ui, sans-serif; color: #2b3a66; max-width: 340px;
-    }
-    #hero-picker .hp-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    #hero-picker .hp-label { width: 40px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; }
-    #hero-picker button { cursor: pointer; padding: 0; }
-    #hero-picker .hp-color { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #2b3a66; font-size: 0; }
-    #hero-picker .hp-depth { height: 22px; padding: 0 9px; border-radius: 999px; border: 2px solid #2b3a66; background: #FEFFE6; font-size: 10px; font-weight: 700; color: #2b3a66; }
-    #hero-picker .hp-color[data-v="navy"]      { background: #2b3a66; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="cream"]     { background: #FEFFE6; border-color: #0E0E0E; }
-    #hero-picker .hp-color[data-v="creamnavy"] { background: #FEFFE6; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="yellow"]    { background: #FCEC60; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="purple"]    { background: #9F8FEA; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="kblue"]     { background: #76B3D0; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="kbluelt"]   { background: #A8D3E8; border-color: #2b3a66; }
-    #hero-picker .hp-color[data-v="ghost"]     { background: #ffffff; border-style: dashed; }
-    #hero-picker .hp-bg { width: 22px; height: 22px; border-radius: 6px; border: 2.5px solid #2b3a66; font-size: 0; }
-    #hero-picker .hp-bg[data-v="beige"]        { background: #FEFFE6; }
-    #hero-picker .hp-bg[data-v="sand"]         { background: #EFE0BE; }
-    #hero-picker .hp-bg[data-v="flat"]         { background: #FEFFE6; border-style: dotted; }
-    #hero-picker .hp-bg[data-v="blue"]         { background: #A8D3E8; }
-    #hero-picker .hp-bg[data-v="butter"]       { background: #FAF0A8; }
-    #hero-picker button[aria-pressed="true"]   { outline: 3px solid #9F8FEA; outline-offset: 2px; }
 
     .kh-hero-title em {
       font-style: normal;
@@ -1540,7 +1487,7 @@
       .kh-hero-title {
         font-size: clamp(44px, 13vw, 64px);
         -webkit-text-stroke-width: 2px;
-        text-shadow: 2px 5px 10px rgba(14, 14, 14, 0.38);
+        text-shadow: 1px 2px 5px rgba(14, 14, 14, 0.30);
       }
       .kh-hero-sub { font-size: 15px; margin-bottom: 20px; }
       .kh-hero-ctas { flex-direction: column; gap: 10px; }
@@ -3553,91 +3500,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   <!-- Vercel Web Analytics (static-site script method) -->
   <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
-  <script>
-  /* Hero style picker — PRIVATE (remove once a look is locked). Lives outside
-     the React root and drives body[data-hero] / [data-depth]. */
-  (function () {
-    var CKEY = 'kh_hero_c2', DKEY = 'kh_hero_d2', BKEY = 'kh_hero_bg1';
-    var BGS = [
-      { v: 'beige',  label: 'Beige gradient' },
-      { v: 'sand',   label: 'Sand (warmer)' },
-      { v: 'flat',   label: 'Flat cream' },
-      { v: 'butter', label: 'Butter (soft yellow)' },
-      { v: 'blue',   label: 'Blue (original)' }
-    ];
-    var COLORS = [
-      { v: 'yellow',    label: 'Yellow + navy outline' },
-      { v: 'navy',      label: 'Navy + white outline' },
-      { v: 'creamnavy', label: 'Beige + navy outline' },
-      { v: 'cream',     label: 'Beige + black outline' },
-      { v: 'kblue',     label: 'Krema blue + navy outline' },
-      { v: 'kbluelt',   label: 'Krema blue (light) + navy outline' },
-      { v: 'purple',    label: 'Purple + navy outline' },
-      { v: 'ghost',     label: 'Ghost (outline only)' }
-    ];
-    var DEPTHS = [
-      { v: 'flat',    label: 'Flat' },
-      { v: 'lift',    label: 'Lift' },
-      { v: 'soft',    label: 'Soft' },
-      { v: 'deep',    label: 'Deep' },
-      { v: 'glow',    label: 'Glow' },
-      { v: 'emboss',  label: 'Emboss' },
-      { v: 'echo',    label: 'Echo' },
-      { v: 'long',    label: 'Long' },
-      { v: 'sticker', label: 'Sticker' }
-    ];
-    var picker = document.createElement('div');
-    picker.id = 'hero-picker';
-    function makeRow(label) {
-      var r = document.createElement('div'); r.className = 'hp-row';
-      var l = document.createElement('span'); l.className = 'hp-label'; l.textContent = label;
-      r.appendChild(l); return r;
-    }
-    function mark(row, v) {
-      Array.prototype.forEach.call(row.querySelectorAll('button'), function (b) {
-        b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
-      });
-    }
-    var bgRow = makeRow('bg'), colorRow = makeRow('text'), depthRow = makeRow('depth');
-    function applyBg(v) { document.body.setAttribute('data-bg', v); try { localStorage.setItem(BKEY, v); } catch (e) {} mark(bgRow, v); }
-    function applyColor(v) { document.body.setAttribute('data-hero', v); try { localStorage.setItem(CKEY, v); } catch (e) {} mark(colorRow, v); }
-    function applyDepth(v) { document.body.setAttribute('data-depth', v); try { localStorage.setItem(DKEY, v); } catch (e) {} mark(depthRow, v); }
-    BGS.forEach(function (s) {
-      var b = document.createElement('button'); b.className = 'hp-bg';
-      b.setAttribute('data-v', s.v); b.title = s.label; b.setAttribute('aria-label', s.label);
-      b.addEventListener('click', function () { applyBg(s.v); });
-      bgRow.appendChild(b);
-    });
-    COLORS.forEach(function (s) {
-      var b = document.createElement('button'); b.className = 'hp-color';
-      b.setAttribute('data-v', s.v); b.title = s.label; b.setAttribute('aria-label', s.label);
-      b.addEventListener('click', function () { applyColor(s.v); });
-      colorRow.appendChild(b);
-    });
-    DEPTHS.forEach(function (s) {
-      var b = document.createElement('button'); b.className = 'hp-depth';
-      b.setAttribute('data-v', s.v); b.textContent = s.label; b.title = s.label;
-      b.addEventListener('click', function () { applyDepth(s.v); });
-      depthRow.appendChild(b);
-    });
-    picker.appendChild(bgRow); picker.appendChild(colorRow); picker.appendChild(depthRow);
-    document.body.appendChild(picker);
-    var bg = 'beige', c = 'yellow', d = 'soft';
-    try {
-      bg = localStorage.getItem(BKEY) || 'beige';
-      c = localStorage.getItem(CKEY) || 'yellow';
-      d = localStorage.getItem(DKEY) || 'soft';
-    } catch (e) {}
-    /* fall back if a saved value no longer exists (e.g. the removed 3D depth) */
-    function valid(list, v, fb) {
-      for (var i = 0; i < list.length; i++) { if (list[i].v === v) return v; }
-      return fb;
-    }
-    applyBg(valid(BGS, bg, 'beige'));
-    applyColor(valid(COLORS, c, 'yellow'));
-    applyDepth(valid(DEPTHS, d, 'soft'));
-  })();
-  </script>
 
 </body>
 </html>
