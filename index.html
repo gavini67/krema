@@ -1690,6 +1690,15 @@
       font-size: 10px; font-weight: 700; color: #2b3a66; cursor: pointer;
     }
     #logo-picker button[aria-pressed="true"] { outline: 3px solid #9F8FEA; outline-offset: 2px; }
+
+    /* ── Shrink-on-scroll header ── */
+    .kh-header-inner { transition: padding 0.22s cubic-bezier(0.22,1,0.36,1); }
+    .kh-logo img { transition: height 0.22s cubic-bezier(0.22,1,0.36,1); }
+    body[data-scrolled="1"] .kh-header-inner { padding-top: 2px; padding-bottom: 2px; }
+    body[data-scrolled="1"] .kh-logo img { height: 60px !important; }
+    @media (prefers-reduced-motion: reduce) {
+      .kh-header-inner, .kh-logo img { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -3552,6 +3561,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     try { s = localStorage.getItem(KEY) || 'black'; } catch (e) {}
     if (!/^(black|white|navy)$/.test(s)) s = 'black';
     apply(s);
+  })();
+  </script>
+  <script>
+  /* Shrink-on-scroll header — sets body[data-scrolled] so React is untouched. */
+  (function () {
+    var ticking = false;
+    function update() {
+      document.body.setAttribute('data-scrolled', window.scrollY > 40 ? '1' : '0');
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
   })();
   </script>
 </body>
