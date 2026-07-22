@@ -812,10 +812,19 @@
     .kh-ig-card {
       break-inside: avoid;
       margin: 0 0 24px;
+      position: relative;
+      z-index: 1;
       transform: rotate(var(--rot, 0deg));
       transition: transform 0.22s ease;
     }
-    .kh-ig-card:hover { transform: rotate(0deg) translate(-2px, -3px); }
+    /* Lift, don't un-rotate. Snapping to rotate(0) made the card jump out
+       from under its own offset shadow and slide behind the neighbouring
+       column's shadow, which read as the card vanishing. Keeping --rot and
+       raising z-index keeps it on top of its siblings the whole way up. */
+    .kh-ig-card:hover {
+      z-index: 3;
+      transform: rotate(var(--rot, 0deg)) translate(-3px, -6px) scale(1.014);
+    }
     /* tame Instagram's injected chrome so OUR frame is the only one */
     .kh-ig-card .instagram-media {
       margin: 0 !important;
@@ -839,21 +848,21 @@
         inset 0 2px 0 rgba(255, 255, 255, 0.9),
         4px 4px 0 var(--accent),
         7px 9px 0 var(--ink),
-        16px 22px 26px rgba(14, 14, 14, 0.18);
+        9px 12px 18px rgba(14, 14, 14, 0.13);
     }
     .kh-ig-card:nth-child(even) .kh-ig-fallback {
       box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.9),
         4px 4px 0 var(--sky-deep),
         7px 9px 0 var(--ink),
-        16px 22px 26px rgba(14, 14, 14, 0.18);
+        9px 12px 18px rgba(14, 14, 14, 0.13);
     }
     .kh-ig-card:nth-child(3n) .kh-ig-fallback {
       box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.9),
         4px 4px 0 var(--purple),
         7px 9px 0 var(--ink),
-        16px 22px 26px rgba(14, 14, 14, 0.18);
+        9px 12px 18px rgba(14, 14, 14, 0.13);
     }
     .kh-ig-fb-top {
       display: flex; align-items: center; gap: 9px;
