@@ -3201,18 +3201,23 @@ function Gram({ palette, scriptFont }) {
     const run = () => { if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process(); };
     run();                          // process now if embed.js already loaded
     const t1 = setTimeout(run, 1200); // …and again once the async script lands
-    // after a grace period, reveal the fallback for any embed that never rendered
+    // After a grace period, reveal the branded card for any embed that didn't
+    // come up. Two failure modes: no iframe at all (embed.js blocked), and an
+    // iframe that rendered but collapsed — Instagram serves a ~14px empty
+    // frame for posts that are deleted, private or otherwise unavailable, and
+    // without this check that slot just leaves a hole in the grid.
     const t2 = setTimeout(() => {
       setFailed((prev) => {
         const next = { ...prev };
         posts.forEach((p, i) => {
           if (!p.permalink) return; // intentional fallback — leave alone
           const el = refs.current[i];
-          if (!el || !el.querySelector('iframe')) next[i] = true;
+          const frame = el && el.querySelector('iframe');
+          if (!frame || frame.getBoundingClientRect().height < 200) next[i] = true;
         });
         return next;
       });
-    }, 4000);
+    }, 6000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -3241,7 +3246,9 @@ function Gram({ palette, scriptFont }) {
 
       <div className="kh-community-wall">
         {posts.map((post, i) => {
-          const showEmbed = false; // always use the branded fallback card (colored bg per post, all 6 shown)
+          // real Instagram embed when we have a permalink and it rendered;
+          // the branded card is the fallback for when embed.js is blocked
+          const showEmbed = post.permalink && !failed[i];
           return (
             <div key={i} className="kh-ig-card" style={{ '--rot': `${IG_TILTS[i % IG_TILTS.length]}deg` }}>
               {showEmbed ? (
