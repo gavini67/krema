@@ -798,20 +798,24 @@
       text-align: center; max-width: 720px; margin: 0 auto 56px;
     }
     /* responsive masonry wall of community posts (CSS columns) */
+    /* GRID, not multi-column. Safari has a long-standing repaint bug where a
+       transformed child of a `column-count` container blanks out when its
+       transform changes (i.e. on hover). Grid sidesteps it entirely, and with
+       6 posts a 3-wide grid gives two even rows anyway. */
     .kh-community-wall {
       max-width: 1180px; margin: 0 auto;
-      column-count: 3;
-      column-gap: 24px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      align-items: start;
     }
     /* wide monitors: widen the wall so it doesn't sit as a narrow centered
-       strip — but STAY at 3 columns. There are 6 posts, so 3 gives two even
-       rows; 4 leaves a column empty and balances the rest lopsidedly. */
+       strip — but STAY at 3 columns, so the 6 posts stay two even rows. */
     @media (min-width: 1400px) {
       .kh-community-wall { max-width: 1340px; }
     }
     .kh-ig-card {
-      break-inside: avoid;
-      margin: 0 0 24px;
+      margin: 0;
       position: relative;
       z-index: 1;
       transform: rotate(var(--rot, 0deg));
@@ -1415,7 +1419,7 @@
       .kh-nav a { font-size: 13px; }
       .kh-menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .kh-events-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .kh-community-wall { column-count: 2; }
+      .kh-community-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .kh-footer-bot { grid-template-columns: repeat(2, 1fr); gap: 30px; }
       .kh-happy-inner { gap: 32px; }
     }
@@ -1575,7 +1579,7 @@
       /* — community wall — */
       .kh-gram { padding: 56px 16px 70px; }
       .kh-gram-head { margin-bottom: 36px; }
-      .kh-community-wall { column-count: 1; }
+      .kh-community-wall { grid-template-columns: minmax(0, 1fr); }
       .kh-ig-card { transform: none !important; margin-bottom: 18px; }
       .kh-ig-fb-img { aspect-ratio: 1 / 1; }
       .kh-ig-fb-cap { font-size: 14px; }
@@ -1665,7 +1669,7 @@
     /* ── very small phones (≤ 400px) ───────────────────────────────── */
     @media (max-width: 400px) {
       .kh-menu-grid { grid-template-columns: 1fr; }
-      .kh-community-wall { column-count: 1; }
+      .kh-community-wall { grid-template-columns: minmax(0, 1fr); }
       .kh-footer-bot { grid-template-columns: 1fr; }
       .kh-hero-mascot-bubble { width: clamp(220px, 80vw, 260px) !important; }
       .kh-hero-mascot::before { width: clamp(220px, 80vw, 260px); }
@@ -3182,6 +3186,11 @@ function FallbackPost({ post }) {
   );
 }
 
+// Per-card tilt. Every entry is non-zero and the sign alternates, so no row
+// ever reads as dead straight. (The old ((i*7)%5-2)*0.7 formula gave card 1
+// exactly 0deg and cards 3/4 only ±0.7deg.)
+const IG_TILTS = [-1.5, 1.2, -1.1, 1.5, -1.2, 1.1];
+
 // ── community wall — real Instagram embeds with graceful fallback ─────────
 function Gram({ palette, scriptFont }) {
   const posts = COMMUNITY_POSTS;
@@ -3234,7 +3243,7 @@ function Gram({ palette, scriptFont }) {
         {posts.map((post, i) => {
           const showEmbed = false; // always use the branded fallback card (colored bg per post, all 6 shown)
           return (
-            <div key={i} className="kh-ig-card" style={{ '--rot': `${((i * 7) % 5 - 2) * 0.7}deg` }}>
+            <div key={i} className="kh-ig-card" style={{ '--rot': `${IG_TILTS[i % IG_TILTS.length]}deg` }}>
               {showEmbed ? (
                 <div ref={(el) => { refs.current[i] = el; }}>
                   <blockquote className="instagram-media"
