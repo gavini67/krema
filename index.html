@@ -803,10 +803,11 @@
       column-count: 3;
       column-gap: 24px;
     }
-    /* wide monitors: widen + 4 columns so the wall fills instead of sitting
-       as a narrow centered strip with big empty margins */
+    /* wide monitors: widen the wall so it doesn't sit as a narrow centered
+       strip — but STAY at 3 columns. There are 6 posts, so 3 gives two even
+       rows; 4 leaves a column empty and balances the rest lopsidedly. */
     @media (min-width: 1400px) {
-      .kh-community-wall { max-width: 1560px; column-count: 4; }
+      .kh-community-wall { max-width: 1340px; }
     }
     .kh-ig-card {
       break-inside: avoid;
