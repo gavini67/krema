@@ -1421,8 +1421,13 @@
       .kh-ribbon-track { animation-duration: 20s; }
 
       /* keep Instagram's injected iframe inside the card — no horizontal
-         overscroll / white gap on fast left-swipe */
-      .kh-ig-card { max-width: 100%; overflow: hidden; }
+         overscroll / white gap on fast left-swipe.
+         NOTE: no `overflow: hidden` here. The fallback card's offset hard
+         shadows (4px accent / 7px 9px navy) sit OUTSIDE its border box, so
+         clipping the .kh-ig-card box shaves them off mid-edge and the
+         borders read as glitched. The carousel's own bottom padding
+         already gives the shadows room. */
+      .kh-ig-card { max-width: 100%; }
       .kh-ig-card .instagram-media,
       .kh-ig-card iframe { max-width: 100% !important; }
 
