@@ -203,7 +203,10 @@
 
         <button id="btn-add-stamp" data-action="add-stamp" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">+ add stamp</button>
 
-        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;"></button>
+        <!-- one button per pending (reached-but-unclaimed) tier, ascending — built by
+             renderClaimButtons(). The first one keeps id="btn-redeem-discount" so the existing
+             hook stays valid; extras get id="btn-claim-<tier>", all data-action="redeem-discount". -->
+        <div id="claim-buttons" style="display:flex;flex-direction:column;gap:10px;"></div>
 
         <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free bingsu</button>
 
@@ -263,22 +266,25 @@
   var toastTimer = null;
   var current = null; // currently-loaded card object, as returned by the RPCs
 
-  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract
+  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract.
+  // `pending` = every unclaimed-but-reached tier, ascending — drives one claim button per tier so
+  // an earlier unclaimed reward is never hidden behind a later one.
   function deriveState(c) {
     var goal = c.goal || GOAL;
     var tiers = (c.tiers && c.tiers.length ? c.tiers.slice() : TIERS.slice()).sort(function (a, b) { return a - b; });
     var claimed = c.claimed || [];
     var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var pending = [];
     var lastUnlocked = null, next = null;
     for (var i = 0; i < tiers.length; i++) {
       var t = tiers[i];
       if (stamps >= t) {
-        if (t < goal && claimed.indexOf(t) === -1) lastUnlocked = t;
+        if (t < goal && claimed.indexOf(t) === -1) { lastUnlocked = t; pending.push(t); }
       } else if (next === null) {
         next = t;
       }
     }
-    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next };
+    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next, pending: pending };
   }
 
   var html5QrCode = null;
@@ -374,13 +380,32 @@
     }
   }
 
+  // one button per pending tier (ascending). First keeps id="btn-redeem-discount" so the
+  // existing hook stays valid; extras get id="btn-claim-<tier>". All share data-action
+  // "redeem-discount" and a data-tier attribute; clicks are handled via delegation in init().
+  function renderClaimButtons(state) {
+    var container = $('claim-buttons');
+    container.innerHTML = '';
+    var btnStyle = 'display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:\'futura-100-book\',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;';
+    state.pending.forEach(function (tier, idx) {
+      var meta = TIER_META[tier];
+      var btn = document.createElement('button');
+      btn.id = idx === 0 ? 'btn-redeem-discount' : ('btn-claim-' + tier);
+      btn.setAttribute('data-action', 'redeem-discount');
+      btn.setAttribute('data-tier', String(tier));
+      btn.style.cssText = btnStyle;
+      btn.textContent = 'apply ' + meta.short;
+      container.appendChild(btn);
+    });
+  }
+
   // ── result render ──────────────────────────────────────────────
   function renderResult() {
     if (!current) return;
     var state = deriveState(current);
     var stamps = state.stamps, goal = state.goal;
     var isFull = !!current.reward_ready;
-    var milestoneReady = state.lastUnlocked !== null;
+    var pendingCount = state.pending.length;
 
     $('result-name').textContent = current.name;
     $('result-code').textContent = current.member_code;
@@ -388,17 +413,18 @@
     $('result-counter').textContent = String(stamps);
 
     renderSlots($('result-grid'), stamps, goal, state.tiers);
+    renderClaimButtons(state);
 
-    if (milestoneReady) {
-      var meta = TIER_META[state.lastUnlocked];
-      $('result-discount-banner').textContent = state.lastUnlocked + ' stamps — ' + meta.short + ' ready!';
-      $('btn-redeem-discount').textContent = 'apply ' + meta.short;
+    if (pendingCount === 1) {
+      var meta = TIER_META[state.pending[0]];
+      $('result-discount-banner').textContent = state.pending[0] + ' stamps — ' + meta.short + ' ready!';
+    } else if (pendingCount > 1) {
+      $('result-discount-banner').textContent = pendingCount + ' rewards ready to claim';
     }
-    $('result-discount-banner').classList.toggle('hidden', !milestoneReady);
+    $('result-discount-banner').classList.toggle('hidden', pendingCount === 0);
     $('result-full-banner').classList.toggle('hidden', !isFull);
     $('result-already-redeemed').classList.add('hidden'); // only flashed transiently on a redeem error
 
-    $('btn-redeem-discount').classList.toggle('hidden', !milestoneReady);
     $('btn-redeem').classList.toggle('hidden', !isFull);
 
     $('btn-add-stamp').disabled = isFull;
@@ -493,11 +519,14 @@
     });
   }
 
-  function handleRedeemDiscount() {
+  function handleRedeemDiscount(tier) {
     if (!current) return;
-    var state = deriveState(current);
-    if (state.lastUnlocked === null) return;
-    var tier = state.lastUnlocked;
+    if (tier === undefined || tier === null) {
+      // fallback (e.g. programmatic call without an explicit tier): claim the highest pending
+      var state = deriveState(current);
+      if (state.lastUnlocked === null) return;
+      tier = state.lastUnlocked;
+    }
     var meta = TIER_META[tier];
     supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: tier }).then(function (res) {
       if (res.error) throw res.error;
@@ -540,7 +569,13 @@
     $('btn-scan').addEventListener('click', handleScan);
     $('btn-find').addEventListener('click', handleFind);
     $('btn-add-stamp').addEventListener('click', handleAddStamp);
-    $('btn-redeem-discount').addEventListener('click', handleRedeemDiscount);
+    // claim buttons are rebuilt on every render (one per pending tier), so listen via
+    // delegation on the container rather than binding a single static button
+    $('claim-buttons').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-action="redeem-discount"]') : null;
+      if (!btn) return;
+      handleRedeemDiscount(parseInt(btn.getAttribute('data-tier'), 10));
+    });
     $('btn-redeem').addEventListener('click', handleRedeem);
     $('btn-scan-next').addEventListener('click', handleScanNext);
     $('btn-redeem-done').addEventListener('click', handleScanNext);

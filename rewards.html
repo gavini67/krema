@@ -221,22 +221,10 @@
           </div>
         </div>
 
-        <!-- unused milestone voucher chip (unlocked earlier, still spendable) -->
-        <div id="milestone-chip" class="hidden" style="position:relative;">
-          <div style="position:relative;background:#2b3a66;border:2.5px solid #2b3a66;border-radius:18px;padding:14px 22px 15px;transform:rotate(-1deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.16),5px 6px 0 #2b3a66;overflow:hidden;">
-            <div id="milestone-chip-edge" style="position:absolute;inset:6px;border:2px dashed rgba(252,236,96,0.45);border-radius:12px;pointer-events:none;"></div>
-            <div style="position:absolute;top:50%;left:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-            <div style="position:absolute;top:50%;right:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-            <div style="position:relative;display:flex;align-items:center;gap:13px;">
-              <img id="milestone-chip-icon" src="assets/sticker-coffee.png" alt="" style="width:46px;height:46px;object-fit:contain;flex:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));animation:kr-wiggle 3.2s ease-in-out infinite;">
-              <div style="text-align:left;min-width:0;">
-                <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · <span id="milestone-chip-ticket"></span> ticket</div>
-                <div id="milestone-chip-title" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);"></div>
-                <div id="milestone-chip-note" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#cdd6ef;margin-top:5px;line-height:1.35;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- unused milestone voucher chips — one per pending (reached-but-unclaimed) tier that
+             isn't the "fresh" one, so an earlier unclaimed reward never goes invisible just
+             because a later tier was also reached. Built dynamically by renderChips(). -->
+        <div id="milestone-chips" style="display:flex;flex-direction:column;gap:12px;"></div>
 
         <!-- QR block -->
         <div style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;display:flex;flex-direction:column;align-items:center;gap:12px;">
@@ -309,24 +297,29 @@
     return RAIL_ICONS[idx < 0 ? 0 : idx];
   }
 
-  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract
+  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract.
+  // `pending` = every unclaimed-but-reached tier, ascending — the source of truth for "what does
+  // the customer still need to be shown/offered". `lastUnlocked` (highest pending) and `fresh`/`chip`
+  // are kept for back-compat, but the rail and the milestone-chip list iterate `pending` in full so
+  // an earlier unclaimed tier never goes invisible just because a later one was also reached.
   function deriveState(c) {
     var goal = c.goal || GOAL;
     var tiers = (c.tiers && c.tiers.length ? c.tiers.slice() : TIERS.slice()).sort(function (a, b) { return a - b; });
     var claimed = c.claimed || [];
     var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var pending = [];
     var lastUnlocked = null, next = null;
     for (var i = 0; i < tiers.length; i++) {
       var t = tiers[i];
       if (stamps >= t) {
-        if (t < goal && claimed.indexOf(t) === -1) lastUnlocked = t;
+        if (t < goal && claimed.indexOf(t) === -1) { lastUnlocked = t; pending.push(t); }
       } else if (next === null) {
         next = t;
       }
     }
     var fresh = lastUnlocked !== null && stamps === lastUnlocked;
     var chip = lastUnlocked !== null && !fresh;
-    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next, fresh: fresh, chip: chip };
+    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next, fresh: fresh, chip: chip, pending: pending };
   }
 
   var pollTimer = null;
@@ -398,21 +391,36 @@
     }
   }
 
-  function renderRail(container, state) {
+  // Three rail states, driven off `claimed` (not just "reached") so a reached-but-unclaimed
+  // tier is never mistaken for a claimed one:
+  //   claimed — tier IS in claimed[]            → done styling + green ✓ (the ONLY state with a ✓)
+  //   ready   — reached (or reward_ready for 20) AND NOT claimed → tier's own accent colour,
+  //             fully opaque, "!" badge — reads as "claim me"
+  //   locked  — not yet reached                 → dim/grey; the `next` tile keeps the purple
+  //             kr-wiggle highlight it always had
+  function renderRail(container, state, rewardReady) {
     container.innerHTML = '';
     for (var i = 0; i < TIERS.length; i++) {
       var tier = TIERS[i];
       var meta = TIER_META[tier];
-      var done = state.stamps >= tier;
-      var isNext = !done && state.next === tier;
-      var bg = done ? RAIL_TINTS[i] : (isNext ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)');
-      var border = done ? '#2b3a66' : (isNext ? '#9F8FEA' : '#cbd7ee');
-      var shadow = done ? '3px 4px 0 #2b3a66' : (isNext ? '3px 4px 0 rgba(159,143,234,0.45)' : 'none');
-      var fg = done ? '#2b3a66' : (isNext ? '#7a68d4' : '#a3b0cd');
-      var numBg = done ? '#2b3a66' : (isNext ? '#9F8FEA' : '#e6ecf7');
-      var numFg = (done || isNext) ? '#FCEC60' : '#8695ba';
-      var opacity = done ? 1 : (isNext ? 0.85 : 0.4);
-      var anim = isNext ? 'kr-wiggle 2.4s ease-in-out infinite' : 'none';
+      var isClaimed = state.claimed.indexOf(tier) !== -1;
+      var isReady = !isClaimed && (tier === 20 ? !!rewardReady : state.stamps >= tier);
+      var isNext = !isClaimed && !isReady && state.next === tier;
+
+      var bg, border, shadow, fg, numBg, numFg, opacity, anim;
+      if (isClaimed) {
+        bg = RAIL_TINTS[i]; border = '#2b3a66'; shadow = '3px 4px 0 #2b3a66'; fg = '#2b3a66';
+        numBg = '#2b3a66'; numFg = '#FCEC60'; opacity = 1; anim = 'none';
+      } else if (isReady) {
+        bg = meta.soft; border = meta.accent; shadow = '3px 4px 0 ' + meta.accent; fg = '#2b3a66';
+        numBg = meta.accent; numFg = '#2b3a66'; opacity = 1; anim = 'kr-wiggle 2.2s ease-in-out infinite';
+      } else if (isNext) {
+        bg = 'rgba(255,255,255,0.55)'; border = '#9F8FEA'; shadow = '3px 4px 0 rgba(159,143,234,0.45)'; fg = '#7a68d4';
+        numBg = '#9F8FEA'; numFg = '#FCEC60'; opacity = 0.85; anim = 'kr-wiggle 2.4s ease-in-out infinite';
+      } else {
+        bg = 'rgba(255,255,255,0.3)'; border = '#cbd7ee'; shadow = 'none'; fg = '#a3b0cd';
+        numBg = '#e6ecf7'; numFg = '#8695ba'; opacity = 0.4; anim = 'none';
+      }
 
       var item = document.createElement('div');
       item.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 3px 8px;border-radius:16px;background:' + bg + ';border:2.5px solid ' + border + ';box-shadow:' + shadow + ';transform:rotate(' + RAIL_ROTS[i] + 'deg);';
@@ -433,15 +441,54 @@
       label.textContent = meta.short;
       item.appendChild(label);
 
-      if (done) {
+      if (isClaimed) {
         var check = document.createElement('div');
         check.style.cssText = 'position:absolute;top:-8px;right:-6px;width:20px;height:20px;border-radius:50%;background:#4EC97A;border:2px solid #2b3a66;color:#FEFFE6;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1;';
         check.textContent = '✓';
         item.appendChild(check);
+      } else if (isReady) {
+        var attn = document.createElement('div');
+        attn.style.cssText = 'position:absolute;top:-8px;right:-6px;width:20px;height:20px;border-radius:50%;background:' + meta.accent + ';border:2px solid #2b3a66;color:#2b3a66;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;line-height:1;animation:kr-pop .4s cubic-bezier(.34,1.56,.64,1) both;';
+        attn.textContent = '!';
+        item.appendChild(attn);
       }
 
       container.appendChild(item);
     }
+  }
+
+  // builds one "still yours" voucher chip for a single pending tier, styled per that tier's
+  // TIER_META (accent/soft/ticket/big/note) — same visual as the old single static chip block
+  function buildChipElement(tier) {
+    var meta = TIER_META[tier];
+    var wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.innerHTML =
+      '<div style="position:relative;background:#2b3a66;border:2.5px solid #2b3a66;border-radius:18px;padding:14px 22px 15px;transform:rotate(-1deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.16),5px 6px 0 #2b3a66;overflow:hidden;">' +
+        '<div style="position:absolute;inset:6px;border:2px dashed ' + meta.soft + ';border-radius:12px;pointer-events:none;"></div>' +
+        '<div style="position:absolute;top:50%;left:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>' +
+        '<div style="position:absolute;top:50%;right:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>' +
+        '<div style="position:relative;display:flex;align-items:center;gap:13px;">' +
+          '<img src="' + railIconFor(tier) + '" alt="" style="width:46px;height:46px;object-fit:contain;flex:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));animation:kr-wiggle 3.2s ease-in-out infinite;">' +
+          '<div style="text-align:left;min-width:0;">' +
+            '<div style="font-family:\'futura-100-book\',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · ' + meta.ticket + ' ticket</div>' +
+            '<div style="font-family:\'Neighbor\',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:0.95;letter-spacing:-0.01em;color:' + meta.accent + ';text-shadow:2px 2px 0 rgba(0,0,0,0.28);">' + meta.big + ' — STILL YOURS!</div>' +
+            '<div style="font-family:\'futura-100-book\',system-ui,sans-serif;font-size:11px;font-style:italic;color:#cdd6ef;margin-top:5px;line-height:1.35;">' + meta.note + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    return wrap;
+  }
+
+  // renders a chip for every pending tier EXCEPT the one currently shown as the "fresh" burst
+  // (there's at most one fresh tier — the one the customer just landed on exactly)
+  function renderChips(container, state) {
+    container.innerHTML = '';
+    var freshTier = state.fresh ? state.lastUnlocked : null;
+    state.pending.forEach(function (tier) {
+      if (tier === freshTier) return;
+      container.appendChild(buildChipElement(tier));
+    });
   }
 
   // NOTE: server doesn't return a stamp history list, so #history-block
@@ -460,7 +507,7 @@
     $('stamp-counter').textContent = String(stamps);
 
     renderSlots($('stamp-grid'), stamps, goal, state.tiers);
-    renderRail($('treats-rail'), state);
+    renderRail($('treats-rail'), state, isFull);
 
     // reward (full) state
     $('reward-glow').classList.toggle('hidden', !isFull);
@@ -468,10 +515,8 @@
     $('reward-ticket').classList.toggle('hidden', !isFull);
     $('progress-line').classList.toggle('hidden', isFull);
 
-    // milestone fresh / chip states
+    // milestone fresh burst (the tier the customer just landed on exactly)
     $('milestone-fresh').classList.toggle('hidden', !state.fresh);
-    $('milestone-chip').classList.toggle('hidden', !state.chip);
-
     if (state.fresh) {
       var freshMeta = TIER_META[state.lastUnlocked];
       $('milestone-fresh-icon').src = railIconFor(state.lastUnlocked);
@@ -481,15 +526,9 @@
       $('milestone-fresh-title').style.color = freshMeta.accent;
       $('milestone-fresh-edge').style.borderColor = freshMeta.soft;
     }
-    if (state.chip) {
-      var chipMeta = TIER_META[state.lastUnlocked];
-      $('milestone-chip-icon').src = railIconFor(state.lastUnlocked);
-      $('milestone-chip-ticket').textContent = chipMeta.ticket;
-      $('milestone-chip-title').textContent = chipMeta.big + ' — STILL YOURS!';
-      $('milestone-chip-note').textContent = chipMeta.note;
-      $('milestone-chip-title').style.color = chipMeta.accent;
-      $('milestone-chip-edge').style.borderColor = chipMeta.soft;
-    }
+
+    // milestone chips — every other pending (reached-but-unclaimed) tier
+    renderChips($('milestone-chips'), state);
 
     if (!isFull) {
       var text;
