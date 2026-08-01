@@ -118,12 +118,32 @@ create or replace function public.is_staff() returns boolean
   select exists (select 1 from public.staff where uid = auth.uid())
 $$;
 
+-- Normalise a PH mobile number to 09XXXXXXXXX. Returns NULL if it isn't one.
+-- Accepts 0917…, +63917…, 63917…, 917…, with spaces/dashes/brackets.
+create or replace function public.krema_norm_phone(p_raw text) returns text
+  language sql immutable as $$
+  select case
+           when d ~ '^09[0-9]{9}$'  then d
+           when d ~ '^639[0-9]{9}$' then '0' || substr(d, 3)
+           when d ~ '^9[0-9]{9}$'   then '0' || d
+           else null
+         end
+  from (select regexp_replace(coalesce(p_raw, ''), '\D', '', 'g') as d) s
+$$;
+
+-- Member codes: 6 chars from an unambiguous alphabet (no O/0/I/1) ≈ 887M
+-- combinations. The old 4-digit codes only had 10,000 — every card was
+-- enumerable, and krema_new_code would spin forever once they ran out.
+-- Existing KREMA-1234 codes keep working; only new ones use this format.
 create or replace function public.krema_new_code() returns text
   language plpgsql security definer set search_path = public as $$
-declare v_code text;
+declare v_code text; v_alphabet text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; i int;
 begin
   loop
-    v_code := 'KREMA-' || lpad((floor(random()*10000))::int::text, 4, '0');
+    v_code := 'KREMA-';
+    for i in 1..6 loop
+      v_code := v_code || substr(v_alphabet, 1 + floor(random() * length(v_alphabet))::int, 1);
+    end loop;
     exit when not exists (select 1 from public.customers c where c.member_code = v_code);
   end loop;
   return v_code;
@@ -158,19 +178,22 @@ create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid;
+declare v_id uuid; v_phone text;
 begin
-  p_name  := trim(p_name);
-  p_phone := trim(p_phone);
-  if length(p_name) < 1 or length(p_phone) < 5 then
-    raise exception 'name and phone required';
+  p_name := trim(p_name);
+  if length(p_name) < 1 then raise exception 'please enter your name'; end if;
+  if length(p_name) > 60 then p_name := substr(p_name, 1, 60); end if;
+
+  v_phone := krema_norm_phone(p_phone);
+  if v_phone is null then
+    raise exception 'enter a valid mobile number, e.g. 0917 123 4567';
   end if;
 
-  select c.id into v_id from public.customers c where c.phone = p_phone;
+  select c.id into v_id from public.customers c where c.phone = v_phone;
 
   if v_id is null then
     insert into public.customers (member_code, name, phone, stamps, lifetime)
-    values (krema_new_code(), p_name, p_phone, 0, 0)     -- empty card
+    values (krema_new_code(), p_name, v_phone, 0, 0)     -- empty card
     returning id into v_id;
   end if;
 
@@ -197,7 +220,12 @@ create or replace function public.customer_lookup(p_phone text)
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid;
 begin
-  select c.id into v_id from public.customers c where c.phone = trim(p_phone);
+  -- match on the normalised number, falling back to the raw string so rows
+  -- stored before normalisation are still findable
+  select c.id into v_id from public.customers c
+   where c.phone = coalesce(krema_norm_phone(p_phone), '~none~')
+      or c.phone = trim(p_phone)
+   limit 1;
   if v_id is null then return; end if;
   return query select * from public.krema_card(v_id);
 end $$;
@@ -270,10 +298,28 @@ create or replace function public.staff_lookup(p_phone text)
 declare v_id uuid;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
-  select c.id into v_id from public.customers c where c.phone = trim(p_phone);
+  select c.id into v_id from public.customers c
+   where c.phone = coalesce(krema_norm_phone(p_phone), '~none~')
+      or c.phone = trim(p_phone)
+   limit 1;
   if v_id is null then return; end if;
   return query select * from public.krema_card(v_id);
 end $$;
+
+-- ── Backfill: normalise phones already stored in mixed formats ──────────
+-- Runs after krema_norm_phone exists. Same person can't end up with two
+-- cards, and lookup works whatever format they type. Skipped for any row
+-- where it would collide with another customer. Junk numbers (e.g.
+-- 'asdasdasd') can't be normalised and are left as-is — list them with:
+--   select member_code, name, phone from public.customers
+--    where public.krema_norm_phone(phone) is null;
+update public.customers c
+   set phone = public.krema_norm_phone(c.phone)
+ where public.krema_norm_phone(c.phone) is not null
+   and c.phone <> public.krema_norm_phone(c.phone)
+   and not exists (
+     select 1 from public.customers c2
+      where c2.id <> c.id and c2.phone = public.krema_norm_phone(c.phone));
 
 -- ── Permissions ─────────────────────────────────────────────────────────
 revoke all on function public.signup_customer(text,text) from public;

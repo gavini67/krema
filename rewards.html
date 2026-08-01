@@ -327,6 +327,16 @@
 
   function $(id) { return document.getElementById(id); }
 
+  // PH mobile → 09XXXXXXXXX, or null if it isn't one.
+  // Must stay in sync with krema_norm_phone() in supabase-setup.sql.
+  function normPhone(raw) {
+    var d = String(raw || '').replace(/\D/g, '');
+    if (/^09\d{9}$/.test(d)) return d;
+    if (/^639\d{9}$/.test(d)) return '0' + d.slice(2);
+    if (/^9\d{9}$/.test(d)) return '0' + d;
+    return null;
+  }
+
   function getSavedCode() {
     try { return localStorage.getItem(MEMBER_KEY); } catch (e) { return null; }
   }
@@ -631,6 +641,16 @@
     }
     nameInput.style.borderColor = '#2b3a66';
     var phone = (phoneInput.value || '').trim();
+
+    // mirrors the server rule, so a bad number fails here with a friendly
+    // message instead of coming back as a raw server error
+    if (!normPhone(phone)) {
+      phoneInput.focus();
+      phoneInput.style.borderColor = '#c0392b';
+      showSignupError('enter a valid mobile number, e.g. 0917 123 4567');
+      return;
+    }
+    phoneInput.style.borderColor = '#2b3a66';
 
     var btn = $('btn-join');
     btn.disabled = true;
