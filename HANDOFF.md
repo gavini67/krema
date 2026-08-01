@@ -27,18 +27,33 @@ Push to `main` → Vercel auto-deploys (~30s). Hard-refresh / private tab to ski
 ## 3. Krema Rewards — how it works
 Digital "buy N, get one free" punch card. Replaces a paper card.
 
-**Mechanic (locked):**
-- 11-slot card. Counter shows `X / 11`.
-- **Empty card** on signup (0/11); staff add the first stamp on the first purchase.
-- **6 stamps** → 10% off voucher unlocked (spendable until redeemed).
-- **11 stamps** → free drink. Staff redeems → card resets to 0, cycle repeats.
-- **1 free-drink redeem per customer per day** (discount has no daily limit).
-- Only **staff** can add stamps / redeem. Enforced server-side (see §5).
+**Mechanic — KREMA CLUB (changed 2026-08-02 at the owner's request; was 11-stamp/2-tier):**
+- **20-slot card.** Counter shows `X / 20`. 1 stamp per drink.
+- **Empty card** on signup (0/20); staff add the first stamp on the first purchase.
+- Four milestones, each claimable **once per card cycle**:
+  | at | reward | note |
+  |----|--------|------|
+  | 6  | 10% off     | on your 6th drink |
+  | 10 | free drink  | lowest-priced drink · except matcha |
+  | 16 | free merch  | pick a piece of krema merch |
+  | 20 | free bingsu | solo · regular flavors only |
+- Claiming **tier 20** completes the card → server resets stamps to 0 and starts a new cycle.
+- "Card valid for 2 months" is **displayed only, NOT enforced** (`expires_at` is returned for the UI; nothing expires server-side — deliberate choice).
+- The old *1-redeem-per-day* rule is gone; once-per-tier-per-cycle replaces it (stronger).
+- Only **staff** can add stamps / claim rewards. Enforced server-side (see §5).
+- Staff UI surfaces the **highest** unclaimed sub-20 tier as one "apply &lt;reward&gt;" button. If a customer passes a milestone without claiming it, older unclaimed tiers aren't reachable from the UI (the DB still allows `claim_reward(code, tier)` for them). Known limitation.
 - Returning customers retrieve their card by **phone number** (`customer_lookup` anon RPC) or a bookmarkable `rewards.html?c=KREMA-XXXX` link — no password/PIN (see the login design spec).
 
 **Customer flow:** open `/rewards.html` → sign up (name + phone) → get a card with a QR + member code (e.g. `KREMA-1234`), remembered on the phone (localStorage stores only the member code). Card auto-refreshes every 4s + on focus, so staff stamps show up live.
 
-**Staff flow:** open `/staff.html` → log in (Supabase Auth) → scan customer QR (html5-qrcode camera) or phone-lookup fallback → add stamp / redeem / redeem discount.
+**Staff flow:** open `/staff.html` → log in (Supabase Auth) → scan customer QR (html5-qrcode camera) or phone-lookup fallback → add stamp / apply the pending milestone / redeem the free bingsu.
+
+**RPCs** (all return one row: `member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready`):
+`signup_customer(name,phone)`, `get_card(code)`, `customer_lookup(phone)` — anon ·
+`add_stamp(code)`, `claim_reward(code,tier)`, `staff_lookup(phone)` — staff only.
+`redeem()` / `redeem_discount()` were **retired** with the 11-stamp model.
+
+> ⚠️ **Frontend and DB must ship together.** The pages and `supabase-setup.sql` are one contract — changing the mechanic means running the SQL in Supabase *and* deploying the pages. Running only one leaves the live site broken (this happened on 2026-08-02).
 
 ## 4. Supabase (the backend)
 - Project: **kremadesserthaus** (Free tier, region: Seoul / ap-northeast-2)

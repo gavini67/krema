@@ -31,6 +31,8 @@
   @keyframes kr-confetti { 0% { transform: translateY(-24px) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 82% { opacity: 1; } 100% { transform: translateY(430px) rotate(340deg); opacity: 0; } }
   @keyframes kr-twinkle { 0%,100% { transform: scale(0.55) rotate(0deg); opacity: 0.45; } 50% { transform: scale(1.15) rotate(22deg); opacity: 1; } }
   @keyframes kr-scanline { 0%, 100% { top: 8%; } 50% { top: 88%; } }
+  @keyframes kr-wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  @keyframes kr-nudge { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-3px) rotate(1deg); } }
   @keyframes kr-burst { 0% { transform: translate(0,0) rotate(0deg) scale(0.4); opacity: 0; } 12% { opacity: 1; transform: translate(calc(var(--tx,0px) * 0.3), calc(var(--ty,0px) * 0.3)) rotate(90deg) scale(1); } 100% { transform: translate(var(--tx,0px), calc(var(--ty,0px) + 46px)) rotate(320deg) scale(0.8); opacity: 0; } }
   .hidden { display: none !important; }
   /* On real phones, drop the decorative phone-frame chrome so the app is full-bleed */
@@ -69,18 +71,13 @@
         <div style="position:relative;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:22px;padding:18px 20px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.15),5px 6px 0 #2b3a66;">
           <img src="assets/sticker-boba.png" alt="" style="position:absolute;top:-42px;right:-10px;width:78px;height:78px;object-fit:contain;transform:rotate(12deg);filter:drop-shadow(2px 3px 0 rgba(43,58,102,0.4));pointer-events:none;">
           <div style="position:absolute;inset:7px;border:2px dashed rgba(252,236,96,0.3);border-radius:15px;pointer-events:none;"></div>
-          <div style="position:relative;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1.05;max-width:240px;">6 stamps = 10% off. 11 = free drink.</div>
-          <div style="position:relative;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit. one card, all the treats.</div>
-          <div style="position:relative;display:flex;align-items:center;gap:6px;margin-top:13px;">
-            <div style="width:18px;height:18px;border-radius:50%;background:#FCEC60;border:2px solid #FCEC60;display:flex;align-items:center;justify-content:center;flex:none;"><div style="width:9px;height:9px;background:#2b3a66;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);"></div></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;border:2px dashed rgba(252,236,96,0.45);flex:none;"></div>
+          <div style="position:relative;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1.05;max-width:250px;">every drink = 1 stamp. 4 treats on the way.</div>
+          <div style="position:relative;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit — card valid for 2 months.</div>
+          <div style="position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:13px;">
+            <span style="background:#FCEC60;color:#2b3a66;border:2px solid #FCEC60;border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(-2deg);">6 · 10% off</span>
+            <span style="color:#FCEC60;border:2px dashed rgba(252,236,96,0.6);border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(1.5deg);">10 · free drink</span>
+            <span style="color:#FCEC60;border:2px dashed rgba(252,236,96,0.6);border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(-1deg);">16 · free merch</span>
+            <span style="color:#FCEC60;border:2px dashed rgba(252,236,96,0.6);border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(2deg);">20 · free bingsu</span>
           </div>
         </div>
 
@@ -132,6 +129,9 @@
         <!-- the card -->
         <div style="position:relative;background:#FEFFE6;border:3px solid #2b3a66;border-radius:26px;padding:22px 20px 24px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.9),7px 9px 0 #2b3a66;">
 
+          <!-- washi tape -->
+          <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%) rotate(-2deg);background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:6px;padding:3px 20px;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:10px;letter-spacing:0.22em;color:#FEFFE6;text-shadow:1px 1px 0 rgba(43,58,102,0.5);box-shadow:2px 3px 0 rgba(43,58,102,0.28);z-index:4;">KREMA CLUB</div>
+
           <!-- reward glow (shown only when full) -->
           <div id="reward-glow" class="hidden" style="position:absolute;inset:0;border-radius:26px;overflow:hidden;pointer-events:none;z-index:2;">
             <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 42%, rgba(252,236,96,0.85) 0%, rgba(252,236,96,0.0) 62%);animation:kr-glow 2.4s ease-in-out infinite;"></div>
@@ -153,12 +153,19 @@
           <!-- counter -->
           <div style="position:relative;display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:4px;">
             <span id="stamp-counter" data-counter="0" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:56px;line-height:1;letter-spacing:-0.02em;color:#2b3a66;text-shadow:2px 3px 0 rgba(252,236,96,0.9);">0</span>
-            <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:26px;color:#4a5a8a;">/ 11</span>
+            <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:26px;color:#4a5a8a;">/ 20</span>
             <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:600;font-size:13px;color:#4a5a8a;align-self:flex-end;margin-bottom:8px;">stamps</span>
           </div>
+          <div style="position:relative;text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-bottom:2px;">1 stamp per drink · card valid for 2 months</div>
 
           <!-- stamp grid -->
-          <div id="stamp-grid" style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0 6px;"></div>
+          <div id="stamp-grid" style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0 6px;"></div>
+
+          <!-- the treats rail -->
+          <div style="position:relative;margin-top:16px;padding-top:14px;border-top:2.5px dashed #cbd7ee;">
+            <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#FEFFE6;padding:0 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:10px;letter-spacing:0.2em;color:#8695ba;">THE TREATS</div>
+            <div id="treats-rail" style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;"></div>
+          </div>
 
           <!-- reward ticket (full) -->
           <div id="reward-ticket" class="hidden" style="position:relative;margin-top:16px;">
@@ -173,15 +180,15 @@
                 <img src="assets/krema-brandmark.png" alt="" style="width:52px;height:52px;object-fit:contain;flex:none;transform:rotate(-6deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));">
                 <div style="text-align:left;min-width:0;">
                   <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · golden ticket</div>
-                  <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:29px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);">FREE DRINK<br>UNLOCKED!</div>
+                  <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:29px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);">FREE BINGSU<br>UNLOCKED!</div>
                 </div>
               </div>
             </div>
-            <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;margin-top:12px;">treat yo' self, bestie — you earned it.</div>
+            <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;margin-top:12px;">solo bingsu, regular flavors only — you earned it.</div>
           </div>
 
-          <!-- discount just-unlocked (one-shot burst, stamps === 6) -->
-          <div id="discount-fresh" class="hidden">
+          <!-- milestone just-unlocked (one-shot burst, stamps === lastUnlocked tier) -->
+          <div id="milestone-fresh" class="hidden">
             <div style="position:relative;height:0;"><div style="position:absolute;left:50%;top:44px;z-index:5;pointer-events:none;">
               <span style="position:absolute;width:9px;height:9px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:2px;--tx:-74px;--ty:-58px;animation:kr-burst 1.9s cubic-bezier(.2,.7,.4,1) 0.35s both;"></span>
               <span style="position:absolute;width:7px;height:7px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:50%;--tx:62px;--ty:-70px;animation:kr-burst 2.1s cubic-bezier(.2,.7,.4,1) 0.45s both;"></span>
@@ -192,15 +199,20 @@
               <span style="position:absolute;width:4px;height:11px;background:#9F8FEA;border:1.5px solid #2b3a66;border-radius:3px;--tx:14px;--ty:-100px;animation:kr-burst 1.9s cubic-bezier(.2,.7,.4,1) 0.42s both;"></span>
               <span style="position:absolute;width:7px;height:7px;background:#FCEC60;border:1.5px solid #2b3a66;border-radius:2px;--tx:-16px;--ty:-96px;animation:kr-burst 2s cubic-bezier(.2,.7,.4,1) 0.65s both;"></span>
             </div></div>
-            <div style="position:relative;background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:16px;padding:11px 22px;margin-top:14px;transform:rotate(1deg);animation:kr-pop .55s cubic-bezier(.34,1.56,.64,1) 0.25s both;box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),4px 5px 0 rgba(43,58,102,0.32);overflow:hidden;">
-              <div style="position:absolute;inset:5px;border:2px dashed rgba(254,255,230,0.5);border-radius:11px;pointer-events:none;"></div>
-              <div style="position:absolute;top:50%;left:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-              <div style="position:absolute;top:50%;right:-12px;width:22px;height:22px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-              <div style="position:relative;text-align:center;">
-                <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#2b3a66;opacity:0.7;margin-bottom:2px;">milestone reward</div>
-                <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:21px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF UNLOCKED — show at counter</div>
+            <div style="position:relative;background:#2b3a66;border:2.5px solid #2b3a66;border-radius:18px;padding:15px 22px 16px;margin-top:14px;transform:rotate(-1.5deg);animation:kr-pop .55s cubic-bezier(.34,1.56,.64,1) 0.25s both,kr-bob 3.4s ease-in-out infinite;box-shadow:inset 0 2px 0 rgba(255,255,255,0.16),5px 7px 0 rgba(43,58,102,0.32);overflow:hidden;">
+              <div id="milestone-fresh-edge" style="position:absolute;inset:6px;border:2px dashed rgba(252,236,96,0.45);border-radius:12px;pointer-events:none;"></div>
+              <div style="position:absolute;top:50%;left:-13px;width:24px;height:24px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:absolute;top:50%;right:-13px;width:24px;height:24px;border-radius:50%;background:#FEFFE6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+              <div style="position:relative;display:flex;align-items:center;gap:14px;">
+                <img id="milestone-fresh-icon" src="assets/sticker-coffee.png" alt="" style="width:52px;height:52px;object-fit:contain;flex:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));animation:kr-wiggle 2.8s ease-in-out infinite;">
+                <div style="text-align:left;min-width:0;">
+                  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · <span id="milestone-fresh-ticket"></span> ticket</div>
+                  <div id="milestone-fresh-title" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:26px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);"></div>
+                  <div id="milestone-fresh-note" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#cdd6ef;margin-top:5px;line-height:1.35;"></div>
+                </div>
               </div>
             </div>
+            <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;margin-top:11px;">flash this at the counter — it's yours &#10024;</div>
           </div>
 
           <!-- progress line (not yet at reward) -->
@@ -209,16 +221,19 @@
           </div>
         </div>
 
-        <!-- unused discount voucher chip (unlocked earlier, still spendable) -->
-        <div id="discount-chip" class="hidden" style="position:relative;background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 26px;transform:rotate(-1deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),5px 6px 0 #2b3a66;overflow:hidden;">
-          <div style="position:absolute;inset:5px;border:2px dashed rgba(254,255,230,0.5);border-radius:13px;pointer-events:none;"></div>
-          <div style="position:absolute;top:50%;left:-12px;width:22px;height:22px;border-radius:50%;background:#f8f4e6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-          <div style="position:absolute;top:50%;right:-12px;width:22px;height:22px;border-radius:50%;background:#f8f4e6;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
-          <div style="position:relative;display:flex;align-items:center;gap:12px;">
-            <span style="flex:none;width:22px;height:22px;background:#FEFFE6;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);animation:kr-twinkle 2.6s ease-in-out infinite;"></span>
-            <div style="min-width:0;">
-              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;line-height:1;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);">10% OFF — still yours!</div>
-              <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#2b3a66;margin-top:3px;">show this at the counter on your next order</div>
+        <!-- unused milestone voucher chip (unlocked earlier, still spendable) -->
+        <div id="milestone-chip" class="hidden" style="position:relative;">
+          <div style="position:relative;background:#2b3a66;border:2.5px solid #2b3a66;border-radius:18px;padding:14px 22px 15px;transform:rotate(-1deg);box-shadow:inset 0 2px 0 rgba(255,255,255,0.16),5px 6px 0 #2b3a66;overflow:hidden;">
+            <div id="milestone-chip-edge" style="position:absolute;inset:6px;border:2px dashed rgba(252,236,96,0.45);border-radius:12px;pointer-events:none;"></div>
+            <div style="position:absolute;top:50%;left:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+            <div style="position:absolute;top:50%;right:-13px;width:24px;height:24px;border-radius:50%;background:#d4e8f5;border:2.5px solid #2b3a66;transform:translateY(-50%);"></div>
+            <div style="position:relative;display:flex;align-items:center;gap:13px;">
+              <img id="milestone-chip-icon" src="assets/sticker-coffee.png" alt="" style="width:46px;height:46px;object-fit:contain;flex:none;filter:drop-shadow(2px 2px 0 rgba(0,0,0,0.25));animation:kr-wiggle 3.2s ease-in-out infinite;">
+              <div style="text-align:left;min-width:0;">
+                <div style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:#9db0d8;margin-bottom:3px;">krema rewards · <span id="milestone-chip-ticket"></span> ticket</div>
+                <div id="milestone-chip-title" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:0.95;letter-spacing:-0.01em;color:#FCEC60;text-shadow:2px 2px 0 rgba(0,0,0,0.28);"></div>
+                <div id="milestone-chip-note" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#cdd6ef;margin-top:5px;line-height:1.35;"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -234,7 +249,7 @@
             <div id="member-code" data-member-code="" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em;color:#2b3a66;"></div>
           </div>
           <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#4a5a8a;line-height:1.4;max-width:230px;">
-            <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free drink</span>
+            <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free bingsu</span>
             <span id="qr-hint-normal">show this to the barista to collect a stamp</span>
           </div>
           <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-top:10px;">tip: bookmark this page so your card is always one tap away</div>
@@ -255,7 +270,7 @@
     </div>
   </div>
 
-  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;color:#3f5580;opacity:0.65;">Krema Rewards · 6 stamps = 10% off · 11 = free drink</div>
+  <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;color:#3f5580;opacity:0.65;">Krema Club · 6 = 10% off · 10 = free drink · 16 = free merch · 20 = free bingsu</div>
 </div>
 
 <script>
@@ -268,13 +283,51 @@
   var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   var MEMBER_KEY = 'krema_member_code';
-  var GOAL = 11;
-  var MILESTONE = 6;
+  var GOAL = 20;
+  var TIERS = [6, 10, 16, 20];
   var POLL_MS = 4000;
 
-  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
-  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
-  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8, 4, -6, 7];
+  // tier metadata — short/big/note/accent/soft come straight from the design spec;
+  // `ticket` is the design's ticket-color name used in the "krema rewards · X ticket" label.
+  var TIER_META = {
+    6:  { short: '10% off',    big: '10% OFF',     note: 'on your 6th drink', ticket: 'lilac', accent: '#C9BCFF', soft: 'rgba(201,188,255,0.45)' },
+    10: { short: 'free drink', big: 'FREE DRINK',  note: 'lowest-priced drink free · except matcha', ticket: 'blue', accent: '#9AD8F5', soft: 'rgba(154,216,245,0.45)' },
+    16: { short: 'free merch', big: 'FREE MERCH',  note: 'pick a piece of krema merch', ticket: 'cream', accent: '#FEFFE6', soft: 'rgba(254,255,230,0.45)' },
+    20: { short: 'free bingsu', big: 'FREE BINGSU', note: 'solo bingsu · regular flavors only', ticket: 'golden', accent: '#FCEC60', soft: 'rgba(252,236,96,0.45)' }
+  };
+
+  var RAIL_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-croissant.png', 'assets/sticker-blob-chill.png'];
+  var RAIL_TINTS = ['#e6dff8', '#dcebf7', '#FCEC60', '#ffe0ec'];
+  var RAIL_ROTS = [-2.5, 1.5, -1.5, 2.5];
+
+  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-blob-chill.png'];
+  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8'];
+  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8];
+
+  function railIconFor(tier) {
+    var idx = TIERS.indexOf(tier);
+    return RAIL_ICONS[idx < 0 ? 0 : idx];
+  }
+
+  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract
+  function deriveState(c) {
+    var goal = c.goal || GOAL;
+    var tiers = (c.tiers && c.tiers.length ? c.tiers.slice() : TIERS.slice()).sort(function (a, b) { return a - b; });
+    var claimed = c.claimed || [];
+    var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var lastUnlocked = null, next = null;
+    for (var i = 0; i < tiers.length; i++) {
+      var t = tiers[i];
+      if (stamps >= t) {
+        if (t < goal && claimed.indexOf(t) === -1) lastUnlocked = t;
+      } else if (next === null) {
+        next = t;
+      }
+    }
+    var fresh = lastUnlocked !== null && stamps === lastUnlocked;
+    var chip = lastUnlocked !== null && !fresh;
+    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next, fresh: fresh, chip: chip };
+  }
 
   var pollTimer = null;
   var currentCard = null;
@@ -309,33 +362,85 @@
     }
   }
 
-  function renderSlots(container, stamps, goal, milestone) {
+  function renderSlots(container, stamps, goal, tiers) {
     goal = goal || GOAL;
-    milestone = milestone || MILESTONE;
+    tiers = tiers || TIERS;
     container.innerHTML = '';
     for (var i = 0; i < goal; i++) {
       var filled = i < stamps;
-      var isMile = (i + 1) === milestone;
-      var isFinal = (i + 1) === goal;
+      var tier = tiers.indexOf(i + 1) !== -1 ? (i + 1) : null;
       var slot = document.createElement('div');
       slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
       slot.setAttribute('data-stamp-index', String(i));
       slot.setAttribute('data-filled', filled ? 'true' : 'false');
       if (filled) {
-        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i] + ';border:2.5px solid #2b3a66;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),3px 4px 0 rgba(43,58,102,0.28);animation:kr-pop .45s cubic-bezier(.34,1.56,.64,1) both;overflow:visible;';
+        slot.style.cssText = 'position:relative;aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i % STAMP_BGS.length] + ';border:2.5px solid #2b3a66;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),3px 4px 0 rgba(43,58,102,0.28);animation:kr-pop .45s cubic-bezier(.34,1.56,.64,1) both;overflow:visible;';
         var img = document.createElement('img');
-        img.src = STAMP_ICONS[i];
+        img.src = STAMP_ICONS[i % STAMP_ICONS.length];
         img.alt = 'stamp';
-        img.style.cssText = 'width:96%;height:96%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i] + 'deg);filter:drop-shadow(1px 2px 0 rgba(43,58,102,0.3));';
+        img.style.cssText = 'width:94%;height:94%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i % STAMP_ROTS.length] + 'deg);filter:drop-shadow(1px 2px 0 rgba(43,58,102,0.3));';
         slot.appendChild(img);
+        if (tier) {
+          var badge = document.createElement('div');
+          badge.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#9F8FEA;border:2px solid #2b3a66;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;';
+          badge.innerHTML = '<div style="width:11px;height:11px;background:#FEFFE6;clip-path:polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);"></div>';
+          slot.appendChild(badge);
+        }
       } else {
-        var edge = (isMile || isFinal) ? '#9F8FEA' : '#8695ba';
-        var fs = (isMile || isFinal) ? 11 : 19;
-        var label = isMile ? '10% off' : (isFinal ? 'free drink' : String(i + 1));
-        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.35);border:2.5px dashed ' + edge + ';display:flex;align-items:center;justify-content:center;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:' + fs + 'px;color:' + edge + ';text-align:center;line-height:1.05;';
+        var edge = tier ? '#9F8FEA' : '#8695ba';
+        var fs = tier ? 9 : 15;
+        var label = tier ? TIER_META[tier].short : String(i + 1);
+        var emptyBg = tier ? 'rgba(159,143,234,0.14)' : 'rgba(255,255,255,0.35)';
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + emptyBg + ';border:2.5px dashed ' + edge + ';padding:2px;display:flex;align-items:center;justify-content:center;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:' + fs + 'px;color:' + edge + ';text-align:center;line-height:1.05;';
         slot.textContent = label;
       }
       container.appendChild(slot);
+    }
+  }
+
+  function renderRail(container, state) {
+    container.innerHTML = '';
+    for (var i = 0; i < TIERS.length; i++) {
+      var tier = TIERS[i];
+      var meta = TIER_META[tier];
+      var done = state.stamps >= tier;
+      var isNext = !done && state.next === tier;
+      var bg = done ? RAIL_TINTS[i] : (isNext ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)');
+      var border = done ? '#2b3a66' : (isNext ? '#9F8FEA' : '#cbd7ee');
+      var shadow = done ? '3px 4px 0 #2b3a66' : (isNext ? '3px 4px 0 rgba(159,143,234,0.45)' : 'none');
+      var fg = done ? '#2b3a66' : (isNext ? '#7a68d4' : '#a3b0cd');
+      var numBg = done ? '#2b3a66' : (isNext ? '#9F8FEA' : '#e6ecf7');
+      var numFg = (done || isNext) ? '#FCEC60' : '#8695ba';
+      var opacity = done ? 1 : (isNext ? 0.85 : 0.4);
+      var anim = isNext ? 'kr-wiggle 2.4s ease-in-out infinite' : 'none';
+
+      var item = document.createElement('div');
+      item.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 3px 8px;border-radius:16px;background:' + bg + ';border:2.5px solid ' + border + ';box-shadow:' + shadow + ';transform:rotate(' + RAIL_ROTS[i] + 'deg);';
+
+      var numBadge = document.createElement('div');
+      numBadge.style.cssText = 'position:absolute;top:-8px;left:-6px;background:' + numBg + ';color:' + numFg + ';border:2px solid #2b3a66;border-radius:999px;min-width:22px;padding:1px 5px;text-align:center;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:900;font-size:10px;line-height:1.5;';
+      numBadge.textContent = String(tier);
+      item.appendChild(numBadge);
+
+      var icon = document.createElement('img');
+      icon.src = RAIL_ICONS[i];
+      icon.alt = '';
+      icon.style.cssText = 'width:34px;height:34px;object-fit:contain;opacity:' + opacity + ';animation:' + anim + ';';
+      item.appendChild(icon);
+
+      var label = document.createElement('div');
+      label.style.cssText = 'font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:9px;line-height:1.15;text-align:center;color:' + fg + ';';
+      label.textContent = meta.short;
+      item.appendChild(label);
+
+      if (done) {
+        var check = document.createElement('div');
+        check.style.cssText = 'position:absolute;top:-8px;right:-6px;width:20px;height:20px;border-radius:50%;background:#4EC97A;border:2px solid #2b3a66;color:#FEFFE6;font-family:\'Neighbor\',system-ui,sans-serif;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1;';
+        check.textContent = '✓';
+        item.appendChild(check);
+      }
+
+      container.appendChild(item);
     }
   }
 
@@ -346,17 +451,16 @@
     $('view-signup').classList.add('hidden');
     $('view-card').classList.remove('hidden');
 
-    var goal = c.goal || GOAL;
-    var milestone = c.discount_at || MILESTONE;
-    var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var state = deriveState(c);
+    var stamps = state.stamps, goal = state.goal;
     var isFull = !!c.reward_ready;
-    var discountReady = !!c.discount_available;
 
     $('greet-name').textContent = c.name || 'there';
     $('stamp-counter').setAttribute('data-counter', String(stamps));
     $('stamp-counter').textContent = String(stamps);
 
-    renderSlots($('stamp-grid'), stamps, goal, milestone);
+    renderSlots($('stamp-grid'), stamps, goal, state.tiers);
+    renderRail($('treats-rail'), state);
 
     // reward (full) state
     $('reward-glow').classList.toggle('hidden', !isFull);
@@ -364,20 +468,37 @@
     $('reward-ticket').classList.toggle('hidden', !isFull);
     $('progress-line').classList.toggle('hidden', isFull);
 
-    // discount states
-    var isDiscountFresh = discountReady && stamps === milestone;
-    var isDiscountChip = discountReady && stamps > milestone;
-    $('discount-fresh').classList.toggle('hidden', !isDiscountFresh);
-    $('discount-chip').classList.toggle('hidden', !isDiscountChip);
+    // milestone fresh / chip states
+    $('milestone-fresh').classList.toggle('hidden', !state.fresh);
+    $('milestone-chip').classList.toggle('hidden', !state.chip);
+
+    if (state.fresh) {
+      var freshMeta = TIER_META[state.lastUnlocked];
+      $('milestone-fresh-icon').src = railIconFor(state.lastUnlocked);
+      $('milestone-fresh-ticket').textContent = freshMeta.ticket;
+      $('milestone-fresh-title').innerHTML = freshMeta.big + '<br>UNLOCKED!';
+      $('milestone-fresh-note').textContent = freshMeta.note;
+      $('milestone-fresh-title').style.color = freshMeta.accent;
+      $('milestone-fresh-edge').style.borderColor = freshMeta.soft;
+    }
+    if (state.chip) {
+      var chipMeta = TIER_META[state.lastUnlocked];
+      $('milestone-chip-icon').src = railIconFor(state.lastUnlocked);
+      $('milestone-chip-ticket').textContent = chipMeta.ticket;
+      $('milestone-chip-title').textContent = chipMeta.big + ' — STILL YOURS!';
+      $('milestone-chip-note').textContent = chipMeta.note;
+      $('milestone-chip-title').style.color = chipMeta.accent;
+      $('milestone-chip-edge').style.borderColor = chipMeta.soft;
+    }
 
     if (!isFull) {
       var text;
-      if (stamps < milestone) {
-        var r = milestone - stamps;
-        text = r === 1 ? "just 1 more till 10% off" : (r + " more till 10% off");
+      if (!state.next) {
+        text = 'card complete — claim your bingsu!';
       } else {
-        var remaining = goal - stamps;
-        text = remaining === 1 ? "just 1 more till your free drink" : (remaining + " more till your free drink");
+        var r = state.next - stamps;
+        var nextShort = TIER_META[state.next].short;
+        text = r === 1 ? ('just 1 more till ' + nextShort) : (r + ' more till ' + nextShort);
       }
       $('progress-text').textContent = text;
     }

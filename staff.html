@@ -31,6 +31,7 @@
   @keyframes kr-confetti { 0% { transform: translateY(-24px) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 82% { opacity: 1; } 100% { transform: translateY(430px) rotate(340deg); opacity: 0; } }
   @keyframes kr-twinkle { 0%,100% { transform: scale(0.55) rotate(0deg); opacity: 0.45; } 50% { transform: scale(1.15) rotate(22deg); opacity: 1; } }
   @keyframes kr-scanline { 0%, 100% { top: 8%; } 50% { top: 88%; } }
+  @keyframes kr-wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
   @keyframes kr-burst { 0% { transform: translate(0,0) rotate(0deg) scale(0.4); opacity: 0; } 12% { opacity: 1; transform: translate(calc(var(--tx,0px) * 0.3), calc(var(--ty,0px) * 0.3)) rotate(90deg) scale(1); } 100% { transform: translate(var(--tx,0px), calc(var(--ty,0px) + 46px)) rotate(320deg) scale(0.8); opacity: 0; } }
   .hidden { display: none !important; }
   /* html5-qrcode injects its own <video> (and a hidden scan <canvas>) into
@@ -184,31 +185,31 @@
               <div id="result-code" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#4a5a8a;"></div>
             </div>
             <div style="margin-left:auto;text-align:right;">
-              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:1;color:#2b3a66;"><span id="result-counter" data-counter="0">0</span><span style="font-size:18px;color:#4a5a8a;"> / 11</span></div>
+              <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:1;color:#2b3a66;"><span id="result-counter" data-counter="0">0</span><span style="font-size:18px;color:#4a5a8a;"> / 20</span></div>
               <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;color:#4a5a8a;">stamps</div>
             </div>
           </div>
 
           <!-- mini grid -->
-          <div id="result-grid" style="display:grid;grid-template-columns:repeat(11,1fr);gap:5px;"></div>
+          <div id="result-grid" style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;"></div>
         </div>
 
-        <!-- discount ready banner -->
-        <div id="result-discount-banner" class="hidden" style="background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:20px;padding:13px 16px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:17px;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),5px 6px 0 #2b3a66;">6 stamps — 10% off ready!</div>
+        <!-- milestone ready banner -->
+        <div id="result-discount-banner" class="hidden" style="background:#9F8FEA;border:2.5px solid #2b3a66;border-radius:20px;padding:13px 16px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:17px;color:#FEFFE6;text-shadow:1.5px 1.5px 0 rgba(43,58,102,0.5);box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),5px 6px 0 #2b3a66;"></div>
         <!-- full banner -->
-        <div id="result-full-banner" class="hidden" style="background:#FCEC60;border:2.5px solid #2b3a66;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.5),5px 6px 0 #2b3a66;animation:kr-bob 2.4s ease-in-out infinite;">card full — free drink ready!<img src="assets/sticker-blob-walk.png" alt="" style="height:28px;width:auto;object-fit:contain;flex:none;"></div>
+        <div id="result-full-banner" class="hidden" style="background:#FCEC60;border:2.5px solid #2b3a66;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:18px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.5),5px 6px 0 #2b3a66;animation:kr-bob 2.4s ease-in-out infinite;">card full — free bingsu ready!<img src="assets/sticker-blob-walk.png" alt="" style="height:28px;width:auto;object-fit:contain;flex:none;"></div>
 
         <div id="result-already-redeemed" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;">already redeemed today — come back tomorrow.</div>
 
         <button id="btn-add-stamp" data-action="add-stamp" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">+ add stamp</button>
 
-        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">apply 10% off</button>
+        <button id="btn-redeem-discount" data-action="redeem-discount" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;"></button>
 
-        <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free drink</button>
+        <button id="btn-redeem" data-action="redeem" class="hidden" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#9F8FEA;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.4),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">&#127873; redeem free bingsu</button>
 
         <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
 
-        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;">1 redemption per customer per day</div>
+        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;">each treat can only be claimed once per card</div>
       </div>
 
       <!-- ════════════════ REDEEMED CELEBRATION ════════════════ -->
@@ -222,9 +223,9 @@
         </div>
         <div>
           <div style="font-family:'Bukhari Script',cursive;font-size:24px;color:#4a5a8a;line-height:1;margin-bottom:6px;">yay bestie —</div>
-          <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:40px;line-height:0.92;letter-spacing:-0.01em;color:#2b3a66;">FREE DRINK<br>REDEEMED!</div>
+          <div id="redeemed-title" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:40px;line-height:0.92;letter-spacing:-0.01em;color:#2b3a66;">FREE BINGSU<br>REDEEMED!</div>
         </div>
-        <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;max-width:250px;line-height:1.45;"><span id="redeemed-name"></span>'s card is reset — the next 11 start now.</div>
+        <div style="font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;max-width:250px;line-height:1.45;"><span id="redeemed-name"></span>'s card is reset — the next 20 start now.</div>
         <button id="btn-redeem-done" data-action="redeem-done" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;max-width:300px;padding:16px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:16px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:8px;">scan next customer →</button>
       </div>
 
@@ -243,16 +244,42 @@
   var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
   var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  var GOAL = 11;
-  var MILESTONE = 6;
+  var GOAL = 20;
+  var TIERS = [6, 10, 16, 20];
 
-  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-croissant.png', 'assets/sticker-coffee.png', 'assets/sticker-boba.png', 'assets/sticker-blob-chill.png', 'assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png'];
-  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8', '#dcebf7', '#FCEC60', '#e6dff8', '#FCEC60', '#dcebf7', '#e6dff8', '#FCEC60', '#dcebf7'];
-  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8, 4, -6, 7];
+  // tier metadata — short/big come straight from the design spec
+  var TIER_META = {
+    6:  { short: '10% off',    big: '10% OFF' },
+    10: { short: 'free drink', big: 'FREE DRINK' },
+    16: { short: 'free merch', big: 'FREE MERCH' },
+    20: { short: 'free bingsu', big: 'FREE BINGSU' }
+  };
+
+  var STAMP_ICONS = ['assets/sticker-coffee.png', 'assets/sticker-croissant.png', 'assets/sticker-boba.png', 'assets/sticker-blob-walk.png', 'assets/sticker-blob-chill.png'];
+  var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8'];
+  var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8];
 
   var todayCount = 0;
   var toastTimer = null;
   var current = null; // currently-loaded card object, as returned by the RPCs
+
+  // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract
+  function deriveState(c) {
+    var goal = c.goal || GOAL;
+    var tiers = (c.tiers && c.tiers.length ? c.tiers.slice() : TIERS.slice()).sort(function (a, b) { return a - b; });
+    var claimed = c.claimed || [];
+    var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
+    var lastUnlocked = null, next = null;
+    for (var i = 0; i < tiers.length; i++) {
+      var t = tiers[i];
+      if (stamps >= t) {
+        if (t < goal && claimed.indexOf(t) === -1) lastUnlocked = t;
+      } else if (next === null) {
+        next = t;
+      }
+    }
+    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next };
+  }
 
   var html5QrCode = null;
   var qrScanning = false;
@@ -320,26 +347,28 @@
   }
 
   // ── slot rendering (shared) ───────────────────────────────────
-  function renderSlots(container, stamps, goal, milestone) {
+  function renderSlots(container, stamps, goal, tiers) {
     goal = goal || GOAL;
-    milestone = milestone || MILESTONE;
+    tiers = tiers || TIERS;
     container.innerHTML = '';
     for (var i = 0; i < goal; i++) {
       var filled = i < stamps;
+      var isMile = tiers.indexOf(i + 1) !== -1;
       var slot = document.createElement('div');
       slot.className = 'stamp-slot ' + (filled ? 'is-filled' : 'is-empty');
       slot.setAttribute('data-stamp-index', String(i));
       slot.setAttribute('data-filled', filled ? 'true' : 'false');
-      var edge = ((i + 1) === milestone || (i + 1) === goal) ? '#9F8FEA' : '#8695ba';
+      var edge = isMile ? '#9F8FEA' : '#8695ba';
       if (filled) {
-        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i] + ';border:2px solid #2b3a66;display:flex;align-items:center;justify-content:center;';
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + STAMP_BGS[i % STAMP_BGS.length] + ';border:2px solid #2b3a66;display:flex;align-items:center;justify-content:center;';
         var img = document.createElement('img');
-        img.src = STAMP_ICONS[i];
+        img.src = STAMP_ICONS[i % STAMP_ICONS.length];
         img.alt = 'stamp';
-        img.style.cssText = 'width:92%;height:92%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i] + 'deg);';
+        img.style.cssText = 'width:92%;height:92%;object-fit:contain;transform:rotate(' + STAMP_ROTS[i % STAMP_ROTS.length] + 'deg);';
         slot.appendChild(img);
       } else {
-        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.4);border:2px dashed ' + edge + ';';
+        var emptyBg = isMile ? 'rgba(159,143,234,0.22)' : 'rgba(255,255,255,0.4)';
+        slot.style.cssText = 'aspect-ratio:1;border-radius:50%;background:' + emptyBg + ';border:2px dashed ' + edge + ';';
       }
       container.appendChild(slot);
     }
@@ -348,24 +377,28 @@
   // ── result render ──────────────────────────────────────────────
   function renderResult() {
     if (!current) return;
-    var goal = current.goal || GOAL;
-    var milestone = current.discount_at || MILESTONE;
-    var stamps = Math.max(0, Math.min(goal, current.stamps || 0));
+    var state = deriveState(current);
+    var stamps = state.stamps, goal = state.goal;
     var isFull = !!current.reward_ready;
-    var discountReady = !!current.discount_available;
+    var milestoneReady = state.lastUnlocked !== null;
 
     $('result-name').textContent = current.name;
     $('result-code').textContent = current.member_code;
     $('result-counter').setAttribute('data-counter', String(stamps));
     $('result-counter').textContent = String(stamps);
 
-    renderSlots($('result-grid'), stamps, goal, milestone);
+    renderSlots($('result-grid'), stamps, goal, state.tiers);
 
-    $('result-discount-banner').classList.toggle('hidden', !discountReady);
+    if (milestoneReady) {
+      var meta = TIER_META[state.lastUnlocked];
+      $('result-discount-banner').textContent = state.lastUnlocked + ' stamps — ' + meta.short + ' ready!';
+      $('btn-redeem-discount').textContent = 'apply ' + meta.short;
+    }
+    $('result-discount-banner').classList.toggle('hidden', !milestoneReady);
     $('result-full-banner').classList.toggle('hidden', !isFull);
     $('result-already-redeemed').classList.add('hidden'); // only flashed transiently on a redeem error
 
-    $('btn-redeem-discount').classList.toggle('hidden', !discountReady);
+    $('btn-redeem-discount').classList.toggle('hidden', !milestoneReady);
     $('btn-redeem').classList.toggle('hidden', !isFull);
 
     $('btn-add-stamp').disabled = isFull;
@@ -462,19 +495,23 @@
 
   function handleRedeemDiscount() {
     if (!current) return;
-    supabaseClient.rpc('redeem_discount', { p_code: current.member_code }).then(function (res) {
+    var state = deriveState(current);
+    if (state.lastUnlocked === null) return;
+    var tier = state.lastUnlocked;
+    var meta = TIER_META[tier];
+    supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: tier }).then(function (res) {
       if (res.error) throw res.error;
       current = res.data[0];
       renderResult();
-      showToast('10% off applied');
+      showToast(meta.short + ' applied');
     }).catch(function (err) {
-      showToast((err && err.message) || 'could not apply discount');
+      showToast((err && err.message) || 'could not apply reward');
     });
   }
 
   function handleRedeem() {
     if (!current) return;
-    supabaseClient.rpc('redeem', { p_code: current.member_code }).then(function (res) {
+    supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: 20 }).then(function (res) {
       if (res.error) throw res.error;
       current = res.data[0];
       $('redeemed-name').textContent = current.name;
@@ -482,7 +519,7 @@
     }).catch(function (err) {
       var msg = (err && err.message) || 'could not redeem';
       showToast(msg);
-      if (/already redeemed/i.test(msg)) {
+      if (/already claimed/i.test(msg)) {
         $('result-already-redeemed').textContent = msg;
         $('result-already-redeemed').classList.remove('hidden');
       }
