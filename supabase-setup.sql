@@ -44,6 +44,32 @@ create table if not exists public.staff (
   added_at  timestamptz not null default now()
 );
 
+-- One row per stamp given, so daily/period totals can be reported.
+-- (customers.stamps is only the current card count; lifetime is a running
+-- total. Neither can answer "how many stamps did we give today".)
+create table if not exists public.stamp_events (
+  id           uuid primary key default gen_random_uuid(),
+  customer_id  uuid not null references public.customers(id) on delete cascade,
+  staff_uid    uuid,
+  created_at   timestamptz not null default now()
+);
+
+create index if not exists stamp_events_created_idx
+  on public.stamp_events (created_at desc);
+
+-- ── Lock every table: no direct client access ───────────────────────────
+-- RLS on with NO policies = anon/authenticated cannot read or write these
+-- tables at all. Everything goes through the SECURITY DEFINER functions
+-- below, which is where the staff checks live.
+alter table public.customers    enable row level security;
+alter table public.redemptions  enable row level security;
+alter table public.staff        enable row level security;
+alter table public.stamp_events enable row level security;
+revoke all on public.customers    from anon, authenticated;
+revoke all on public.redemptions  from anon, authenticated;
+revoke all on public.staff        from anon, authenticated;
+revoke all on public.stamp_events from anon, authenticated;
+
 -- ── Schema migration ────────────────────────────────────────────────────
 -- Each card has a cycle; milestone claims are scoped to the cycle they
 -- happened in, so a completed card starts everyone fresh.
@@ -93,6 +119,7 @@ drop function if exists public.customer_lookup(text);
 drop function if exists public.add_stamp(text);
 drop function if exists public.staff_lookup(text);
 drop function if exists public.claim_reward(text,int);
+drop function if exists public.stamps_today();
 drop function if exists public.krema_card(uuid);
 drop function if exists public.krema_claimed(uuid,timestamptz);
 drop function if exists public.krema_claimed(uuid,int);
@@ -250,6 +277,9 @@ begin
      set stamps = c.stamps + 1, lifetime = c.lifetime + 1
    where c.id = v_id;
 
+  insert into public.stamp_events (customer_id, staff_uid)
+  values (v_id, auth.uid());
+
   return query select * from public.krema_card(v_id);
 end $$;
 
@@ -306,6 +336,27 @@ begin
   return query select * from public.krema_card(v_id);
 end $$;
 
+-- ── Staff: today's totals (Manila time) ─────────────────────────────────
+--  stamps_given   — stamps handed out today
+--  customers_seen — distinct customers stamped today
+--  rewards_given  — milestone rewards claimed today
+create or replace function public.stamps_today()
+  returns table (stamps_given int, customers_seen int, rewards_given int)
+  language plpgsql security definer set search_path = public stable as $$
+declare v_today date := (now() at time zone 'Asia/Manila')::date;
+begin
+  if not is_staff() then raise exception 'staff only'; end if;
+  return query
+    select
+      (select count(*)::int from public.stamp_events e
+        where (e.created_at at time zone 'Asia/Manila')::date = v_today),
+      (select count(distinct e.customer_id)::int from public.stamp_events e
+        where (e.created_at at time zone 'Asia/Manila')::date = v_today),
+      (select count(*)::int from public.redemptions r
+        where r.tier is not null
+          and (r.redeemed_at at time zone 'Asia/Manila')::date = v_today);
+end $$;
+
 -- ── Backfill: normalise phones already stored in mixed formats ──────────
 -- Runs after krema_norm_phone exists. Same person can't end up with two
 -- cards, and lookup works whatever format they type. Skipped for any row
@@ -328,6 +379,7 @@ revoke all on function public.customer_lookup(text)      from public;
 revoke all on function public.add_stamp(text)            from public;
 revoke all on function public.claim_reward(text,int)     from public;
 revoke all on function public.staff_lookup(text)         from public;
+revoke all on function public.stamps_today()             from public;
 
 grant execute on function public.signup_customer(text,text) to anon, authenticated;
 grant execute on function public.get_card(text)             to anon, authenticated;
@@ -335,6 +387,7 @@ grant execute on function public.customer_lookup(text)      to anon, authenticat
 grant execute on function public.add_stamp(text)            to authenticated;
 grant execute on function public.claim_reward(text,int)     to authenticated;
 grant execute on function public.staff_lookup(text)         to authenticated;
+grant execute on function public.stamps_today()             to authenticated;
 
 -- ════════════════════════════════════════════════════════════════════════
 --  Staff accounts: only uids in public.staff can stamp or claim rewards.

@@ -262,7 +262,6 @@
   var STAMP_BGS = ['#FCEC60', '#dcebf7', '#e6dff8'];
   var STAMP_ROTS = [-7, 5, -3, 8, -5, 3, 6, -8];
 
-  var todayCount = 0;
   var toastTimer = null;
   var current = null; // currently-loaded card object, as returned by the RPCs
 
@@ -297,7 +296,7 @@
     ['login', 'scan', 'result', 'redeemed'].forEach(function (v) {
       $('view-' + v).classList.toggle('hidden', v !== name);
     });
-    if (name === 'scan') startScanner(); else stopScanner();
+    if (name === 'scan') { startScanner(); refreshTodayCount(); } else stopScanner();
   }
 
   // ── camera / QR scanner (html5-qrcode renders into #qr-reader-region,
@@ -505,13 +504,20 @@
   }
 
   // ── stamp / redeem actions ─────────────────────────────────────
+  // Real server-side total (Manila day), not a per-session tally.
+  function refreshTodayCount() {
+    supabaseClient.rpc('stamps_today').then(function (res) {
+      if (res.error || !res.data || !res.data[0]) return;
+      $('today-count').textContent = String(res.data[0].stamps_given);
+    }).catch(function () { /* non-critical */ });
+  }
+
   function handleAddStamp() {
     if (!current) return;
     supabaseClient.rpc('add_stamp', { p_code: current.member_code }).then(function (res) {
       if (res.error) throw res.error;
       current = res.data[0];
-      todayCount++;
-      $('today-count').textContent = String(todayCount);
+      refreshTodayCount();
       renderResult();
       showToast('+1 stamp for ' + current.name + ' ✓');
     }).catch(function (err) {
