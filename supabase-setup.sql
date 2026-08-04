@@ -96,6 +96,13 @@ alter table public.customers
 alter table public.redemptions
   add column if not exists tier int;
 
+-- Owner/staff test cards. Excluded from stamps_today() and the reporting
+-- queries so testing the flow never corrupts the day's real numbers.
+-- Deliberately NOT part of the card shape — customers never see it, and it
+-- changes nothing about how a card behaves.
+alter table public.customers
+  add column if not exists is_test boolean not null default false;
+
 -- Cycles are identified by an explicit counter, NOT by timestamp.
 -- (Timestamps fail: claiming the final tier inserts the redemption and moves
 -- the cycle in ONE transaction, and now() is the transaction time, so both get
@@ -412,6 +419,10 @@ end $$;
 --  stamps_given   — stamps handed out today
 --  customers_seen — distinct customers stamped today
 --  rewards_given  — milestone rewards claimed today
+--
+--  Cards flagged customers.is_test are excluded, so the owner can stamp a
+--  test card freely without corrupting the day's numbers. Waived tiers are
+--  excluded from rewards_given too — nothing was handed over.
 create or replace function public.stamps_today()
   returns table (stamps_given int, customers_seen int, rewards_given int)
   language plpgsql security definer set search_path = public stable as $$
@@ -421,11 +432,18 @@ begin
   return query
     select
       (select count(*)::int from public.stamp_events e
-        where (e.created_at at time zone 'Asia/Manila')::date = v_today),
+         join public.customers c on c.id = e.customer_id
+        where not c.is_test
+          and (e.created_at at time zone 'Asia/Manila')::date = v_today),
       (select count(distinct e.customer_id)::int from public.stamp_events e
-        where (e.created_at at time zone 'Asia/Manila')::date = v_today),
+         join public.customers c on c.id = e.customer_id
+        where not c.is_test
+          and (e.created_at at time zone 'Asia/Manila')::date = v_today),
       (select count(*)::int from public.redemptions r
-        where r.tier is not null
+         join public.customers c on c.id = r.customer_id
+        where not c.is_test
+          and r.tier is not null
+          and coalesce(r.kind, '') <> 'waived'
           and (r.redeemed_at at time zone 'Asia/Manila')::date = v_today);
 end $$;
 
