@@ -125,6 +125,25 @@
           <a id="link-logout-scan" data-action="logout" href="#" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;color:#8695ba;border-bottom:1px dashed #8695ba;padding-bottom:1px;">log out</a>
         </div>
 
+        <!-- today's totals — filled by refreshToday() via the stamps_today() RPC -->
+        <div id="today-bar" class="hidden" style="display:flex;align-items:stretch;gap:8px;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:18px;padding:11px 8px;box-shadow:4px 4px 0 #FCEC60,7px 9px 0 #2b3a66;">
+          <div style="flex:1;text-align:center;">
+            <div id="today-stamps" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:24px;line-height:1;color:#2b3a66;">–</div>
+            <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#4a5a8a;margin-top:3px;">stamps</div>
+          </div>
+          <div style="width:2px;background:#dfe6f2;border-radius:2px;"></div>
+          <div style="flex:1;text-align:center;">
+            <div id="today-customers" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:24px;line-height:1;color:#2b3a66;">–</div>
+            <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#4a5a8a;margin-top:3px;">customers</div>
+          </div>
+          <div style="width:2px;background:#dfe6f2;border-radius:2px;"></div>
+          <div style="flex:1;text-align:center;">
+            <div id="today-rewards" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:24px;line-height:1;color:#2b3a66;">–</div>
+            <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#4a5a8a;margin-top:3px;">rewards</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:-10px;font-family:'futura-100-book',system-ui,sans-serif;font-size:10px;font-style:italic;color:#8695ba;">today · resets midnight Manila</div>
+
         <!-- camera preview -->
         <div id="camera-preview" data-camera="" style="position:relative;width:100%;aspect-ratio:1;background:#2b3a66;border:3px solid #2b3a66;border-radius:26px;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,0.12),7px 9px 0 #2b3a66;display:flex;align-items:center;justify-content:center;">
           <div id="qr-reader-region" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden;"></div>
@@ -163,7 +182,6 @@
 
         <div id="scan-not-found" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;">no customer found yet — ask them to join on rewards.html first.</div>
 
-        <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#4a5a8a;">stamps given today: <b id="today-count" style="font-style:normal;color:#2b3a66;">0</b></div>
       </div>
 
       <!-- ════════════════ RESULT ════════════════ -->
@@ -531,12 +549,20 @@
   }
 
   // ── stamp / redeem actions ─────────────────────────────────────
-  // Real server-side total (Manila day), not a per-session tally.
+  // Real server-side totals for the Manila day, not a per-session tally.
+  // stamps_today() is is_staff()-gated, so this only resolves for a barista.
+  // Stays hidden on failure rather than showing a wrong or stale number.
   function refreshTodayCount() {
     supabaseClient.rpc('stamps_today').then(function (res) {
-      if (res.error || !res.data || !res.data[0]) return;
-      $('today-count').textContent = String(res.data[0].stamps_given);
-    }).catch(function () { /* non-critical */ });
+      if (res.error || !res.data || !res.data[0]) throw new Error('no data');
+      var t = res.data[0];
+      $('today-stamps').textContent    = String(t.stamps_given);
+      $('today-customers').textContent = String(t.customers_seen);
+      $('today-rewards').textContent   = String(t.rewards_given);
+      $('today-bar').classList.remove('hidden');
+    }).catch(function () {
+      $('today-bar').classList.add('hidden');   // non-critical — never block scanning
+    });
   }
 
   function handleAddStamp() {
@@ -564,6 +590,7 @@
     supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: tier }).then(function (res) {
       if (res.error) throw res.error;
       current = res.data[0];
+      refreshTodayCount();          // rewards_given just changed
       renderResult();
       showToast(meta.short + ' applied');
     }).catch(function (err) {
