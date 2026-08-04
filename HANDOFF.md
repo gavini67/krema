@@ -38,7 +38,7 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
   | 16 | free merch  | pick a piece of krema merch |
   | 20 | free bingsu | solo · regular flavors only |
 - Claiming **tier 20** completes the card → server resets stamps to 0 and starts a new cycle.
-- **Tier 20 is refused while any reached lower tier is still unclaimed** (fixed 2026-08-04 — before this, completing the card silently discarded them). Staff either hand the pending rewards over, or skip them explicitly via `waive_reward(code, tier)`, which records `kind='waived'` so reporting can tell a skip from a real handover. `staff.html` prompts before doing this.
+- **Tier 20 is refused while any reached lower tier is still unclaimed** (fixed + verified live on a test card 2026-08-04 — before this, completing the card silently discarded them). Staff either hand the pending rewards over, or skip them explicitly via `waive_reward(code, tier)`, which records `kind='waived'` so reporting can tell a skip from a real handover. `staff.html` prompts before doing this.
 - "Card valid for 2 months" is **displayed only, NOT enforced** (`expires_at` is returned for the UI; nothing expires server-side — deliberate choice).
 - The old *1-redeem-per-day* rule is gone; once-per-tier-per-cycle replaces it (stronger).
 - Only **staff** can add stamps / claim rewards. Enforced server-side (see §5).
@@ -106,7 +106,11 @@ Three things the planning turned up that must be respected:
 - [x] **Phase 2 — staff gate + session isolation. Shipped 2026-08-04.**
   - `staff.html` → `storageKey: 'krema-staff-auth'`; `rewards.html` → `'krema-customer-auth'` + `detectSessionInUrl: false`. **Changing the staff key logs the current barista out once — expected, just log back in.**
   - `staff.html` now calls `requireStaff()` (an `is_staff` RPC) on **both** the fresh-login and restore-session paths; a non-staff account is signed straight back out with *"that's not a staff account"*. Server-side enforcement was already correct — this stops a customer account from landing in a barista UI where every button fails.
+- [x] **Reporting.** `staff.html` shows a today bar (stamps / customers / rewards) from `stamps_today()`. `customers.is_test` excludes owner test cards from the totals; `KREMA-0585` is flagged. Waived tiers don't count as rewards given.
 - [ ] **Phase 0 — owner setup. BLOCKS Phases 3–4.** Not started.
+      Brevo account · SPF+DKIM+DMARC at GoDaddy · Supabase SMTP → Brevo · CAPTCHA keys ·
+      auth email templates switched to `{{ .Token }}` · rate limit ~30/hr ·
+      confirm min password length 6 + "No required characters" · export customers CSV.
 - [ ] **Phase 3 — customer accounts.** Blocked on Phase 0.
 - [ ] **Phase 4 — newsletter.** Blocked on Phase 0.
 
