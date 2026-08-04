@@ -84,6 +84,17 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
 Latest commit: `478ad8b` (QR fix). Recent: `e4c6a71` supabase wire · `2b21e8c` rewards frontend · `1054835` mobile nav.
 
 ## 6. State of play — PENDING / TODO
+
+### ▶ NEXT UP (approved 2026-08-04): customer accounts + newsletter
+Full approved plan: **`docs/superpowers/plans/2026-08-04-customer-accounts-and-newsletter.md`** — read it before starting.
+
+Two features: email + **6-digit PIN** customer login (with "forgot PIN" by email), and a working newsletter (the footer form in `index.html` is currently dead — it only calls `preventDefault()`).
+
+Three things the planning turned up that must be respected:
+1. **Card-hijack hole.** `customer_lookup(phone)` *returns the member code*, so "code + phone" is only one factor — anyone knowing a phone could permanently claim a card. **Phase 1 hardening must ship before accounts.**
+2. **Session clash.** `rewards.html` and `staff.html` share one origin and one default Supabase auth storage key, so a customer logging in would log the barista out. Each client needs its own `storageKey`.
+3. **Phase 0 is owner work and blocks everything** — Brevo account, SPF/DKIM/DMARC at GoDaddy, Supabase custom SMTP, CAPTCHA, and switching the auth email templates to `{{ .Token }}` (OTP, not magic links). None of it is testable without working email.
+
 - [ ] **Apply the RPC ambiguity fix for `redeem` + `redeem_discount` in the live DB.** On 2026-07-14 `add_stamp`/`redeem`/`redeem_discount` were found to throw `column reference "stamps" is ambiguous` — the `SELECT … INTO` (and `add_stamp`'s `UPDATE`) referenced bare column names that collide with the `RETURNS TABLE` output columns. Fix = qualify every ref with the `c.` alias (done in `supabase-setup.sql`). **`add_stamp` was re-run in Supabase and works; `redeem` + `redeem_discount` still need their corrected definitions run in the SQL Editor** (editing the file does NOT update the live DB — you must `create or replace` in Supabase). Verify a function's live body with `select pg_get_functiondef('public.redeem(text)'::regprocedure);`.
 - [x] **QR blank-box bug FIXED** — was the `qrcode@1.5.4` 404 (see §7); repinned to `1.5.1`. Still worth a real phone camera-scan on the live site to confirm decode.
 - [x] **Staff auth confirmed** — `keionchua@gmail.com` is in `public.staff` (§4).
@@ -94,6 +105,10 @@ Latest commit: `478ad8b` (QR fix). Recent: `e4c6a71` supabase wire · `2b21e8c` 
 
 ## 7. GOTCHAS / house rules (important)
 - **CDN PINNING — never use `@latest` / unpinned.** On 2026-06-26 an unpinned `@babel/standalone` auto-upgraded to Babel 8 and blanked the whole site (Babel 8 injects ES imports illegal in `text/babel`). Pinned versions in use: Babel `7.26.4`, React/ReactDOM `18.3.1`, `@supabase/supabase-js@2.45.4`, `html5-qrcode@2.3.8`, `qrcode@1.5.1`.
+- **FROZEN Supabase Auth settings** (same tier of care as the CDN pins — changing either breaks every existing customer PIN and the reset flow):
+  - **Minimum password length = 6.** Supabase's floor; a 4-digit PIN is impossible. The customer PIN *is* the Auth password.
+  - **Password Requirements = "No required characters."** Flipping this to "letters and digits" makes numeric PINs unsettable.
+- **`is_staff()` is the only thing between a customer account and staff powers.** Once customers are Auth users, `authenticated` is an untrusted public role. **Never remove** the `if not is_staff() then raise` line at the top of `add_stamp`, `claim_reward`, `staff_lookup`, `stamps_today` — and any new RPC granted to `authenticated` needs the same check.
   - ⚠️ **`qrcode` must be `1.5.1`, NOT 1.5.3/1.5.4.** The maintainer removed the browser bundle `build/qrcode.min.js` after 1.5.1 — on 1.5.3/1.5.4 that path 404s, `window.QRCode` never loads, and the customer card shows a **blank white QR box**. `1.5.1` ships the UMD build with the same `QRCode.toCanvas` API. (Fixed 2026-07-14.)
 - **Claude Design exports regress the same fixes every time.** When applying a new `*.dc.html` / design export over `index.html`, it re-exports from an older base and wipes: (1) featuredBingsu → resets to "Mango Magic" (should be **Mango Graham**, +price/desc), (2) community Instagram → fabricates FAKE posts (real handles: `rib.onn_`, `black.bird_05`, `chayincafes`, `thefoodieatty`, `mitchyko78`, `meagannochii` with real `instagram.com/p/...` permalinks) — and hard-codes `showEmbed = false`, forcing every slot to the branded fallback card (revert to `post.permalink && !failed[i]`), (3) mobile ticker → resets 20s→40s, (4) drops the `overscroll-behavior-x:none` + IG-iframe clamp. Always `git diff` a fresh export and treat everything except the intended change as a regression to revert.
 - **Preview/screenshot tools are network-isolated** — they can't load Google Fonts, jsdelivr, Supabase, or Instagram embeds, so screenshots hang and backend calls fail *in the tool*. Verify via DOM checks or on the live site / a real browser.
