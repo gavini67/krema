@@ -268,7 +268,13 @@
   // ── Supabase (public-safe anon key) ─────────────────────────────
   var SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
-  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Own storage key so a customer signing in here never touches the barista's
+  // session on the same device (staff.html uses 'krema-staff-auth').
+  // detectSessionInUrl: false — PIN reset uses a 6-digit OTP, not a magic
+  // link, and this page parses its own ?c=CODE.
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { storageKey: 'krema-customer-auth', detectSessionInUrl: false }
+  });
 
   var MEMBER_KEY = 'krema_member_code';
   var GOAL = 20;

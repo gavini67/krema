@@ -95,6 +95,20 @@ Three things the planning turned up that must be respected:
 2. **Session clash.** `rewards.html` and `staff.html` share one origin and one default Supabase auth storage key, so a customer logging in would log the barista out. Each client needs its own `storageKey`.
 3. **Phase 0 is owner work and blocks everything** — Brevo account, SPF/DKIM/DMARC at GoDaddy, Supabase custom SMTP, CAPTCHA, and switching the auth email templates to `{{ .Token }}` (OTP, not magic links). None of it is testable without working email.
 
+**Progress:**
+- [x] **Phase 1 — security hardening. APPLIED TO THE LIVE DB 2026-08-04 and verified.** Migration: `docs/migrations/2026-08-04-phase1-hardening.sql`.
+  - `signup_customer` now requires the **name to match** when the phone is already on a card. This was the sharpest hijack vector — sharper than `customer_lookup`, since it needed no second step: typing a stranger's number returned their card with the member code included.
+  - The internal helpers (`krema_goal/tiers/validity/norm_phone/new_code/claimed/card`) are revoked from `public, anon, authenticated`. Postgres grants EXECUTE to PUBLIC by default and PostgREST publishes every `public` function as an RPC, so they were all reachable by anon over HTTP. (Severity was lower than the plan implies — `krema_card(uuid)` needs a UUIDv4 that no anon RPC ever returns — but `authenticated` becomes untrusted once customers have accounts, so this is required either way.)
+  - `is_staff()` → revoked from anon, granted to `authenticated` (staff.html needs it for the Phase 2 gate).
+  - `card_claim_events` audit table added for Phase 3.
+  - ⚠️ Side effect: a returning customer who types their name differently than stored (`Gavin C` vs `Gavin`) now gets an error instead of their card. Case and whitespace are normalised; anything else is a real mismatch.
+- [x] **Phase 2 — staff gate + session isolation. Shipped 2026-08-04.**
+  - `staff.html` → `storageKey: 'krema-staff-auth'`; `rewards.html` → `'krema-customer-auth'` + `detectSessionInUrl: false`. **Changing the staff key logs the current barista out once — expected, just log back in.**
+  - `staff.html` now calls `requireStaff()` (an `is_staff` RPC) on **both** the fresh-login and restore-session paths; a non-staff account is signed straight back out with *"that's not a staff account"*. Server-side enforcement was already correct — this stops a customer account from landing in a barista UI where every button fails.
+- [ ] **Phase 0 — owner setup. BLOCKS Phases 3–4.** Not started.
+- [ ] **Phase 3 — customer accounts.** Blocked on Phase 0.
+- [ ] **Phase 4 — newsletter.** Blocked on Phase 0.
+
 - [ ] **Apply the RPC ambiguity fix for `redeem` + `redeem_discount` in the live DB.** On 2026-07-14 `add_stamp`/`redeem`/`redeem_discount` were found to throw `column reference "stamps" is ambiguous` — the `SELECT … INTO` (and `add_stamp`'s `UPDATE`) referenced bare column names that collide with the `RETURNS TABLE` output columns. Fix = qualify every ref with the `c.` alias (done in `supabase-setup.sql`). **`add_stamp` was re-run in Supabase and works; `redeem` + `redeem_discount` still need their corrected definitions run in the SQL Editor** (editing the file does NOT update the live DB — you must `create or replace` in Supabase). Verify a function's live body with `select pg_get_functiondef('public.redeem(text)'::regprocedure);`.
 - [x] **QR blank-box bug FIXED** — was the `qrcode@1.5.4` 404 (see §7); repinned to `1.5.1`. Still worth a real phone camera-scan on the live site to confirm decode.
 - [x] **Staff auth confirmed** — `keionchua@gmail.com` is in `public.staff` (§4).

@@ -245,7 +245,12 @@
   // ── Supabase (public-safe anon key) ─────────────────────────────
   var SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
-  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Own storage key: staff.html and rewards.html share an origin, so with the
+  // default key a customer signing in on the counter iPad would silently
+  // replace the barista's session and log them out mid-shift.
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { storageKey: 'krema-staff-auth' }
+  });
 
   var GOAL = 20;
   var TIERS = [6, 10, 16, 20];
@@ -440,10 +445,32 @@
 
     supabaseClient.auth.signInWithPassword({ email: email, password: password }).then(function (res) {
       if (res.error) throw res.error;
+      return requireStaff();
+    }).then(function () {
       showView('scan');
-    }).catch(function () {
-      $('login-error').textContent = 'wrong email or password';
+    }).catch(function (err) {
+      $('login-error').textContent = (err && err.notStaff)
+        ? "that's not a staff account"
+        : 'wrong email or password';
       $('login-error').classList.remove('hidden');
+    });
+  }
+
+  // A valid Supabase session is NOT enough — once customers have accounts,
+  // `authenticated` is an untrusted public role. Every stamp/claim RPC already
+  // enforces is_staff() server-side, so a customer could never actually stamp;
+  // without this check they'd just land in a barista UI where every button
+  // fails "staff only", which looks broken. Signs them back out instead.
+  function requireStaff() {
+    return supabaseClient.rpc('is_staff').then(function (res) {
+      if (res.error) throw res.error;
+      if (res.data !== true) {
+        return supabaseClient.auth.signOut().catch(function () {}).then(function () {
+          var e = new Error('not staff');
+          e.notStaff = true;
+          throw e;
+        });
+      }
     });
   }
 
@@ -596,9 +623,14 @@
     window.addEventListener('pagehide', stopScanner);
     window.addEventListener('beforeunload', stopScanner);
 
+    // Same gate on the restore-session path, not just fresh logins — a stored
+    // non-staff session must not walk straight into the barista UI.
     supabaseClient.auth.getSession().then(function (res) {
       var session = res && res.data ? res.data.session : null;
-      showView(session ? 'scan' : 'login');
+      if (!session) { showView('login'); return; }
+      return requireStaff().then(function () {
+        showView('scan');
+      });
     }).catch(function () {
       showView('login');
     });
