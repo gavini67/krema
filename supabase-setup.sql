@@ -57,18 +57,35 @@ create table if not exists public.stamp_events (
 create index if not exists stamp_events_created_idx
   on public.stamp_events (created_at desc);
 
+-- One row per card claim / unlink, so "who secured this card, and when" is
+-- answerable after the fact. Needed by claim_card + unlink_card (Phase 3):
+-- an unlink is a support action that moves a card between accounts, and that
+-- must leave a trail.
+create table if not exists public.card_claim_events (
+  id           uuid primary key default gen_random_uuid(),
+  customer_id  uuid not null references public.customers(id) on delete cascade,
+  user_id      uuid,                                   -- auth.users id; null after account deletion
+  action       text not null check (action in ('claim','unlink')),
+  created_at   timestamptz not null default now()
+);
+
+create index if not exists card_claim_events_customer_idx
+  on public.card_claim_events (customer_id, created_at desc);
+
 -- ── Lock every table: no direct client access ───────────────────────────
 -- RLS on with NO policies = anon/authenticated cannot read or write these
 -- tables at all. Everything goes through the SECURITY DEFINER functions
 -- below, which is where the staff checks live.
-alter table public.customers    enable row level security;
-alter table public.redemptions  enable row level security;
-alter table public.staff        enable row level security;
-alter table public.stamp_events enable row level security;
-revoke all on public.customers    from anon, authenticated;
-revoke all on public.redemptions  from anon, authenticated;
-revoke all on public.staff        from anon, authenticated;
-revoke all on public.stamp_events from anon, authenticated;
+alter table public.customers         enable row level security;
+alter table public.redemptions       enable row level security;
+alter table public.staff             enable row level security;
+alter table public.stamp_events      enable row level security;
+alter table public.card_claim_events enable row level security;
+revoke all on public.customers         from anon, authenticated;
+revoke all on public.redemptions       from anon, authenticated;
+revoke all on public.staff             from anon, authenticated;
+revoke all on public.stamp_events      from anon, authenticated;
+revoke all on public.card_claim_events from anon, authenticated;
 
 -- ── Schema migration ────────────────────────────────────────────────────
 -- Each card has a cycle; milestone claims are scoped to the cycle they
@@ -205,7 +222,7 @@ create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_phone text;
+declare v_id uuid; v_phone text; v_name text;
 begin
   p_name := trim(p_name);
   if length(p_name) < 1 then raise exception 'please enter your name'; end if;
@@ -216,12 +233,20 @@ begin
     raise exception 'enter a valid mobile number, e.g. 0917 123 4567';
   end if;
 
-  select c.id into v_id from public.customers c where c.phone = v_phone;
+  select c.id, c.name into v_id, v_name
+    from public.customers c where c.phone = v_phone;
 
   if v_id is null then
     insert into public.customers (member_code, name, phone, stamps, lifetime)
     values (krema_new_code(), p_name, v_phone, 0, 0)     -- empty card
     returning id into v_id;
+  elsif lower(trim(v_name)) is distinct from lower(p_name) then
+    -- Phone is already on a card and the name doesn't match. Without this,
+    -- typing a stranger's number returned THEIR card — member code included,
+    -- and that code is the card's only credential. Same generic message for
+    -- "wrong name" as the UI shows for a taken number: don't confirm to a
+    -- guesser whether they got the name right.
+    raise exception 'that number''s already on a card — tap "already have a card?"';
   end if;
 
   return query select * from public.krema_card(v_id);
@@ -373,6 +398,25 @@ update public.customers c
       where c2.id <> c.id and c2.phone = public.krema_norm_phone(c.phone));
 
 -- ── Permissions ─────────────────────────────────────────────────────────
+-- Postgres grants EXECUTE on every new function to PUBLIC by default, and
+-- PostgREST exposes anything in `public` as an RPC. So the internal helpers
+-- below were all callable by anon over HTTP until this block existed.
+-- Revoking them does NOT break the RPCs that call them: every caller is
+-- SECURITY DEFINER, so the inner calls run with the owner's rights, and the
+-- owner keeps EXECUTE regardless.
+revoke all on function public.krema_goal()            from public, anon, authenticated;
+revoke all on function public.krema_tiers()           from public, anon, authenticated;
+revoke all on function public.krema_validity()        from public, anon, authenticated;
+revoke all on function public.krema_norm_phone(text)  from public, anon, authenticated;
+revoke all on function public.krema_new_code()        from public, anon, authenticated;
+revoke all on function public.krema_claimed(uuid,int) from public, anon, authenticated;
+revoke all on function public.krema_card(uuid)        from public, anon, authenticated;
+
+-- is_staff() is the one helper a client legitimately calls: staff.html needs
+-- it to gate its own UI (Phase 2). Authenticated only — never anon.
+revoke all on function public.is_staff() from public, anon;
+grant execute on function public.is_staff() to authenticated;
+
 revoke all on function public.signup_customer(text,text) from public;
 revoke all on function public.get_card(text)             from public;
 revoke all on function public.customer_lookup(text)      from public;
