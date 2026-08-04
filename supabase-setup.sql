@@ -445,7 +445,16 @@ update public.customers c
       where c2.id <> c.id and c2.phone = public.krema_norm_phone(c.phone));
 
 -- ── Permissions ─────────────────────────────────────────────────────────
--- Postgres grants EXECUTE on every new function to PUBLIC by default, and
+-- ⚠️ ALWAYS revoke from `anon` EXPLICITLY, never just `public`.
+-- Supabase ships default privileges that grant EXECUTE on every new function
+-- in this schema DIRECTLY to anon/authenticated:
+--     alter default privileges in schema public
+--       grant all on functions to anon, authenticated, service_role;
+-- So `revoke ... from public` leaves anon's own grant untouched, and every
+-- `create or replace function` re-applies it. After adding or replacing ANY
+-- function, re-run the audit in docs/migrations/2026-08-04-fix-anon-grants.sql.
+--
+-- Postgres also grants EXECUTE on every new function to PUBLIC by default, and
 -- PostgREST exposes anything in `public` as an RPC. So the internal helpers
 -- below were all callable by anon over HTTP until this block existed.
 -- Revoking them does NOT break the RPCs that call them: every caller is
@@ -467,11 +476,11 @@ grant execute on function public.is_staff() to authenticated;
 revoke all on function public.signup_customer(text,text) from public;
 revoke all on function public.get_card(text)             from public;
 revoke all on function public.customer_lookup(text)      from public;
-revoke all on function public.add_stamp(text)            from public;
-revoke all on function public.claim_reward(text,int)     from public;
-revoke all on function public.waive_reward(text,int)     from public;
-revoke all on function public.staff_lookup(text)         from public;
-revoke all on function public.stamps_today()             from public;
+revoke all on function public.add_stamp(text)            from public, anon;
+revoke all on function public.claim_reward(text,int)     from public, anon;
+revoke all on function public.waive_reward(text,int)     from public, anon;
+revoke all on function public.staff_lookup(text)         from public, anon;
+revoke all on function public.stamps_today()             from public, anon;
 
 grant execute on function public.signup_customer(text,text) to anon, authenticated;
 grant execute on function public.get_card(text)             to anon, authenticated;

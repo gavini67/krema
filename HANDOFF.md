@@ -123,6 +123,15 @@ Three things the planning turned up that must be respected:
 - **FROZEN Supabase Auth settings** (same tier of care as the CDN pins — changing either breaks every existing customer PIN and the reset flow):
   - **Minimum password length = 6.** Supabase's floor; a 4-digit PIN is impossible. The customer PIN *is* the Auth password.
   - **Password Requirements = "No required characters."** Flipping this to "letters and digits" makes numeric PINs unsettable.
+- **Revoking from `public` does NOT revoke from `anon`.** Supabase ships `alter default privileges in schema public grant all on functions to anon, authenticated, service_role`, so anon holds its *own* EXECUTE grant on every function — and **every `create or replace function` re-applies it.** Always `revoke ... from public, anon` on staff-only RPCs, and re-run the audit in `docs/migrations/2026-08-04-fix-anon-grants.sql` after any migration that adds or replaces a function:
+  ```sql
+  select p.proname,
+         has_function_privilege('anon', p.oid, 'execute') as anon,
+         has_function_privilege('authenticated', p.oid, 'execute') as authed
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' order by 2 desc, 1;
+  ```
+  `anon` must be true for **only** `get_card`, `signup_customer`, `customer_lookup`. (Caught 2026-08-04: `waive_reward` shipped anon-executable because the revoke said `from public` alone.)
 - **`is_staff()` is the only thing between a customer account and staff powers.** Once customers are Auth users, `authenticated` is an untrusted public role. **Never remove** the `if not is_staff() then raise` line at the top of `add_stamp`, `claim_reward`, `staff_lookup`, `stamps_today` — and any new RPC granted to `authenticated` needs the same check.
   - ⚠️ **`qrcode` must be `1.5.1`, NOT 1.5.3/1.5.4.** The maintainer removed the browser bundle `build/qrcode.min.js` after 1.5.1 — on 1.5.3/1.5.4 that path 404s, `window.QRCode` never loads, and the customer card shows a **blank white QR box**. `1.5.1` ships the UMD build with the same `QRCode.toCanvas` API. (Fixed 2026-07-14.)
 - **Claude Design exports regress the same fixes every time.** When applying a new `*.dc.html` / design export over `index.html`, it re-exports from an older base and wipes: (1) featuredBingsu → resets to "Mango Magic" (should be **Mango Graham**, +price/desc), (2) community Instagram → fabricates FAKE posts (real handles: `rib.onn_`, `black.bird_05`, `chayincafes`, `thefoodieatty`, `mitchyko78`, `meagannochii` with real `instagram.com/p/...` permalinks) — and hard-codes `showEmbed = false`, forcing every slot to the branded fallback card (revert to `post.permalink && !failed[i]`), (3) mobile ticker → resets 20s→40s, (4) drops the `overscroll-behavior-x:none` + IG-iframe clamp. Always `git diff` a fresh export and treat everything except the intended change as a regression to revert.
