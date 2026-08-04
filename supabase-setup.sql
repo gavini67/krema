@@ -315,7 +315,7 @@ create or replace function public.claim_reward(p_code text, p_tier int)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_stamps int; v_seq int;
+declare v_id uuid; v_stamps int; v_seq int; v_pending text;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
   if not (p_tier = any (krema_tiers())) then raise exception 'unknown reward'; end if;
@@ -326,6 +326,21 @@ begin
   if v_stamps < p_tier then raise exception 'not enough stamps yet'; end if;
   if p_tier = any (krema_claimed(v_id, v_seq)) then
     raise exception 'already claimed';
+  end if;
+
+  -- Completing the card resets the cycle, which permanently discards any
+  -- reward the customer earned but never collected. Refuse until every
+  -- reached lower tier is either claimed or explicitly waived by staff
+  -- (waive_reward), so nothing is lost by a mis-tap at the counter.
+  if p_tier = krema_goal() then
+    select string_agg(t::text, ', ' order by t) into v_pending
+      from unnest(krema_tiers()) t
+     where t < krema_goal()
+       and t <= v_stamps
+       and not (t = any (krema_claimed(v_id, v_seq)));
+    if v_pending is not null then
+      raise exception 'unclaimed rewards at % stamps — claim or skip them first', v_pending;
+    end if;
   end if;
 
   -- Stamped with the cycle being claimed against, so completing the card
@@ -341,6 +356,38 @@ begin
            cycle_started_at = now(), discount_available = false
      where c.id = v_id;
   end if;
+
+  return query select * from public.krema_card(v_id);
+end $$;
+
+-- ── Staff: skip an unclaimed reward ─────────────────────────────────────
+--  The customer doesn't want it (declines the merch, already has one, etc.).
+--  Without this, claim_reward's completion guard would deadlock the card:
+--  they can't claim tier 20 while a lower tier is pending, and they don't
+--  want the lower tier. Recorded as kind='waived' so it stays distinguishable
+--  from a real redemption in reporting — nothing was actually handed over.
+create or replace function public.waive_reward(p_code text, p_tier int)
+  returns table (member_code text, name text, stamps int, goal int,
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+  language plpgsql security definer set search_path = public as $$
+declare v_id uuid; v_stamps int; v_seq int;
+begin
+  if not is_staff() then raise exception 'staff only'; end if;
+  if not (p_tier = any (krema_tiers())) then raise exception 'unknown reward'; end if;
+  if p_tier = krema_goal() then
+    raise exception 'the final reward cannot be skipped';
+  end if;
+
+  select c.id, c.stamps, c.cycle_seq into v_id, v_stamps, v_seq
+    from public.customers c where c.member_code = p_code;
+  if v_id is null then raise exception 'card not found'; end if;
+  if v_stamps < p_tier then raise exception 'not enough stamps yet'; end if;
+  if p_tier = any (krema_claimed(v_id, v_seq)) then
+    raise exception 'already claimed';
+  end if;
+
+  insert into public.redemptions (customer_id, tier, kind, cycle_seq)
+  values (v_id, p_tier, 'waived', v_seq);
 
   return query select * from public.krema_card(v_id);
 end $$;
@@ -422,6 +469,7 @@ revoke all on function public.get_card(text)             from public;
 revoke all on function public.customer_lookup(text)      from public;
 revoke all on function public.add_stamp(text)            from public;
 revoke all on function public.claim_reward(text,int)     from public;
+revoke all on function public.waive_reward(text,int)     from public;
 revoke all on function public.staff_lookup(text)         from public;
 revoke all on function public.stamps_today()             from public;
 
@@ -430,6 +478,7 @@ grant execute on function public.get_card(text)             to anon, authenticat
 grant execute on function public.customer_lookup(text)      to anon, authenticated;
 grant execute on function public.add_stamp(text)            to authenticated;
 grant execute on function public.claim_reward(text,int)     to authenticated;
+grant execute on function public.waive_reward(text,int)     to authenticated;
 grant execute on function public.staff_lookup(text)         to authenticated;
 grant execute on function public.stamps_today()             to authenticated;
 

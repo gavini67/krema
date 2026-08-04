@@ -573,7 +573,39 @@
 
   function handleRedeem() {
     if (!current) return;
-    supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: 20 }).then(function (res) {
+
+    // Completing the card starts a new cycle and discards anything still
+    // unclaimed, so make the barista deal with pending rewards first. The
+    // server refuses this too — this is just so it's caught at the counter
+    // with a readable prompt instead of an error toast.
+    var pending = deriveState(current).pending;
+    if (pending.length) {
+      var names = pending.map(function (t) { return TIER_META[t].short; }).join(' + ');
+      var ok = window.confirm(
+        current.name + ' still has ' + names + ' unclaimed.\n\n' +
+        'Claiming the bingsu ends this card, and those are lost.\n\n' +
+        'OK = customer doesn\'t want ' + (pending.length > 1 ? 'them' : 'it') + ', skip and continue.\n' +
+        'Cancel = go back and hand ' + (pending.length > 1 ? 'them' : 'it') + ' over first.'
+      );
+      if (!ok) return;
+      // Waive each pending tier, in order, then complete the card.
+      var chain = Promise.resolve();
+      pending.forEach(function (t) {
+        chain = chain.then(function () {
+          return supabaseClient.rpc('waive_reward', { p_code: current.member_code, p_tier: t })
+            .then(function (res) { if (res.error) throw res.error; current = res.data[0]; });
+        });
+      });
+      chain.then(completeCard).catch(function (err) {
+        showToast((err && err.message) || 'could not skip that reward');
+      });
+      return;
+    }
+    completeCard();
+  }
+
+  function completeCard() {
+    return supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: 20 }).then(function (res) {
       if (res.error) throw res.error;
       current = res.data[0];
       $('redeemed-name').textContent = current.name;
