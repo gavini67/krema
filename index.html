@@ -100,9 +100,7 @@
     /* ── header ──────────────────────────────────────────────────────── */
     .kh-header {
       position: sticky; top: 0; z-index: 50;
-      background: color-mix(in srgb, var(--bg) 82%, transparent);
-      -webkit-backdrop-filter: saturate(1.4) blur(12px);
-      backdrop-filter: saturate(1.4) blur(12px);
+      background: var(--sky-deep);          /* brand blue, always */
       border-bottom: 3px solid var(--ink);
       box-shadow: 0 4px 0 rgba(14, 14, 14, 0.08), 0 14px 24px -10px rgba(14, 14, 14, 0.18);
       transition: box-shadow 0.35s ease, background 0.35s ease, padding 0.35s ease;
@@ -430,6 +428,79 @@
     }
     .kh-hero-sub strong { color: var(--ink); }
     .kh-hero-ctas { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+
+    /* hero teaser → the club */
+    @keyframes kh-club-nudge {
+      0%, 88%, 100% { transform: rotate(-1.1deg) translate(0, 0); }
+      92% { transform: rotate(-1.1deg) translate(-3px, -4px); }
+      96% { transform: rotate(-1.1deg) translate(0, -1px); }
+    }
+    @keyframes kh-club-stamp {
+      0%, 12% { background: transparent; transform: scale(1); }
+      18% { background: var(--accent); transform: scale(1.35); }
+      24%, 88% { background: var(--accent); transform: scale(1); }
+      96%, 100% { background: transparent; transform: scale(1); }
+    }
+    .kh-hero-club {
+      display: inline-flex; align-items: center; gap: 13px;
+      max-width: 540px; margin: 0 0 22px; padding: 11px 16px 11px 12px;
+      background: linear-gradient(100deg, #fffdf0 0%, var(--paper) 60%);
+      border: 2.5px solid var(--ink);
+      border-radius: 999px 20px 20px 999px;
+      color: var(--ink); text-decoration: none;
+      transform: rotate(-1.1deg);
+      animation: kh-club-nudge 6.5s ease-in-out infinite;
+      box-shadow: var(--bevel-top), 4px 5px 0 var(--accent), 8px 10px 0 var(--ink);
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .kh-hero-club:hover {
+      animation: none;
+      transform: rotate(-1.1deg) translate(-3px, -4px);
+      box-shadow: var(--bevel-top), 5px 6px 0 var(--accent), 12px 15px 0 var(--ink);
+    }
+    .kh-hero-club-seal {
+      flex: none; width: 46px; height: 46px; border-radius: var(--r-pill);
+      background: var(--accent); border: 2.5px solid var(--ink);
+      display: grid; place-items: center;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.5);
+    }
+    .kh-hero-club-seal > span {
+      display: flex; flex-direction: column; align-items: center; line-height: 0.9;
+      font-family: var(--font-display); color: var(--ink);
+    }
+    .kh-hero-club-seal b { font-size: 17px; font-weight: 900; letter-spacing: -0.02em; }
+    .kh-hero-club-seal small {
+      font-family: var(--font-body); font-weight: 700; font-size: 8.5px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .kh-hero-club-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .kh-hero-club-line {
+      font-family: var(--font-display); font-weight: 900; font-size: 17px; line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .kh-hero-club-hook {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-body); font-weight: 600; font-size: 12.5px; line-height: 1;
+      color: var(--ink-soft);
+    }
+    .kh-hero-club-mini { display: inline-flex; gap: 4px; align-items: center; }
+    .kh-hero-club-mini i {
+      width: 9px; height: 9px; border-radius: var(--r-pill);
+      border: 1.5px solid var(--ink); background: transparent; display: block; flex: none;
+      animation: kh-club-stamp 6.5s ease-in-out infinite;
+    }
+    .kh-hero-club-mini i:nth-child(2) { animation-delay: 0.35s; }
+    .kh-hero-club-mini i:nth-child(3) { animation-delay: 0.7s; }
+    .kh-hero-club-mini i:nth-child(4) { animation-delay: 1.05s; }
+    .kh-hero-club-arrow {
+      flex: none; font-family: var(--font-body); font-weight: 700; font-size: 18px;
+      transition: transform 0.16s ease;
+    }
+    .kh-hero-club:hover .kh-hero-club-arrow { transform: translateX(3px); }
+    @media (prefers-reduced-motion: reduce) {
+      .kh-hero-club, .kh-hero-club-mini i { animation: none; }
+      .kh-hero-club-mini i { background: var(--accent); }
+    }
     .kh-hero-meta {
       display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
     }
@@ -1170,6 +1241,75 @@
     .kh-review-meta { font-family: var(--font-body); font-size: 13px; color: var(--ink-soft); }
     .kh-reviews-cta { display: inline-flex; margin-top: 4px; }
 
+    /* ── krema club (rewards) ───────────────────────────────────────── */
+    .kh-club {
+      background: linear-gradient(170deg, #FEFFE6 0%, #fffde4 55%, #fdf6c9 100%);
+      padding: 96px 32px 110px;
+    }
+    .kh-club-head { text-align: center; max-width: 720px; margin: 0 auto 46px; }
+    .kh-club-card {
+      max-width: 880px; margin: 0 auto;
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: var(--r-card);
+      padding: 32px 36px 30px;
+      box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.55),
+        5px 6px 0 var(--accent),
+        11px 14px 0 var(--ink),
+        20px 28px 32px rgba(14, 14, 14, 0.18);
+    }
+    .kh-club-cardtop {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .kh-club-name {
+      font-family: var(--font-display); font-weight: 900; line-height: 1;
+      font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.01em;
+    }
+    .kh-club-count {
+      font-family: var(--font-body); font-weight: 700; font-size: 12px;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+    }
+    /* 20 slots: 10 per row so the two rows read as one card, not a wall */
+    .kh-club-slots { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 9px; }
+    .kh-club-slot {
+      aspect-ratio: 1 / 1; border-radius: var(--r-pill);
+      border: 2.5px dashed rgba(43, 58, 102, 0.38);
+      background: rgba(255, 255, 255, 0.55);
+      display: grid; place-items: center;
+      font-family: var(--font-body); font-weight: 700; font-size: 13px;
+      color: var(--ink-soft);
+    }
+    /* the four milestones — brand tokens only */
+    .kh-club-slot.is-tier {
+      border: 2.5px solid var(--ink); color: var(--ink);
+      box-shadow: var(--bevel-top), 3px 4px 0 var(--ink);
+    }
+    .kh-club-slot.is-t6   { background: #bce6f5; }
+    .kh-club-slot.is-t10  { background: var(--accent); }
+    .kh-club-slot.is-t16  { background: var(--purple); }
+    .kh-club-slot.is-t20  { background: var(--accent); font-size: 16px; }
+    .kh-club-legend {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 26px; margin-top: 22px;
+      font-family: var(--font-body); font-size: 14px; color: var(--ink-soft);
+    }
+    .kh-club-legend > span { display: inline-flex; align-items: center; gap: 9px; }
+    .kh-club-dot {
+      width: 15px; height: 15px; border-radius: var(--r-pill);
+      border: 2px solid var(--ink); display: inline-block; flex: none;
+    }
+    .kh-club-ctas {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+      margin: 26px 0 0; padding-top: 24px;
+      border-top: 2.5px dashed rgba(43, 58, 102, 0.22);
+    }
+    .kh-club-fine {
+      max-width: 880px; margin: 18px auto 0; text-align: center;
+      font-family: var(--font-body); font-size: 13px; color: var(--ink-soft);
+    }
+
     /* ── find us ────────────────────────────────────────────────────── */
     .kh-find {
       background:
@@ -1599,6 +1739,14 @@
       .kh-review-card { transform: none; padding: 22px; }
 
       /* — find us — */
+      .kh-club { padding: 56px 16px 70px; }
+      .kh-club-head { margin-bottom: 32px; }
+      .kh-club-card { padding: 22px 20px 24px; border-radius: 20px; }
+      .kh-club-slots { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+      .kh-club-legend { grid-template-columns: minmax(0, 1fr); }
+      .kh-club-ctas { flex-direction: column; align-items: stretch; }
+      .kh-club-ctas .kh-btn { width: 100%; justify-content: center; }
+      .kh-hero-club { margin-bottom: 18px; }
       .kh-find { padding: 56px 16px 70px; }
       .kh-find-inner { grid-template-columns: 1fr; gap: 32px; }
       .kh-find-list li { grid-template-columns: 100px 1fr; }
@@ -1712,28 +1860,6 @@
       .kh-mobile-bar .kh-btn:active { transform: translate(2px, 3px); }
     }
 
-    /* ── Logo picker (PRIVATE — remove once a version is chosen) ── */
-    body[data-logo="black"] .kh-logo img { content: url("assets/svg/wordmark2-black.svg"); }
-    body[data-logo="white"] .kh-logo img { content: url("assets/svg/wordmark-white-1.svg"); }
-    body[data-logo="navy"]  .kh-logo img { content: url("assets/svg/wordmark-white-1.svg"); }
-    body[data-logo="navy"]  .kh-header { background: #2b3a66 !important; border-bottom-color: #2b3a66; }
-    body[data-logo="navy"]  .kh-nav a { color: #FEFFE6; }
-    body[data-logo="navy"]  .kh-nav a:hover { border-bottom-color: #FEFFE6; }
-    #logo-picker {
-      position: fixed; bottom: 14px; right: 14px; z-index: 200;
-      display: flex; gap: 6px; align-items: center;
-      background: rgba(255,255,255,0.94); border: 2px solid #2b3a66;
-      border-radius: 999px; padding: 6px 10px;
-      box-shadow: 3px 4px 0 rgba(43,58,102,0.3);
-      font-family: system-ui, sans-serif; font-size: 10px; font-weight: 700; color: #2b3a66;
-    }
-    #logo-picker button {
-      height: 22px; padding: 0 10px; border-radius: 999px;
-      border: 2px solid #2b3a66; background: #FEFFE6;
-      font-size: 10px; font-weight: 700; color: #2b3a66; cursor: pointer;
-    }
-    #logo-picker button[aria-pressed="true"] { outline: 3px solid #9F8FEA; outline-offset: 2px; }
-
     /* ── Shrink-on-scroll header (progressive: --hdr goes 0 -> 1 with scroll) ── */
     .kh-logo img { height: calc(128px - 68px * var(--hdr, 0)) !important; }
     .kh-header-inner {
@@ -1763,7 +1889,7 @@
     }
     .kh-doodle { position: absolute; pointer-events: none; z-index: 0; opacity: 0.5; }
     /* keep every section's floating decorations inside that section */
-    .kh-menu, .kh-events, .kh-gram, .kh-reviews, .kh-find { position: relative; overflow: hidden; }
+    .kh-menu, .kh-events, .kh-gram, .kh-reviews, .kh-club, .kh-find { position: relative; overflow: hidden; }
     @media (max-width: 760px) {
       .kh-hero-float, .kh-deco, .kh-doodle { display: none; }
     }
@@ -2689,12 +2815,13 @@ function Header({ palette, showOpenBadge }) {
     <header className="kh-header">
       <div className="kh-header-inner">
         <a className="kh-logo" href="#top" style={{ display:'flex', alignItems:'center', textDecoration:'none' }}>
-          <img src="assets/krema-logo-full.png" alt="Krema Dessert Haus" draggable={false}
+          <img src="assets/svg/wordmark-white-1.svg" alt="Krema Dessert Haus" draggable={false}
                style={{ height:128, width:'auto', display:'block' }} />
         </a>
         <nav className="kh-nav">
           <a href="#menu"   onClick={closeMenu}>Menu</a>
           <a href="#gram"   onClick={closeMenu}>Community</a>
+          <a href="#club"   onClick={closeMenu}>Rewards</a>
           <a href="#events" onClick={closeMenu}>Follow us</a>
           <a href="#find"   onClick={closeMenu}>Find us</a>
         </nav>
@@ -2723,7 +2850,7 @@ function Header({ palette, showOpenBadge }) {
         <img className="kh-nav-sticker kh-nav-sticker-2" src="assets/sticker-boba.png" alt="" draggable={false} />
         <span className="kh-nav-eyebrow">Parqal · Manila</span>
         <nav className="kh-nav-list">
-          {[['#menu', 'Menu'], ['#gram', 'Community'], ['#events', 'Follow us'], ['#find', 'Find us']].map(function (item, i) {
+          {[['#menu', 'Menu'], ['#gram', 'Community'], ['#club', 'Rewards'], ['#events', 'Follow us'], ['#find', 'Find us']].map(function (item, i) {
             return (
               <a key={item[0]} href={item[0]} onClick={closeMenu} style={{ '--i': i }}>
                 <span className="kh-nav-num">{'0' + (i + 1)}</span>
@@ -2794,6 +2921,21 @@ function Hero({ palette, scriptFont, vibe, mascotWiggle }) {
             </a>
             <a className="kh-btn kh-btn-ghost" href="#find">Find the haus</a>
           </div>
+          <a className="kh-hero-club" href="#club">
+            <span className="kh-hero-club-seal" aria-hidden="true">
+              <span><b>10th</b><small>free</small></span>
+            </span>
+            <span className="kh-hero-club-text">
+              <span className="kh-hero-club-line">Be part of the club — drink #10 is on us</span>
+              <span className="kh-hero-club-hook">
+                <span className="kh-hero-club-mini" aria-hidden="true">
+                  <i /><i /><i /><i />
+                </span>
+                collect stamps, unlock treats
+              </span>
+            </span>
+            <span className="kh-hero-club-arrow" aria-hidden="true">→</span>
+          </a>
           <div className="kh-hero-meta">
             <span className="kh-meta-pill">★ 4.7 · 39 Google reviews</span>
             <span className="kh-meta-pill">🐾 Pet-friendly · Wi-Fi inside</span>
@@ -3371,6 +3513,84 @@ function Reviews({ palette }) {
   );
 }
 
+// ── krema club (rewards) ──────────────────────────────────────────────────
+// Milestones MUST match the live card in supabase-setup.sql (krema_tiers()).
+// If the mechanic ever changes, change it here too — this section is the
+// public promise, and rewards.html is what actually gets delivered.
+const CLUB_GOAL  = 20;
+const CLUB_TIERS = {
+  6:  { cls: 'is-t6',  dot: '#bce6f5', label: '6 stamps · 10% off your next order' },
+  10: { cls: 'is-t10', dot: '#FCEC60', label: '10 stamps · a free drink, bestie' },
+  16: { cls: 'is-t16', dot: '#9F8FEA', label: '16 stamps · free Krema merch' },
+  20: { cls: 'is-t20', dot: '#FCEC60', label: '20 stamps · a free bingsu 🍧' }
+};
+
+function Club({ palette, scriptFont }) {
+  const slots = Array.from({ length: CLUB_GOAL }, (_, i) => i + 1);
+  return (
+    <section id="club" className="kh-club">
+      <img src="assets/sticker-boba.png" alt="" draggable={false} className="kh-deco"
+           style={{ width: 104, top: 70, right: '5%', animation: 'kh-float-a 7s ease-in-out infinite' }} />
+      <div className="kh-club-head">
+        <div className="kh-section-eyebrow" style={{ justifyContent: 'center' }}>
+          <Sparkle size={18} color={palette.accent} />
+          <span>Krema Rewards</span>
+          <Sparkle size={18} color={palette.skyDeep} />
+        </div>
+        <h2 className="kh-section-title">Be part of the club.</h2>
+        <p className="kh-section-sub">
+          The regulars aren't paying full price, bestie. Every drink gets a stamp — 6 and you're
+          sipping at 10% off, 10 and the next drink's on us, 16 gets you merch, 20 lands a free
+          bingsu. Free to join, no paper card to lose.
+        </p>
+      </div>
+
+      <div className="kh-club-card">
+        <div className="kh-club-cardtop">
+          <div>
+            <span className="kh-community-cta-script" style={{ fontFamily: `'${scriptFont}', cursive` }}>
+              your card, always in your pocket
+            </span>
+            <div className="kh-club-name">The Krema Club Card</div>
+          </div>
+          <span className="kh-club-count">0 / {CLUB_GOAL} stamps</span>
+        </div>
+
+        <div className="kh-club-slots">
+          {slots.map((n) => {
+            const tier = CLUB_TIERS[n];
+            return (
+              <div key={n} className={'kh-club-slot' + (tier ? ' is-tier ' + tier.cls : '')}>
+                {n === CLUB_GOAL ? '★' : n}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="kh-club-legend">
+          {Object.keys(CLUB_TIERS).map((k) => (
+            <span key={k}>
+              <i className="kh-club-dot" style={{ background: CLUB_TIERS[k].dot }} />
+              {CLUB_TIERS[k].label}
+            </span>
+          ))}
+        </div>
+
+        <div className="kh-club-ctas">
+          <a className="kh-btn kh-btn-primary kh-btn-lg" href="rewards.html">
+            Be part of the club <span aria-hidden="true">→</span>
+          </a>
+          <a className="kh-btn kh-btn-ghost" href="rewards.html">Already a member? Open my card</a>
+        </div>
+      </div>
+
+      <p className="kh-club-fine">
+        Free to join — just your name and number. Stamps are added by our crew in-store.
+      </p>
+    </section>
+  );
+}
+
 // ── find us ───────────────────────────────────────────────────────────────
 function FindUs({ palette, scriptFont, vibe }) {
   const copy = COPY[vibe] || COPY.cheeky;
@@ -3452,6 +3672,7 @@ function Footer({ palette, scriptFont, vibe }) {
           <a href="#menu">Menu</a>
           <a href="#events">Follow us</a>
           <a href="#gram">Community</a>
+          <a href="rewards.html">Rewards</a>
         </div>
         <div className="kh-footer-col">
           <h4>Visit</h4>
@@ -3504,6 +3725,7 @@ function App() {
       <Events palette={palette} vibe={t.vibe} />
       <Gram palette={palette} scriptFont={t.scriptFont} />
       <Reviews palette={palette} />
+      <Club palette={palette} scriptFont={t.scriptFont} />
       <FindUs palette={palette} scriptFont={t.scriptFont} vibe={t.vibe} />
       <Footer palette={palette} scriptFont={t.scriptFont} vibe={t.vibe} />
 
@@ -3635,35 +3857,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   <script defer src="/_vercel/insights/script.js"></script>
 
   <script>
-  /* Logo picker — PRIVATE (remove once a version is chosen). */
-  (function () {
-    var KEY = 'kh_logo1';
-    var OPTS = [
-      { v: 'black', label: 'Black' },
-      { v: 'white', label: 'White' },
-      { v: 'navy',  label: 'White + navy bar' }
-    ];
-    var p = document.createElement('div'); p.id = 'logo-picker';
-    var lab = document.createElement('span'); lab.textContent = 'logo'; p.appendChild(lab);
-    function apply(v) {
-      document.body.setAttribute('data-logo', v);
-      try { localStorage.setItem(KEY, v); } catch (e) {}
-      Array.prototype.forEach.call(p.querySelectorAll('button'), function (b) {
-        b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false');
-      });
-    }
-    OPTS.forEach(function (o) {
-      var b = document.createElement('button');
-      b.setAttribute('data-v', o.v); b.textContent = o.label; b.title = o.label;
-      b.addEventListener('click', function () { apply(o.v); });
-      p.appendChild(b);
-    });
-    document.body.appendChild(p);
-    var s = 'black';
-    try { s = localStorage.getItem(KEY) || 'black'; } catch (e) {}
-    if (!/^(black|white|navy)$/.test(s)) s = 'black';
-    apply(s);
-  })();
+  /* One-off: clear the retired logo-picker key so a stale value can't linger
+     in anyone's browser. Safe to delete after a few weeks. */
+  try { localStorage.removeItem('kh_logo1'); } catch (e) {}
   </script>
   <script>
   /* Shrink-on-scroll header — writes a 0..1 progress var so the logo scales
