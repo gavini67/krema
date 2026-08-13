@@ -1,135 +1,143 @@
 <!-- Supabase -> Authentication -> Emails -> Templates -> "Confirm signup"
      Subject: Your Krema Rewards code
 
-     {{ .Token }} is a 6-digit code, NOT {{ .ConfirmationURL }}. See the note
-     in reset-password.html for why.
+     Base markup from the Claude Design project (emails/confirm-signup.html),
+     plus the brandmark image row. See reset-password.html for why the design
+     markup is the better base and why this uses {{ .Token }} rather than
+     {{ .ConfirmationURL }}.
 
-     The brandmark is a hosted PNG (not SVG - SVG doesn't render in most email
-     clients) and is DECORATIVE only. Every functional element is live text so
-     the email still works when images are blocked. -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#d4e8f5;padding:26px 12px;">
+     The brandmark is DECORATIVE. Images are blocked by default in Outlook
+     desktop and many Gmail configs, so the code, instructions and fine print
+     are all live text and the email still works with images off. PNG not SVG. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0;padding:0;background-color:#d4e8f5;">
   <tr>
-    <td align="center">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:480px;background:#FEFFE6;border:3px solid #2b3a66;border-radius:22px;">
+    <td align="center" style="padding:40px 12px 40px 12px;background-color:#d4e8f5;">
 
-        <!-- navy wordmark bar -->
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:480px;background-color:#FEFFE6;border:3px solid #2b3a66;border-radius:22px;">
+
         <tr>
-          <td align="center" style="background:#2b3a66;border-radius:19px 19px 0 0;padding:13px 20px;font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:3px;color:#FEFFE6;">
-            KREMA &middot; DESSERT &middot; HAUS
+          <td style="background-color:#2b3a66;border-radius:19px 19px 0 0;padding:14px 14px 14px 14px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:4px;text-indent:4px;line-height:14px;mso-line-height-rule:exactly;color:#FEFFE6;text-align:center;">KREMA <span style="color:#FCEC60;">&middot;</span> DESSERT <span style="color:#FCEC60;">&middot;</span> HAUS</td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:22px 20px 2px 20px;">
+            <img src="https://kremadesserthaus.com/assets/krema-brandmark.png" alt="Krema Dessert Haus" width="64" height="64" style="display:block;width:64px;height:64px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
           </td>
         </tr>
-
-        <!-- brandmark (decorative; alt text carries it if blocked) -->
         <tr>
-          <td align="center" style="padding:22px 30px 0;">
-            <img src="https://kremadesserthaus.com/assets/krema-brandmark.png"
-                 alt="Krema Dessert Haus" width="62" height="62"
-                 style="display:block;border:0;outline:none;text-decoration:none;width:62px;height:62px;">
+          <td align="center" style="padding:16px 20px 4px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+              <tr><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#FCEC60;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td><td width="9" style="width:9px;font-size:0;line-height:0;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background-color:#2b3a66;border-radius:5px;font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
           </td>
         </tr>
-
         <tr>
-          <td style="padding:14px 30px 0;">
-            <div style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:17px;color:#4a5a8a;">tara, bestie &mdash;</div>
-            <div style="font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:27px;line-height:1.05;color:#2b3a66;letter-spacing:-0.5px;padding-top:3px;">
-              YOU&rsquo;RE IN THE CLUB
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:14px 30px 0;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#4a5a8a;">
-            Enter this code to finish securing your card.
-          </td>
-        </tr>
-
-        <!-- the code: live text, never an image -->
-        <tr>
-          <td style="padding:20px 30px 0;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FCEC60;border:3px solid #2b3a66;border-radius:16px;">
+          <td style="padding:18px 26px 0 26px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
               <tr>
-                <td align="center" style="padding:14px 16px 4px;font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:10px;letter-spacing:2.5px;color:#2b3a66;">
-                  YOUR 6-DIGIT CODE
+                <td style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:19px;line-height:24px;mso-line-height-rule:exactly;color:#8695ba;padding:0 0 10px 0;">tara, bestie &mdash;</td>
+              </tr>
+              <tr>
+                <td style="font-family:Helvetica,Arial,sans-serif;font-size:34px;font-weight:bold;letter-spacing:-0.5px;line-height:46px;mso-line-height-rule:exactly;color:#2b3a66;text-transform:uppercase;padding:0 0 16px 0;"><span style="background-color:#FCEC60;padding:2px 8px 4px 8px;">YOU&rsquo;RE IN THE CLUB</span></td>
+              </tr>
+              <tr>
+                <td style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;mso-line-height-rule:exactly;color:#4a5a8a;padding:0 0 22px 0;">Enter this code to finish securing your card.</td>
+              </tr>
+              <tr>
+                <td style="padding:0 0 12px 0;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background-color:#FCEC60;border:3px solid #2b3a66;border-radius:16px;">
+                    <tr>
+                      <td align="center" style="padding:15px 6px 2px 6px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:bold;letter-spacing:3px;text-indent:3px;line-height:13px;mso-line-height-rule:exactly;color:#2b3a66;text-transform:uppercase;">YOUR 6-DIGIT CODE</td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding:0 6px 6px 6px;font-family:'Courier New',Courier,monospace;font-size:42px;font-weight:bold;letter-spacing:10px;text-indent:10px;line-height:54px;mso-line-height-rule:exactly;color:#2b3a66;">{{ .Token }}</td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding:0 12px 16px 12px;font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:0.4px;line-height:15px;mso-line-height-rule:exactly;color:#4a5a8a;">This code expires in 1 hour.</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
               <tr>
-                <td align="center" style="padding:0 16px;font-family:'Courier New',Courier,monospace;font-weight:bold;font-size:38px;letter-spacing:8px;color:#2b3a66;">
-                  {{ .Token }}
+                <td style="font-size:0;line-height:0;height:2px;border-top:2px dashed #c3d0e6;">&nbsp;</td>
+              </tr>
+              <tr>
+                <td align="center" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;text-indent:2px;line-height:15px;mso-line-height-rule:exactly;color:#4a5a8a;text-transform:uppercase;padding:22px 0 18px 0;">EVERY DRINK = 1 STAMP</td>
+              </tr>
+              <tr>
+                <td style="padding:0 0 26px 0;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+                    <tr>
+                      <td align="center" valign="top" style="padding:0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                          <tr>
+                            <td width="42" height="42" align="center" valign="middle" style="width:42px;height:42px;background-color:#2b3a66;border:3px solid #2b3a66;border-radius:24px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;line-height:42px;mso-line-height-rule:exactly;color:#FEFFE6;">6</td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:9px 0 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:normal;line-height:14px;mso-line-height-rule:exactly;color:#2b3a66;">10% off</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td align="center" valign="top" style="padding:18px 1px 0 1px;font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:1px;line-height:12px;mso-line-height-rule:exactly;color:#c3d0e6;">&middot;&middot;</td>
+                      <td align="center" valign="top" style="padding:0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                          <tr>
+                            <td width="42" height="42" align="center" valign="middle" style="width:42px;height:42px;background-color:#2b3a66;border:3px solid #2b3a66;border-radius:24px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;line-height:42px;mso-line-height-rule:exactly;color:#FEFFE6;">10</td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:9px 0 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:normal;line-height:14px;mso-line-height-rule:exactly;color:#2b3a66;">free drink</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td align="center" valign="top" style="padding:18px 1px 0 1px;font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:1px;line-height:12px;mso-line-height-rule:exactly;color:#c3d0e6;">&middot;&middot;</td>
+                      <td align="center" valign="top" style="padding:0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                          <tr>
+                            <td width="42" height="42" align="center" valign="middle" style="width:42px;height:42px;background-color:#2b3a66;border:3px solid #2b3a66;border-radius:24px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;line-height:42px;mso-line-height-rule:exactly;color:#FEFFE6;">16</td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:9px 0 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:normal;line-height:14px;mso-line-height-rule:exactly;color:#2b3a66;">free merch</td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td align="center" valign="top" style="padding:18px 1px 0 1px;font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:1px;line-height:12px;mso-line-height-rule:exactly;color:#c3d0e6;">&middot;&middot;</td>
+                      <td align="center" valign="top" style="padding:0;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                          <tr>
+                            <td width="42" height="42" align="center" valign="middle" style="width:42px;height:42px;background-color:#FCEC60;border:3px solid #2b3a66;border-radius:24px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:bold;line-height:42px;mso-line-height-rule:exactly;color:#2b3a66;">20</td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:9px 0 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;line-height:14px;mso-line-height-rule:exactly;color:#2b3a66;">free bingsu</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
               <tr>
-                <td align="center" style="padding:6px 16px 14px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#2b3a66;">
-                  Expires in 1 hour.
-                </td>
+                <td style="font-size:0;line-height:0;height:2px;border-top:2px dashed #c3d0e6;">&nbsp;</td>
+              </tr>
+              <tr>
+                <td style="font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;mso-line-height-rule:exactly;color:#8695ba;padding:20px 0 14px 0;">Didn&rsquo;t sign up? You can ignore this email.</td>
+              </tr>
+              <tr>
+                <td style="background-color:#FFFFFF;border:2px solid #c3d0e6;border-radius:12px;padding:12px 14px 13px 14px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;mso-line-height-rule:exactly;color:#2b3a66;">Never share this code with anyone, including Krema staff. We will never ask you for it.</td>
               </tr>
             </table>
           </td>
         </tr>
 
         <tr>
-          <td style="padding:20px 30px 0;">
-            <div style="border-top:2px dashed #c3d0e6;"></div>
-          </td>
+          <td align="center" style="background-color:#2b3a66;border-radius:0 0 19px 19px;padding:13px 16px 13px 16px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:4px;text-indent:4px;line-height:15px;mso-line-height-rule:exactly;color:#FCEC60;text-transform:uppercase;">SEE YOU AT PARQAL</td>
         </tr>
-
-        <!-- the rewards ladder -->
-        <tr>
-          <td style="padding:16px 30px 0;">
-            <div style="font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:14px;color:#2b3a66;padding-bottom:8px;">
-              Every drink = 1 stamp.
-            </div>
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#4a5a8a;">
-              <tr>
-                <td style="padding:3px 0;width:34px;font-weight:bold;color:#2b3a66;">6</td>
-                <td style="padding:3px 0;">10% off your next order</td>
-              </tr>
-              <tr>
-                <td style="padding:3px 0;font-weight:bold;color:#2b3a66;">10</td>
-                <td style="padding:3px 0;">a free drink, bestie</td>
-              </tr>
-              <tr>
-                <td style="padding:3px 0;font-weight:bold;color:#2b3a66;">16</td>
-                <td style="padding:3px 0;">free Krema merch</td>
-              </tr>
-              <tr>
-                <td style="padding:3px 0;font-weight:bold;color:#2b3a66;">20</td>
-                <td style="padding:3px 0;">a free bingsu</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:16px 30px 0;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#8695ba;">
-            Didn&rsquo;t sign up? You can ignore this email.
-          </td>
-        </tr>
-
-        <!-- security note in its own frame -->
-        <tr>
-          <td style="padding:14px 30px 22px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff;border:2px solid #c3d0e6;border-radius:12px;">
-              <tr>
-                <td style="padding:11px 14px;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.45;color:#4a5a8a;">
-                  Never share this code with anyone, including Krema staff. We will never ask you for it.
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- footer bar -->
-        <tr>
-          <td align="center" style="background:#2b3a66;border-radius:0 0 19px 19px;padding:13px 20px;font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:11px;letter-spacing:2.5px;color:#FCEC60;">
-            SEE YOU AT PARQAL
-          </td>
-        </tr>
-
       </table>
 
-      <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#4a5a8a;padding-top:14px;">
-        Krema Dessert Haus &middot; G/F Parqal Mall, Para&ntilde;aque
-      </div>
+      <table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:480px;">
+        <tr>
+          <td align="center" style="padding:20px 12px 0 12px;font-family:Helvetica,Arial,sans-serif;font-size:12px;letter-spacing:0.2px;line-height:18px;mso-line-height-rule:exactly;color:#8695ba;">Krema Dessert Haus &middot; G/F Parqal Mall, Para&ntilde;aque</td>
+        </tr>
+      </table>
+
     </td>
   </tr>
 </table>
