@@ -3866,23 +3866,47 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
   <script>
   /* Shrink-on-scroll header — writes a 0..1 progress var so the logo scales
-     continuously with scroll instead of snapping between two sizes. */
+     continuously instead of snapping between two sizes.
+
+     The value is NOT bound directly to scrollY. A wheel tick or a trackpad
+     flick moves the page 50-100px in a single event, so a direct binding
+     makes the logo jump that whole distance in one frame — which reads as
+     stutter no matter how the easing curve is shaped. Instead scroll only
+     sets a target, and a rAF loop eases the rendered value toward it, so the
+     motion stays continuous between scroll events and settles after them. */
   (function () {
-    var RANGE = 150, ticking = false, last = -1;
-    function update() {
-      var p = window.scrollY / RANGE;
+    var RANGE  = 260;    /* px of scroll to go full size -> small (was 150) */
+    var EASE   = 0.14;   /* fraction of the remaining gap closed per frame  */
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var current = 0, target = 0, raf = null;
+
+    function targetFor(y) {
+      var p = y / RANGE;
       p = p < 0 ? 0 : (p > 1 ? 1 : p);
-      p = p * p * (3 - 2 * p);            /* smoothstep — eases both ends */
-      if (Math.abs(p - last) > 0.002) {
-        document.body.style.setProperty('--hdr', p.toFixed(3));
-        last = p;
-      }
-      ticking = false;
+      return p * p * (3 - 2 * p);         /* smoothstep — eases both ends */
     }
-    window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    update();
+
+    function paint() {
+      document.body.style.setProperty('--hdr', current.toFixed(4));
+    }
+
+    function tick() {
+      current += (target - current) * EASE;
+      if (Math.abs(target - current) < 0.0005) current = target;
+      paint();
+      raf = current === target ? null : requestAnimationFrame(tick);
+    }
+
+    function onScroll() {
+      target = targetFor(window.scrollY);
+      if (reduce) { current = target; paint(); return; }
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    /* on load (or a restored scroll position) start settled, never animate in */
+    current = target = targetFor(window.scrollY);
+    paint();
   })();
   </script>
 </body>
