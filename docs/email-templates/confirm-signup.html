@@ -1,0 +1,75 @@
+<!-- Supabase -> Authentication -> Emails -> Templates -> "Confirm signup"
+     Subject: Your Krema Rewards code
+
+     Uses {{ .Token }} &mdash; a 6-digit code, NOT {{ .ConfirmationURL }}. See the
+     note in reset-password.html for why. -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#d4e8f5;padding:28px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:480px;background:#FEFFE6;border:3px solid #2b3a66;border-radius:22px;">
+
+        <tr>
+          <td style="padding:26px 30px 0;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:17px;color:#4a5a8a;">tara, bestie &mdash;</div>
+            <div style="font-family:Helvetica,Arial,sans-serif;font-weight:bold;font-size:27px;line-height:1.05;color:#2b3a66;letter-spacing:-0.5px;padding-top:2px;">
+              YOU'RE IN THE CLUB
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:16px 30px 0;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#4a5a8a;">
+            Enter this code to finish securing your card.
+          </td>
+        </tr>
+
+        <!-- the code -->
+        <tr>
+          <td align="center" style="padding:22px 30px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background:#FCEC60;border:3px solid #2b3a66;border-radius:16px;padding:16px 30px;font-family:'Courier New',Courier,monospace;font-weight:bold;font-size:36px;letter-spacing:9px;color:#2b3a66;">
+                  {{ .Token }}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:12px 30px 0;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#8695ba;">
+            This code expires in 1 hour.
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:22px 30px 0;">
+            <div style="border-top:2px dashed #c3d0e6;"></div>
+          </td>
+        </tr>
+
+        <!-- what the card actually gives you -->
+        <tr>
+          <td style="padding:16px 30px 0;font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7;color:#4a5a8a;">
+            <strong style="color:#2b3a66;">Every drink = 1 stamp.</strong><br>
+            6 &middot; 10% off &nbsp;&middot;&nbsp; 10 &middot; free drink<br>
+            16 &middot; free merch &nbsp;&middot;&nbsp; 20 &middot; free bingsu
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:18px 30px 26px;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#8695ba;">
+            Didn't sign up? You can ignore this email.
+            <br><br>
+            Never share this code with anyone, including Krema staff. We will never ask you for it.
+          </td>
+        </tr>
+
+      </table>
+
+      <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#4a5a8a;padding-top:14px;">
+        Krema Dessert Haus &middot; G/F Parqal Mall, Para&ntilde;aque
+      </div>
+    </td>
+  </tr>
+</table>
