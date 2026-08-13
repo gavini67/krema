@@ -100,7 +100,10 @@
     /* ── header ──────────────────────────────────────────────────────── */
     .kh-header {
       position: sticky; top: 0; z-index: 50;
-      background: var(--sky-deep);          /* brand blue, always */
+      /* brand blue lifted 8% toward white — matches the Claude Design header */
+      background: color-mix(in srgb, var(--bg-deep) 92%, #fff);
+      -webkit-backdrop-filter: saturate(1.4) blur(12px);
+      backdrop-filter: saturate(1.4) blur(12px);
       border-bottom: 3px solid var(--ink);
       box-shadow: 0 4px 0 rgba(14, 14, 14, 0.08), 0 14px 24px -10px rgba(14, 14, 14, 0.18);
       transition: box-shadow 0.35s ease, background 0.35s ease, padding 0.35s ease;
