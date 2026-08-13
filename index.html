@@ -3875,8 +3875,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
      sets a target, and a rAF loop eases the rendered value toward it, so the
      motion stays continuous between scroll events and settles after them. */
   (function () {
-    var RANGE  = 260;    /* px of scroll to go full size -> small (was 150) */
-    var EASE   = 0.14;   /* fraction of the remaining gap closed per frame  */
+    var RANGE  = 165;    /* px of scroll to go full size -> small           */
+    var EASE   = 0.34;   /* fraction of the remaining gap closed per frame:
+                            high enough to feel instant, low enough to still
+                            smear a single 60px wheel tick across frames     */
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var current = 0, target = 0, raf = null;
 
