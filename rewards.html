@@ -109,10 +109,10 @@
 
         <!-- Existing cards require prior code possession or staff assistance. -->
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">
-          Already have a card? Open your saved card, QR, or bookmark to secure it.
+          Already have a card? Open your saved card or bookmark.
           Lost access? Ask staff in person to help reopen it.
         </div>
-        <button id="link-sign-in" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
+        <button id="link-sign-in" class="hidden" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
       </div>
 
       <!-- ════════════════ CUSTOMER ACCOUNT VIEWS ════════════════ -->
@@ -316,7 +316,7 @@
         </div>
 
         <div id="card-account-error" class="hidden" aria-live="polite" style="font-size:13px;color:#c0392b;"></div>
-        <div id="card-account-row" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div id="card-account-row" class="hidden" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div id="card-account-copy" style="font-size:13px;line-height:1.35;color:#4a5a8a;">Keep your card safe on any device.</div>
           <button id="btn-secure-card" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">secure your card</button>
           <button id="btn-customer-logout" class="hidden" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FEFFE6;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">log out</button>
@@ -406,6 +406,9 @@
   var currentCard = null;
   var currentCardLinked = false;
   var customerEmail = null;
+  // Production hold: the complete account flow is preserved on
+  // feature/customer-accounts-ready while the owner finishes testing.
+  var CUSTOMER_ACCOUNTS_ENABLED = false;
   var verifiedRecovery = false;
   var accountContext = { code: null, phone: null, email: null };
   var captchaTokens = {};
@@ -1181,7 +1184,7 @@
     supabaseClient.auth.getSession().then(function (res) {
       if (epoch !== cardEpoch) return true;
       var session = res.data && res.data.session;
-      customerEmail = session && session.user && session.user.email || null;
+      customerEmail = CUSTOMER_ACCOUNTS_ENABLED && session && session.user && session.user.email || null;
       if (urlCode) {
         return getCardByCode(urlCode).catch(function () { return null; }).then(function (card) {
           if (epoch !== cardEpoch) return true;
