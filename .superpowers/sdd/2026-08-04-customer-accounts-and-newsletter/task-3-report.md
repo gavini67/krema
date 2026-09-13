@@ -6,7 +6,8 @@ Completed on `feature/customer-accounts`.
 
 ## Commit
 
-This task's commit on `feature/customer-accounts` (the final hash is reported with the task handoff).
+- `9bf5255` — initial Task 3 delivery.
+- `5f0b0c8` — review fixes for logout CAPTCHA, SQL unlink validation, mobile sizing, and synchronous Turnstile failures.
 
 ## Test-first record
 
@@ -71,3 +72,41 @@ fail 0
 
 - The live SQL migration, Supabase CAPTCHA setting, public email signup, and end-to-end throwaway-account checks remain intentionally incomplete and are listed in `HANDOFF.md` in their required activation order.
 - Node tests execute the staff page's browser script in a controlled VM, including request contracts, storage isolation, Turnstile behavior, and unlink flows. A live browser/Supabase/Cloudflare integration run was not performed from this workspace.
+
+## Review fixes
+
+The review found that a restored staff session did not create Turnstile after logout; `unlink_card` could audit an already-unlinked card; the normal widget was selected at a 375px viewport even though its actual container was narrower than 300px; and a synchronous `turnstile.render()` exception left the rendered guard set without inline feedback.
+
+Regression tests were written before the fixes. The focused staff test run produced the expected red result:
+
+```text
+node --test tests/staff-customer-accounts.test.js
+
+tests 8
+pass 5
+fail 3
+```
+
+The failures were the 375px widget choice (`normal` instead of `compact`), the missing widget after restored-session logout, and missing inline feedback after a synchronous render error. The focused SQL contract also produced the expected red result:
+
+```text
+node --test --test-name-pattern='account RPCs scope cards' tests/customer-accounts-sql.test.js
+
+tests 1
+pass 0
+fail 1
+```
+
+It failed because both `unlink_card` copies lacked `if v_user_id is null then raise exception 'card is not linked'; end if;` before mutation and audit.
+
+The fixes render or reset Turnstile whenever staff logout reaches the login view; choose compact from the actual Turnstile container width below 300px; catch synchronous render failures without setting the rendered guard and retry when the next login attempt needs a widget; and add the clear unlink guard identically to `supabase-setup.sql` and `docs/migrations/2026-09-13-customer-accounts.sql`.
+
+Final verification was:
+
+```text
+node --test tests/*.test.js
+
+tests 30
+pass 30
+fail 0
+```
