@@ -1,3 +1,5 @@
+> Historical design: phone/name recovery is superseded by the final security ruling in `docs/superpowers/plans/2026-08-04-customer-accounts-and-newsletter.md`. After account activation, both lookup signatures always return zero rows; use a saved QR/member-code card or staff assistance.
+
 # Returning-customer login + empty-card signup — design
 
 **Date:** 2026-07-14

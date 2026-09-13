@@ -7,7 +7,7 @@ Two features the owner asked for:
 1. **Newsletter** — email customers when new menu items launch. The footer form in `index.html` is currently **dead** (`onSubmit={(e) => e.preventDefault()}`, and the input has no `id`/`name`, so it can't even be read). Every signup is being thrown away today.
 2. **Customer accounts** — email + 6-digit PIN login, with "forgot PIN" by email.
 
-Today a customer has **no account at all**: identity is a `KREMA-XXXXXX` code in `localStorage`, or a `?c=CODE` link. Anyone who knows a customer's **phone number** can pull up their card (name + stamp count) via the anon `customer_lookup` RPC. Accounts fix that and give people a real way to recover a card on a new phone.
+Before account activation, identity was a `KREMA-XXXXXX` code in `localStorage` or a `?c=CODE` link, and anonymous phone lookup could reveal the card. The final security ruling below replaces online phone/name recovery when the accounts migration activates.
 
 Three problems found while planning that change the shape of this:
 
@@ -17,7 +17,8 @@ Three problems found while planning that change the shape of this:
 
 ### Decisions locked
 - PIN = **6 digits**, implemented as a Supabase Auth *password* (never a hand-rolled column — we get hashing, rate limiting and reset emails for free).
-- Existing ~7 customers **keep working via phone lookup**; they're invited to add email + PIN, never forced.
+- Existing customers keep using already-open/saved/bookmarked QR/member-code cards. They can secure an unlinked card with code + phone after authentication; lost-card access requires existing staff lookup in person. Online phone/name recovery is removed.
+- Both `customer_lookup(text)` and `customer_lookup(text,text)` remain callable compatibility shims that always return zero rows. `signup_customer` never returns an existing card: every duplicate normalized phone gets the same generic sign-in/staff message, independent of name or link state. `get_card(code)` stays anonymous; `claim_card(code,phone)` stays authenticated; `staff_lookup` stays staff-only.
 - Newsletter list lives in **Supabase**; campaigns are **sent from Brevo's dashboard**. No serverless function, no build step.
 - **No `customers.email` column** — `auth.users.email` already holds it; don't keep two copies of PII.
 
@@ -45,7 +46,7 @@ Nothing here is testable without working email, so do this first.
 
 Prerequisite for Phase 3. No page changes, no function-shape changes.
 
-- **`signup_customer(p_name, p_phone)`** — today, when the phone already exists it returns that card **regardless of the name given**. Require the name to match; otherwise raise *"that number's already on a card — tap 'already have a card?'"*. Shape unchanged → plain `create or replace`.
+- **`signup_customer(p_name, p_phone)`** — Phase 1 historically added name matching. The account-activation migration supersedes that rule: only return newly inserted cards; reject every existing normalized phone with “please sign in or ask staff to reopen your card”. Use the unique phone constraint to handle concurrent signup safely. Never read/reveal the existing name, code, or secured status.
 - **Lock the internal helpers.** `krema_card(uuid)`, `krema_claimed(uuid,int)`, `krema_new_code()`, `krema_norm_phone(text)`, `krema_goal/tiers/validity()` still have Postgres's default `EXECUTE TO PUBLIC`, so anon can call them over PostgREST. `krema_card(uuid)` returns a full card for any customer UUID. Add `revoke all on function ... from public, anon, authenticated`.
 - **`is_staff()`** — explicit `revoke all from public` + `grant execute to authenticated`, so `staff.html` can gate its UI.
 - **`card_claim_events`** audit table `(id, customer_id, user_id, action, created_at)`, `action ∈ claim|unlink`. RLS on, zero policies, revoked. Needed by Phase 3.
@@ -75,12 +76,15 @@ Must land **before** public signup is re-enabled.
   - else set `user_id`, write `card_claim_events`, return the card
 - **`get_my_card()`** — same 8-column shape, `setof`, ordered `stamps desc, created_at`. Identity comes only from `auth.uid()`, never a parameter. Client uses `rows[0]` in v1.
 - **`unlink_card(p_code)`** — `is_staff()` gated, audited. **Required scope, not polish** — it's the only fix for "customer claimed a card with a typo'd email."
-- **`customer_lookup(p_phone, p_name)`** — new **overload** alongside the existing 1-arg version. Matches phone + case-insensitive name, and **returns zero rows once `user_id` is set** (secured cards move to email+PIN). Drop the 1-arg version a week later, not in the same deploy.
+- **`customer_lookup(p_phone)` and `customer_lookup(p_phone, p_name)`** — preserve both signatures and explicit compatibility grants, but always return zero rows for all inputs and all cards. Neither may consult customer rows. No planned drop is needed for this release.
 
 ### Pages
 - `rewards.html` — new views following the existing `#view-signup`/`#view-card` show-hide pattern: `#view-secure` (email + PIN + confirm), `#view-verify` (6-digit OTP), `#view-signin`, `#view-forgot`.
   - Card screen gets a "🔒 secure your card" row near `#link-start-over` (line 253), or "signed in as …" + log out.
-  - `init()` (line 723) precedence becomes `?c=` → saved code → **session (`get_my_card`)** → signup. `getSession()` is async — resolve it *before* painting, or signed-in customers see a flash of the signup screen.
+  - `init()` precedence is `?c=` → saved code → **session (`get_my_card`)** → signup. Resolve the session first and reconcile any displayed URL/saved code against all `get_my_card` results before deciding linked/unlinked. Failed reconciliation means unknown, with no claim prompt.
+  - Replace phone/name retrieval UI with sign-in and saved-card/staff guidance. Use semantic forms for account actions; Enter and button activation share one guarded submit handler.
+  - Retain verified recovery state after OTP succeeds so failed PIN updates can retry directly. Clear it on recovery restart/cancellation, successful update, and logout. Inspect resolved logout errors before clearing account state.
+  - Invalidate in-flight card requests on every stop/view/account transition. Guard customer Turnstile rendering and allow retry after failure; choose compact below 300px of container width.
   - PIN inputs: `type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"`; reject non-6-digit, `000000`, `123456`, all-same.
   - Reuse the existing `showSignupError`/`hideSignupError` helpers (lines 571–579) and `normPhone` (332–338).
   - **Never reveal "that email is taken"** — Supabase returns a success with an empty `identities` array; route to sign-in with "forgot PIN?" prominent.
@@ -112,7 +116,7 @@ Deliberately **no backend**. `index.html` loads no Supabase SDK today and doesn'
 
 1. **SQL first, pages second.** Old page + new SQL is fine; new page + old SQL is broken.
 2. **Never change an existing `RETURNS TABLE` shape.** `get_my_card` and `claim_card` reuse `krema_card`'s exact 8 columns, so every `rewards.html` change is purely additive and nothing needs a simultaneous deploy. (This is why we're *not* adding a `secured` flag to the card shape in v1.)
-3. **Change signatures by additive overload, then drop later.** `customer_lookup(text,text)` ships beside `customer_lookup(text)`; drop the old one a week on. Protects customers holding stale JS in a backgrounded tab.
+3. **Keep safe compatibility signatures.** Both `customer_lookup` overloads stay callable by stale pages but always return zero rows. Stale signup requests must also reject existing cards generically.
 4. Wrap any drop+create script in explicit `begin; … commit;`.
 
 ---
@@ -120,12 +124,14 @@ Deliberately **no backend**. `index.html` loads no Supabase SDK today and doesn'
 ## Verification
 
 **Phase 1–2**
-- `select pg_get_functiondef('public.signup_customer(text,text)'::regprocedure);` — confirm the name check is live.
+- `select pg_get_functiondef('public.signup_customer(text,text)'::regprocedure);` — Phase 1 historically verified name matching; after Phase 3, verify generic rejection for every existing normalized phone instead.
 - From the live site console (as I did in the security test): anon `krema_card`, `krema_new_code` etc. should now fail *permission denied*.
 - Sign into `staff.html` with a non-staff account → should be signed out with a clear message.
 - Sign into `rewards.html` as a customer in one tab, confirm the barista session in another tab **survives**.
 
 **Phase 3**
+- Anon calls to both lookup signatures return zero rows for linked/unlinked/missing phones and any name. Duplicate signup with matching/different names and normalized phone variants returns the same generic sign-in/staff error; no existing card data.
+- Lost unlinked card: staff uses the existing staff-only lookup in person to help reopen it; customer then authenticates and claims with code + phone.
 - Full flow on a **throwaway card** first: signup → OTP → `claim_card` → log out → log back in on a different browser → `get_my_card` returns the right card with stamps intact.
 - Re-run `claim_card` twice → second call succeeds silently (idempotent).
 - Try claiming an already-claimed card from a second account → clear error; then `unlink_card` from staff → claimable again.

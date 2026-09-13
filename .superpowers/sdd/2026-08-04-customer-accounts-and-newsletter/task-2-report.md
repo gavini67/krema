@@ -1,3 +1,5 @@
+> Historical task record. The final-fix-report.md and updated account plan supersede all phone/name retrieval, name-match signup, and unlinked-card lookup instructions below. Both lookup signatures now always return zero rows; signup rejects every existing normalized phone.
+
 # Task 2 report — customer accounts
 
 ## Status

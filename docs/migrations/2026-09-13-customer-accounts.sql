@@ -1,7 +1,10 @@
 -- Phase 3 — customer accounts
 -- Paste once into Supabase SQL Editor after the Phase 1 hardening migration.
 -- This is additive: it preserves existing customers, stamps, rewards, staff,
--- and Auth users.
+-- and Auth users. Activating accounts retires online phone/name recovery:
+-- both customer_lookup signatures always return zero rows; signup never
+-- returns an existing card. Keep get_card(code) anonymous, claim_card(code,phone)
+-- authenticated, and staff_lookup staff-only for in-person help.
 begin;
 
 alter table public.customers
@@ -17,10 +20,10 @@ create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_phone text; v_name text; v_user_id uuid;
+declare v_id uuid; v_phone text;
 begin
   p_name := trim(p_name);
-  if length(p_name) < 1 then raise exception 'please enter your name'; end if;
+  if p_name is null or length(p_name) < 1 then raise exception 'please enter your name'; end if;
   if length(p_name) > 60 then p_name := substr(p_name, 1, 60); end if;
 
   v_phone := krema_norm_phone(p_phone);
@@ -28,56 +31,37 @@ begin
     raise exception 'enter a valid mobile number, e.g. 0917 123 4567';
   end if;
 
-  -- Lock an existing card through the returned card shape. This conflicts
-  -- with claim_card's link update, so signup cannot return a newly secured
-  -- existing card after checking its previous user_id.
-  select c.id, c.name, c.user_id into v_id, v_name, v_user_id
-    from public.customers c where c.phone = v_phone for share;
-
+  -- Only return a newly created card. The unique phone constraint also
+  -- rejects concurrent duplicate signup without revealing name/code or link state.
+  insert into public.customers (member_code, name, phone, stamps, lifetime)
+  values (krema_new_code(), p_name, v_phone, 0, 0)
+  on conflict (phone) do nothing
+  returning id into v_id;
   if v_id is null then
-    insert into public.customers (member_code, name, phone, stamps, lifetime)
-    values (krema_new_code(), p_name, v_phone, 0, 0)
-    returning id into v_id;
-  elsif lower(trim(v_name)) is distinct from lower(p_name) then
-    raise exception 'that number''s already on a card — tap "already have a card?"';
-  elsif v_user_id is not null then
-    raise exception 'this card is already secured — sign in to continue';
+    raise exception 'please sign in or ask staff to reopen your card';
   end if;
 
   return query select * from public.krema_card(v_id);
 end $$;
 
+-- Compatibility shim for stale pages: always zero rows, for every phone/name.
+-- Reopen a saved QR/member-code card or ask staff in person; no online recovery.
 create or replace function public.customer_lookup(p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid;
 begin
-  select c.id into v_id from public.customers c
-   where (c.phone = coalesce(krema_norm_phone(p_phone), '~none~')
-      or c.phone = trim(p_phone))
-     and c.user_id is null
-   limit 1 for share;
-  if v_id is null then return; end if;
-  return query select * from public.krema_card(v_id);
+  return;
 end $$;
 
+-- Compatibility shim for stale pages: always zero rows, for every phone/name.
+-- Reopen a saved QR/member-code card or ask staff in person; no online recovery.
 create or replace function public.customer_lookup(p_phone text, p_name text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_phone text;
 begin
-  v_phone := krema_norm_phone(p_phone);
-  if v_phone is null then return; end if;
-
-  select c.id into v_id from public.customers c
-   where c.phone = v_phone
-     and lower(trim(c.name)) = lower(trim(p_name))
-     and c.user_id is null
-   limit 1 for share;
-  if v_id is null then return; end if;
-  return query select * from public.krema_card(v_id);
+  return;
 end $$;
 
 create or replace function public.claim_card(p_code text, p_phone text)
@@ -158,6 +142,7 @@ revoke all on function public.unlink_card(text)                from public, anon
 
 grant execute on function public.signup_customer(text,text)       to anon, authenticated;
 grant execute on function public.get_card(text)                   to anon, authenticated;
+-- Zero-row compatibility signatures only; neither grants card retrieval.
 grant execute on function public.customer_lookup(text)            to anon, authenticated;
 grant execute on function public.customer_lookup(text,text)       to anon, authenticated;
 grant execute on function public.claim_card(text,text)            to authenticated;

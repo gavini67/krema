@@ -107,41 +107,28 @@
 
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
 
-        <!-- returning customer: phone-only "welcome back" lookup -->
-        <div style="display:flex;align-items:center;gap:12px;margin-top:2px;">
-          <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
-          <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;color:#8695ba;">OR</span>
-          <div style="flex:1;height:2px;background:repeating-linear-gradient(90deg,#8695ba 0 6px,transparent 6px 12px);"></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:9px;">
-          <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">already have a card?</span>
-          <label style="display:flex;flex-direction:column;gap:7px;">
-            <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">exact name on your card</span>
-            <input id="lookup-name" type="text" placeholder="e.g. Bea Santos" style="width:100%;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
-          </label>
-          <div style="display:flex;gap:10px;">
-            <input id="lookup-phone" type="tel" aria-label="phone number" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
-            <button id="btn-lookup" style="flex:none;padding:0 20px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;background:#dcebf7;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6),4px 5px 0 #2b3a66;cursor:pointer;">find</button>
-          </div>
-          <div id="lookup-error" class="hidden" aria-live="polite" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <!-- Existing cards require prior code possession or staff assistance. -->
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">
+          Already have a card? Open your saved card, QR, or bookmark to secure it.
+          Lost access? Ask staff in person to help reopen it.
         </div>
         <button id="link-sign-in" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
       </div>
 
       <!-- ════════════════ CUSTOMER ACCOUNT VIEWS ════════════════ -->
-      <div id="view-signin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-signin" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:0.95;">WELCOME BACK!</div>
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Sign in to keep your card close, bestie.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="signin-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">6-digit PIN</span><input id="signin-pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <div id="captcha-signin"></div>
-        <button id="btn-signin" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">sign in →</button>
+        <button id="btn-signin" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">sign in →</button>
         <div id="signin-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-forgot-pin" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">forgot your PIN?</button>
-        <button id="link-signin-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back</button>
-      </div>
+        <button id="link-forgot-pin" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">forgot your PIN?</button>
+        <button id="link-signin-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back</button>
+      </form>
 
-      <div id="view-secure-card" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-secure-card" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">SECURE YOUR CARD</div>
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Your PIN only opens this rewards card. Please don’t reuse a bank or GCash PIN.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="secure-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
@@ -149,49 +136,49 @@
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">new 6-digit PIN</span><input id="secure-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">confirm PIN</span><input id="secure-confirm-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <div id="captcha-signup"></div>
-        <button id="btn-secure-submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">secure my card →</button>
+        <button id="btn-secure-submit" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">secure my card →</button>
         <div id="secure-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-secure-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
-      </div>
+        <button id="link-secure-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
+      </form>
 
-      <div id="view-claim-card" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-claim-card" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">LINK THIS CARD</div>
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">You’re already signed in. Confirm the phone number on this card to link it to your account.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">phone on this card</span><input id="claim-phone" type="tel" autocomplete="tel" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
-        <button id="btn-claim-card" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">link this card →</button>
+        <button id="btn-claim-card" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">link this card →</button>
         <div id="claim-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-claim-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
-      </div>
+        <button id="link-claim-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
+      </form>
 
-      <div id="view-verify-signup" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-verify-signup" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">CHECK YOUR EMAIL</div>
         <div id="verify-signup-copy" style="font-size:14px;line-height:1.45;color:#4a5a8a;">Enter the 6–8 digit code from your email to secure your card.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">verification code</span><input id="verify-signup-token" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
-        <button id="btn-verify-signup" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">verify & secure →</button>
+        <button id="btn-verify-signup" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">verify & secure →</button>
         <div id="verify-signup-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-verify-restart" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">start signup again</button>
-      </div>
+        <button id="link-verify-restart" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">start signup again</button>
+      </form>
 
-      <div id="view-forgot-pin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-forgot-pin" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">RESET YOUR PIN</div>
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">We’ll email a verification code if this address can receive one.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="forgot-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <div id="captcha-forgot"></div>
-        <button id="btn-forgot-email" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">email me a code →</button>
+        <button id="btn-forgot-email" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">email me a code →</button>
         <div id="forgot-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-forgot-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
-      </div>
+        <button id="link-forgot-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
+      </form>
 
-      <div id="view-reset-pin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+      <form id="view-reset-pin" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">MAKE A NEW PIN</div>
         <div id="reset-pin-copy" style="font-size:14px;line-height:1.45;color:#4a5a8a;">Enter the 6–8 digit code from your email, then choose a new PIN.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">verification code</span><input id="reset-token" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">new 6-digit PIN</span><input id="reset-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">confirm PIN</span><input id="reset-confirm-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
-        <button id="btn-reset-pin" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">save new PIN →</button>
+        <button id="btn-reset-pin" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">save new PIN →</button>
         <div id="reset-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
-        <button id="link-reset-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
-      </div>
+        <button id="link-reset-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
+      </form>
 
       <!-- ════════════════ PUNCH CARD ════════════════ -->
       <div id="view-card" class="hidden" style="display:flex;flex-direction:column;gap:18px;position:relative;">
@@ -328,6 +315,7 @@
           <div id="history-items" style="display:flex;flex-direction:column;gap:11px;"></div>
         </div>
 
+        <div id="card-account-error" class="hidden" aria-live="polite" style="font-size:13px;color:#c0392b;"></div>
         <div id="card-account-row" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div id="card-account-copy" style="font-size:13px;line-height:1.35;color:#4a5a8a;">Keep your card safe on any device.</div>
           <button id="btn-secure-card" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">secure your card</button>
@@ -414,9 +402,11 @@
   }
 
   var pollTimer = null;
+  var cardEpoch = 0;
   var currentCard = null;
   var currentCardLinked = false;
   var customerEmail = null;
+  var verifiedRecovery = false;
   var accountContext = { code: null, phone: null, email: null };
   var captchaTokens = {};
   var captchaWidgets = {};
@@ -460,17 +450,28 @@
     var target = $('captcha-' + kind);
     if (!target) return;
     captchaTokens[kind] = null;
-    target.innerHTML = '';
     if (!window.turnstile || typeof window.turnstile.render !== 'function') {
       setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.');
       return;
     }
-    captchaWidgets[kind] = window.turnstile.render(target, {
-      sitekey: turnstileSiteKey(),
-      callback: function (token) { captchaTokens[kind] = token; setFormMessage(errorId, ''); },
-      'error-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.'); },
-      'expired-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check expired. Please complete it again.'); }
-    });
+    try {
+      if (captchaWidgets[kind] != null) {
+        resetCaptcha(kind);
+        return;
+      }
+      target.innerHTML = '';
+      captchaWidgets[kind] = window.turnstile.render(target, {
+        sitekey: turnstileSiteKey(),
+        size: target.clientWidth < 300 ? 'compact' : 'normal',
+        callback: function (token) { captchaTokens[kind] = token; setFormMessage(errorId, ''); },
+        'error-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.'); },
+        'expired-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check expired. Please complete it again.'); }
+      });
+    } catch (err) {
+      captchaTokens[kind] = null;
+      captchaWidgets[kind] = null;
+      setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.');
+    }
   }
 
   function requireCaptcha(kind, errorId) {
@@ -486,6 +487,7 @@
   }
 
   function showAccountView(id) {
+    if (id !== 'view-reset-pin') verifiedRecovery = false;
     stopPolling();
     hideAllViews();
     $(id).classList.remove('hidden');
@@ -732,18 +734,22 @@
 
   function renderAccountRow() {
     var signedIn = !!customerEmail;
-    var canClaim = signedIn && !currentCardLinked;
-    $('card-account-copy').textContent = currentCardLinked
+    var checkingLink = signedIn && currentCardLinked === null;
+    var canClaim = signedIn && currentCardLinked === false;
+    $('card-account-copy').textContent = checkingLink
+      ? 'Signed in. We could not check this card’s account yet. Retrying…'
+      : currentCardLinked
       ? ('Signed in as ' + customerEmail)
       : canClaim
         ? ('Signed in as ' + customerEmail + '. Link this card to your account.')
         : 'Keep your card safe on any device.';
     $('btn-secure-card').textContent = canClaim ? 'claim this card' : 'secure your card';
-    $('btn-secure-card').classList.toggle('hidden', signedIn && currentCardLinked);
+    $('btn-secure-card').classList.toggle('hidden', signedIn && currentCardLinked !== false);
     $('btn-customer-logout').classList.toggle('hidden', !signedIn);
   }
 
   function showSignup() {
+    verifiedRecovery = false;
     stopPolling();
     currentCard = null;
     currentCardLinked = false;
@@ -766,11 +772,13 @@
   }
 
   function loadMyCard(noCardMessage) {
+    var epoch = cardEpoch;
     return supabaseClient.rpc('get_my_card').then(function (res) {
+      if (epoch !== cardEpoch) return null;
       if (res.error) throw res.error;
       if (!res.data || res.data.length === 0) {
         showSignup();
-        showSignupError(noCardMessage || 'You’re signed in, but don’t have a linked card yet. Find an existing card or start a new one.');
+        showSignupError(noCardMessage || 'You’re signed in, but don’t have a linked card yet. Open your saved card or ask staff for help. You can also start a new card.');
         return null;
       }
       currentCard = res.data[0];
@@ -784,6 +792,11 @@
 
   function handleSignIn(e) {
     if (e) e.preventDefault();
+    if ($('btn-signin').disabled) return;
+    if (captchaWidgets['signin'] == null) {
+      renderCaptcha('signin', 'signin-error');
+      if (captchaWidgets['signin'] == null) return;
+    }
     setFormMessage('signin-error', '');
     var email = ($('signin-email').value || '').trim();
     var pin = $('signin-pin').value || '';
@@ -799,7 +812,7 @@
       customerEmail = res.data && res.data.session && res.data.session.user && res.data.session.user.email || email;
       return loadMyCard().catch(function () {
         showSignup();
-        showSignupError('You’re signed in, but we could not load your card. Please refresh or find your card below.');
+        showSignupError('You’re signed in, but we could not load your card. Please refresh, open your saved card, or ask staff for help.');
       });
     }).catch(function () {
       if (!signInSucceeded) setFormMessage('signin-error', 'Email or PIN is incorrect.');
@@ -841,6 +854,7 @@
 
   function handleClaimCard(e) {
     if (e) e.preventDefault();
+    if ($('btn-claim-card').disabled) return;
     setFormMessage('claim-error', '');
     var phone = ($('claim-phone').value || '').trim();
     if (!normPhone(phone)) return setFormMessage('claim-error', 'Enter the mobile number attached to this card.');
@@ -853,6 +867,11 @@
 
   function handleSecureSubmit(e) {
     if (e) e.preventDefault();
+    if ($('btn-secure-submit').disabled) return;
+    if (captchaWidgets['signup'] == null) {
+      renderCaptcha('signup', 'secure-error');
+      if (captchaWidgets['signup'] == null) return;
+    }
     setFormMessage('secure-error', '');
     var email = ($('secure-email').value || '').trim();
     var phone = ($('secure-phone').value || '').trim();
@@ -893,6 +912,7 @@
 
   function handleVerifySignup(e) {
     if (e) e.preventDefault();
+    if ($('btn-verify-signup').disabled) return;
     setFormMessage('verify-signup-error', '');
     var token = ($('verify-signup-token').value || '').trim();
     if (!isValidVerificationCode(token)) return setFormMessage('verify-signup-error', 'Enter the 6–8 digit code from your email.');
@@ -912,15 +932,23 @@
 
   function handleForgotEmail(e) {
     if (e) e.preventDefault();
+    if ($('btn-forgot-email').disabled) return;
+    if (captchaWidgets['forgot'] == null) {
+      renderCaptcha('forgot', 'forgot-error');
+      if (captchaWidgets['forgot'] == null) return;
+    }
     setFormMessage('forgot-error', '');
     var email = ($('forgot-email').value || '').trim();
     if (!isValidEmail(email)) return setFormMessage('forgot-error', 'Enter a valid email address.');
     var captchaToken = requireCaptcha('forgot', 'forgot-error');
     if (!captchaToken) return;
+    verifiedRecovery = false;
     accountContext.email = email;
     setBusy('btn-forgot-email', true);
     supabaseClient.auth.resetPasswordForEmail(email, { captchaToken: captchaToken }).then(function (res) {
       if (res.error) throw res.error;
+      $('reset-token').disabled = false;
+      $('reset-token').value = '';
       showAccountView('view-reset-pin');
       setFormMessage('reset-error', 'If this email can receive a reset, a code is on its way.');
     }).catch(function () {
@@ -933,40 +961,55 @@
 
   function handleResetPin(e) {
     if (e) e.preventDefault();
+    if ($('btn-reset-pin').disabled) return;
     setFormMessage('reset-error', '');
     var token = ($('reset-token').value || '').trim();
     var pin = $('reset-pin').value || '';
     var confirmation = $('reset-confirm-pin').value || '';
-    if (!isValidVerificationCode(token)) return setFormMessage('reset-error', 'Enter the 6–8 digit code from your email.');
+    if (!verifiedRecovery && !isValidVerificationCode(token)) return setFormMessage('reset-error', 'Enter the 6–8 digit code from your email.');
     if (!isValidPin(pin)) return setFormMessage('reset-error', 'Use a six-digit PIN that is not easy to guess.');
     if (pin !== confirmation) return setFormMessage('reset-error', 'Your PINs do not match.');
+    var epoch = cardEpoch;
+    var email = accountContext.email;
     setBusy('btn-reset-pin', true);
-    supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'recovery' }).then(function (res) {
+    var verification = verifiedRecovery ? Promise.resolve({ error: null })
+      : supabaseClient.auth.verifyOtp({ email: email, token: token, type: 'recovery' });
+    verification.then(function (res) {
+      if (epoch !== cardEpoch) return;
       if (res.error) throw res.error;
+      verifiedRecovery = true;
+      $('reset-token').value = '';
+      $('reset-token').disabled = true;
       return supabaseClient.auth.updateUser({ password: pin }).then(function (updateRes) {
+        if (epoch !== cardEpoch) return;
         if (updateRes.error) throw updateRes.error;
-        customerEmail = accountContext.email;
-        return loadMyCard('Your new PIN is ready. Find or create a card to link it.').catch(function () {
+        verifiedRecovery = false;
+        customerEmail = email;
+        return loadMyCard('Your new PIN is ready. Open your saved card, ask staff for help, or create a new card.').catch(function () {
           showSignup();
-          showSignupError('Your PIN was updated, but we could not load your card. Please refresh or find your card below.');
+          showSignupError('Your PIN was updated, but we could not load your card. Please refresh, open your saved card, or ask staff for help.');
         });
       }).catch(function () {
-        setFormMessage('reset-error', 'We could not update your PIN. Please try again.');
+        if (epoch === cardEpoch) setFormMessage('reset-error', 'We could not update your PIN. Please try again.');
       });
     }).catch(function () {
-      setFormMessage('reset-error', 'That code could not be verified. Please try again.');
+      if (epoch === cardEpoch) setFormMessage('reset-error', 'That code could not be verified. Please try again.');
     }).finally(function () { setBusy('btn-reset-pin', false); });
   }
 
   function handleCustomerLogout(e) {
     if (e) e.preventDefault();
     $('btn-customer-logout').disabled = true;
-    supabaseClient.auth.signOut().then(function () {
+    setFormMessage('card-account-error', '');
+    supabaseClient.auth.signOut().then(function (res) {
+      if (res.error) throw res.error;
+      verifiedRecovery = false;
       customerEmail = null;
       showSignup();
       showSignupError('You’re signed out. Sign in again whenever you need your card.');
     }).catch(function () {
       renderAccountRow();
+      setFormMessage('card-account-error', 'Could not sign out. Please try again.');
     }).finally(function () { $('btn-customer-logout').disabled = false; });
   }
 
@@ -974,6 +1017,7 @@
   // plus an immediate refresh on visibilitychange/focus so a staff stamp
   // shows up on the customer's phone within a few seconds ──────────────
   function stopPolling() {
+    cardEpoch += 1; // Invalidate requests issued before this view/account transition.
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     document.removeEventListener('visibilitychange', onVisibilityRefresh);
     window.removeEventListener('focus', onFocusRefresh);
@@ -1006,16 +1050,32 @@
     });
   }
 
-  function displayAnonymousCard(card, code) {
-    currentCard = card;
-    currentCardLinked = false;
-    renderCard(currentCard);
-    if (!pollTimer) startPolling(code);
+  function displayCodeCard(card, code, epoch) {
+    // Code/URL display takes precedence, but only the account RPC establishes ownership.
+    var linked = Promise.resolve(false);
+    if (customerEmail) {
+      linked = supabaseClient.rpc('get_my_card').then(function (res) {
+        if (res.error) throw res.error;
+        return (res.data || []).some(function (owned) { return owned.member_code === card.member_code; });
+      }).catch(function () { return null; }); // Unknown is never an invitation to claim.
+    }
+    return linked.then(function (isLinked) {
+      if (epoch !== cardEpoch) return null;
+      currentCard = card;
+      currentCardLinked = isLinked;
+      saveCode(code);
+      renderCard(currentCard);
+      if (!pollTimer) startPolling(code);
+      return card;
+    });
   }
 
   function fetchAndRenderCard(code, isInitialLoad) {
+    var epoch = cardEpoch;
     return getCardByCode(code).then(function (card) {
+      if (epoch !== cardEpoch) return null;
       if (card) {
+        if (isInitialLoad || currentCardLinked === null) return displayCodeCard(card, code, epoch);
         currentCard = card;
         renderCard(currentCard);
         if (!pollTimer) startPolling(code);
@@ -1027,8 +1087,8 @@
       }
       return null;
     }).catch(function () {
-      // on initial load a bad/stale code means "start fresh"; on background
-      // polling ticks we just keep the last-known card on screen and retry later
+      if (epoch !== cardEpoch) return null;
+      // Keep the last-known card on background errors and retry on the next tick.
       if (isInitialLoad) {
         clearCode();
         showSignup();
@@ -1081,46 +1141,6 @@
     });
   }
 
-  function handleLookup(e) {
-    if (e) e.preventDefault();
-    $('lookup-error').classList.add('hidden');
-    var input = $('lookup-phone');
-    var nameInput = $('lookup-name');
-    var phone = (input.value || '').trim();
-    var name = (nameInput.value || '').trim();
-    if (phone.length < 5 || !name) {
-      input.focus();
-      input.style.borderColor = '#c0392b';
-      if (!name) nameInput.focus();
-      return;
-    }
-    input.style.borderColor = '#2b3a66';
-    var btn = $('btn-lookup');
-    btn.disabled = true;
-    supabaseClient.rpc('customer_lookup', { p_phone: phone, p_name: name }).then(function (res) {
-      if (res.error) throw res.error;
-      var rows = res.data;
-      if (!rows || rows.length === 0) {
-        $('lookup-error').textContent = 'No card matched that exact name and number. Check them, or sign in if your card is already secured.';
-        $('lookup-error').classList.remove('hidden');
-        $('cust-phone').value = phone;   // prefill the join form
-        $('cust-name').focus();
-        return;
-      }
-      var card = rows[0];
-      saveCode(card.member_code);
-      currentCard = card;
-      currentCardLinked = false;
-      renderCard(card);
-      startPolling(card.member_code);
-    }).catch(function (err) {
-      $('lookup-error').textContent = (err && err.message) || 'lookup failed — try again';
-      $('lookup-error').classList.remove('hidden');
-    }).finally(function () {
-      btn.disabled = false;
-    });
-  }
-
   function handleStartOver(e) {
     if (e) e.preventDefault();
     stopPolling();
@@ -1137,7 +1157,6 @@
 
   function init() {
     $('btn-join').addEventListener('click', handleJoin);
-    $('btn-lookup').addEventListener('click', handleLookup);
     $('link-start-over').addEventListener('click', handleStartOver);
     $('link-sign-in').addEventListener('click', function () { showAccountView('view-signin'); });
     $('link-signin-back').addEventListener('click', showSignup);
@@ -1147,38 +1166,39 @@
     $('link-secure-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
     $('link-claim-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
     $('link-verify-restart').addEventListener('click', function () { showSignup(); });
-    $('btn-signin').addEventListener('click', handleSignIn);
+    $('view-signin').addEventListener('submit', handleSignIn);
     $('btn-secure-card').addEventListener('click', handleOpenSecureCard);
-    $('btn-secure-submit').addEventListener('click', handleSecureSubmit);
-    $('btn-claim-card').addEventListener('click', handleClaimCard);
-    $('btn-verify-signup').addEventListener('click', handleVerifySignup);
-    $('btn-forgot-email').addEventListener('click', handleForgotEmail);
-    $('btn-reset-pin').addEventListener('click', handleResetPin);
+    $('view-secure-card').addEventListener('submit', handleSecureSubmit);
+    $('view-claim-card').addEventListener('submit', handleClaimCard);
+    $('view-verify-signup').addEventListener('submit', handleVerifySignup);
+    $('view-forgot-pin').addEventListener('submit', handleForgotEmail);
+    $('view-reset-pin').addEventListener('submit', handleResetPin);
     $('btn-customer-logout').addEventListener('click', handleCustomerLogout);
 
+    var epoch = cardEpoch;
     var urlCode = getCodeFromUrl();
     var savedCode = getSavedCode();
     supabaseClient.auth.getSession().then(function (res) {
+      if (epoch !== cardEpoch) return true;
       var session = res.data && res.data.session;
       customerEmail = session && session.user && session.user.email || null;
       if (urlCode) {
         return getCardByCode(urlCode).catch(function () { return null; }).then(function (card) {
+          if (epoch !== cardEpoch) return true;
           if (card) {
-            saveCode(urlCode);
-            displayAnonymousCard(card, urlCode);
-            return true;
+            return displayCodeCard(card, urlCode, epoch).then(function () { return true; });
           }
           return false;
         });
       }
       return false;
     }).then(function (foundUrlCard) {
-      if (foundUrlCard) return true;
+      if (foundUrlCard || epoch !== cardEpoch) return true;
       if (savedCode && savedCode !== urlCode) {
         return getCardByCode(savedCode).catch(function () { return null; }).then(function (card) {
+          if (epoch !== cardEpoch) return true;
           if (card) {
-            displayAnonymousCard(card, savedCode);
-            return true;
+            return displayCodeCard(card, savedCode, epoch).then(function () { return true; });
           }
           clearCode();
           return false;
@@ -1186,12 +1206,12 @@
       }
       return false;
     }).then(function (foundSavedCard) {
-      if (foundSavedCard) return null;
+      if (foundSavedCard || epoch !== cardEpoch) return null;
       if (customerEmail) return loadMyCard();
       showSignup();
       return null;
     }).catch(function () {
-      showSignup();
+      if (epoch === cardEpoch) showSignup();
     });
   }
 

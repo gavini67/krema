@@ -43,14 +43,15 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
 - The old *1-redeem-per-day* rule is gone; once-per-tier-per-cycle replaces it (stronger).
 - Only **staff** can add stamps / claim rewards. Enforced server-side (see §5).
 - Staff UI shows **one button per reached-but-unclaimed tier**, ascending, so an earlier reward is never hidden behind a later one.
-- Returning customers retrieve their card by **phone number** (`customer_lookup` anon RPC) or a bookmarkable `rewards.html?c=KREMA-XXXX` link — no password/PIN (see the login design spec).
+- After account activation, returning customers sign in with email + PIN or reopen an already-saved/bookmarked `rewards.html?c=KREMA-XXXX` / QR card. Unlinked cards can be secured only with existing code + phone after authentication; customers who lost access ask staff in person. Online phone/name recovery is retired.
 
 **Customer flow:** open `/rewards.html` → sign up (name + phone) → get a card with a QR + member code (e.g. `KREMA-1234`), remembered on the phone (localStorage stores only the member code). Card auto-refreshes every 4s + on focus, so staff stamps show up live.
 
 **Staff flow:** open `/staff.html` → log in (Supabase Auth) → scan customer QR (html5-qrcode camera) or phone-lookup fallback → add stamp / apply the pending milestone / redeem the free bingsu.
 
-**RPCs** (all return one row: `member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready`):
-`signup_customer(name,phone)`, `get_card(code)`, `customer_lookup(phone)` — anon ·
+**RPCs** (card rows use this shape; lookup shims return zero rows: `member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready`):
+`signup_customer(name,phone)` (new cards only), `get_card(code)` — anon ·
+`customer_lookup(phone)` and `customer_lookup(phone,name)` — anon compatibility shims, always zero rows after activation ·
 `add_stamp(code)`, `claim_reward(code,tier)`, `staff_lookup(phone)` — staff only.
 `redeem()` / `redeem_discount()` were **retired** with the 11-stamp model.
 
@@ -92,17 +93,17 @@ Full approved plan: **`docs/superpowers/plans/2026-08-04-customer-accounts-and-n
 Two features: email + **6-digit PIN** customer login (with "forgot PIN" by email), and a working newsletter (the footer form in `index.html` is currently dead — it only calls `preventDefault()`).
 
 Three things the planning turned up that must be respected:
-1. **Card-hijack hole.** `customer_lookup(phone)` *returns the member code*, so "code + phone" is only one factor — anyone knowing a phone could permanently claim a card. **Phase 1 hardening must ship before accounts.**
+1. **Card-hijack hole.** `customer_lookup(phone)` *returns the member code*, so "code + phone" is only one factor — anyone knowing a phone could permanently claim a card. **Phase 1 plus the final account-activation security ruling must ship before accounts.**
 2. **Session clash.** `rewards.html` and `staff.html` share one origin and one default Supabase auth storage key, so a customer logging in would log the barista out. Each client needs its own `storageKey`.
 3. **Phase 0 is owner work and blocks everything** — Brevo account, SPF/DKIM/DMARC at GoDaddy, Supabase custom SMTP, CAPTCHA, and switching the auth email templates to `{{ .Token }}` (OTP, not magic links). None of it is testable without working email.
 
 **Progress:**
 - [x] **Phase 1 — security hardening. APPLIED TO THE LIVE DB 2026-08-04 and verified.** Migration: `docs/migrations/2026-08-04-phase1-hardening.sql`.
-  - `signup_customer` now requires the **name to match** when the phone is already on a card. This was the sharpest hijack vector — sharper than `customer_lookup`, since it needed no second step: typing a stranger's number returned their card with the member code included.
+  - Phase 1 historically added signup name matching. This is insufficient for accounts: the activation migration supersedes it with generic rejection of every existing normalized phone, regardless of name or secured status, and zero-row lookup shims.
   - The internal helpers (`krema_goal/tiers/validity/norm_phone/new_code/claimed/card`) are revoked from `public, anon, authenticated`. Postgres grants EXECUTE to PUBLIC by default and PostgREST publishes every `public` function as an RPC, so they were all reachable by anon over HTTP. (Severity was lower than the plan implies — `krema_card(uuid)` needs a UUIDv4 that no anon RPC ever returns — but `authenticated` becomes untrusted once customers have accounts, so this is required either way.)
   - `is_staff()` → revoked from anon, granted to `authenticated` (staff.html needs it for the Phase 2 gate).
   - `card_claim_events` audit table added for Phase 3.
-  - ⚠️ Side effect: a returning customer who types their name differently than stored (`Gavin C` vs `Gavin`) now gets an error instead of their card. Case and whitespace are normalised; anything else is a real mismatch.
+  - After account activation, matching a name never restores a card online. Use the saved card or staff assistance in person.
 - [x] **Phase 2 — staff gate + session isolation. Shipped 2026-08-04.**
   - `staff.html` → `storageKey: 'krema-staff-auth'`; `rewards.html` → `'krema-customer-auth'` + `detectSessionInUrl: false`. **Changing the staff key logs the current barista out once — expected, just log back in.**
   - `staff.html` now calls `requireStaff()` (an `is_staff` RPC) on **both** the fresh-login and restore-session paths; a non-staff account is signed straight back out with *"that's not a staff account"*. Server-side enforcement was already correct — this stops a customer account from landing in a barista UI where every button fails.
@@ -118,6 +119,9 @@ Three things the planning turned up that must be respected:
 
 > **The Brevo tracking "problem" is already solved — don't chase it.** Brevo has no dashboard switch to disable open/click tracking for transactional mail (every plausible page was checked), and its real mechanism is a per-send `X-Mailin-Track-*` header that Supabase's SMTP settings don't expose. None of that matters: switching the templates to `{{ .Token }}` removed the **link**, so there is nothing left for Brevo to rewrite into an `r.mail...` redirect. That redirect was the strong spam signal; only the open pixel remains, which is weak. Confirmed live — the reset-password email landed in the **inbox**. Do NOT build a Supabase Auth Hook for this.
 - [ ] **Phase 3 — customer accounts.** Code is prepared on `feature/customer-accounts`; the SQL migration path is `docs/migrations/2026-09-13-customer-accounts.sql`. Activation remains pending on the owner steps above.
+  - **Final security ruling:** preserve both `customer_lookup` signatures/grants only as zero-row shims; `signup_customer` only creates new cards and uses one generic “please sign in or ask staff to reopen your card” error for any existing normalized phone. No name/code or linked status is returned.
+  - `get_card(code)` remains anonymous; authenticated `claim_card(code,phone)` and staff-only `staff_lookup` remain unchanged. Staff helps reopen lost unlinked cards in person; the customer then authenticates and secures the open card.
+  - Before activation, verify linked and unlinked lookup calls both return zero rows, duplicate signup never returns card data, saved-card/session ownership reconciles correctly, logout errors retain the session UI, recovery retries do not reuse OTPs, Enter submits each form once, 320px CAPTCHA fits, and late polling cannot reopen a departed view.
 - [ ] **Phase 4 — newsletter.** Blocked on Phase 0.
 
 - [ ] **Apply the RPC ambiguity fix for `redeem` + `redeem_discount` in the live DB.** On 2026-07-14 `add_stamp`/`redeem`/`redeem_discount` were found to throw `column reference "stamps" is ambiguous` — the `SELECT … INTO` (and `add_stamp`'s `UPDATE`) referenced bare column names that collide with the `RETURNS TABLE` output columns. Fix = qualify every ref with the `c.` alias (done in `supabase-setup.sql`). **`add_stamp` was re-run in Supabase and works; `redeem` + `redeem_discount` still need their corrected definitions run in the SQL Editor** (editing the file does NOT update the live DB — you must `create or replace` in Supabase). Verify a function's live body with `select pg_get_functiondef('public.redeem(text)'::regprocedure);`.
@@ -142,7 +146,7 @@ Three things the planning turned up that must be respected:
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' order by 2 desc, 1;
   ```
-  `anon` must be true for **only** `get_card`, `signup_customer`, `customer_lookup`. (Caught 2026-08-04: `waive_reward` shipped anon-executable because the revoke said `from public` alone.)
+  `anon` must be true for **only** `get_card`, `signup_customer`, and the two zero-row `customer_lookup` compatibility signatures. (Caught 2026-08-04: `waive_reward` shipped anon-executable because the revoke said `from public` alone.)
 - **`is_staff()` is the only thing between a customer account and staff powers.** Once customers are Auth users, `authenticated` is an untrusted public role. **Never remove** the `if not is_staff() then raise` line at the top of `add_stamp`, `claim_reward`, `staff_lookup`, `stamps_today` — and any new RPC granted to `authenticated` needs the same check.
   - ⚠️ **`qrcode` must be `1.5.1`, NOT 1.5.3/1.5.4.** The maintainer removed the browser bundle `build/qrcode.min.js` after 1.5.1 — on 1.5.3/1.5.4 that path 404s, `window.QRCode` never loads, and the customer card shows a **blank white QR box**. `1.5.1` ships the UMD build with the same `QRCode.toCanvas` API. (Fixed 2026-07-14.)
 - **Claude Design exports regress the same fixes every time.** When applying a new `*.dc.html` / design export over `index.html`, it re-exports from an older base and wipes: (1) featuredBingsu → resets to "Mango Magic" (should be **Mango Graham**, +price/desc), (2) community Instagram → fabricates FAKE posts (real handles: `rib.onn_`, `black.bird_05`, `chayincafes`, `thefoodieatty`, `mitchyko78`, `meagannochii` with real `instagram.com/p/...` permalinks) — and hard-codes `showEmbed = false`, forcing every slot to the branded fallback card (revert to `post.permalink && !failed[i]`), (3) mobile ticker → resets 20s→40s, (4) drops the `overscroll-behavior-x:none` + IG-iframe clamp, (5) **the club/rewards section is built on the retired 11-stamp mechanic** ("drink #11 is on us", 11 slots, 2 tiers) — the live card is 20 slots with 4 tiers. Take the design's markup and CSS, never its numbers. Always `git diff` a fresh export and treat everything except the intended change as a regression to revert.

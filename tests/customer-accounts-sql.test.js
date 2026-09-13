@@ -75,19 +75,21 @@ test('account RPCs scope cards to the authenticated user and preserve staff unli
   );
 });
 
-test('secured-card readers lock the eligible row through their return in setup and migration SQL', () => {
-  for (const [label, sql] of [['setup', setup], ['migration', migration]]) {
-    const phoneLookup = functionBody(sql, 'customer_lookup(p_phone text)');
-    assert.match(phoneLookup, /c\.user_id is null limit 1 for share;/, `${label} one-argument lookup must lock its unsecured result`);
-
-    const namedLookup = functionBody(sql, 'customer_lookup(p_phone text, p_name text)');
-    assert.match(namedLookup, /v_phone := krema_norm_phone\(p_phone\)/, `${label} named lookup must normalize the phone`);
-    assert.match(namedLookup, /lower\(trim\(c\.name\)\) = lower\(trim\(p_name\)\)/, `${label} named lookup must preserve name matching`);
-    assert.match(namedLookup, /c\.user_id is null limit 1 for share;/, `${label} named lookup must lock its unsecured result`);
-
+test('anonymous recovery shims disclose no cards and signup rejects every existing phone', () => {
+  for (const sql of [setup, migration]) {
+    for (const signature of ['customer_lookup(p_phone text)', 'customer_lookup(p_phone text, p_name text)']) {
+      const body = functionBody(sql, signature);
+      assertStandardCardShape(body);
+      assert.match(body, /begin return; end \$\$;/);
+      assert.doesNotMatch(body, /from public\.customers|krema_card/);
+      assert.equal(body, functionBody(setup, signature));
+    }
     const signup = functionBody(sql, 'signup_customer(p_name text, p_phone text)');
-    assert.match(signup, /from public\.customers c where c\.phone = v_phone for share;/, `${label} signup must lock an existing card before checking user_id`);
-    assert.match(signup, /elsif v_user_id is not null then raise exception 'this card is already secured — sign in to continue'/, `${label} signup must reject a secured existing card`);
+    assert.match(signup, /v_phone := krema_norm_phone\(p_phone\)/);
+    assert.match(signup, /on conflict \(phone\) do nothing/);
+    assert.match(signup, /if v_id is null then raise exception 'please sign in or ask staff to reopen your card'/);
+    assert.doesNotMatch(signup, /v_user_id|v_name|from public\.customers/);
+    assert.equal(signup, functionBody(setup, 'signup_customer(p_name text, p_phone text)'));
   }
 });
 
