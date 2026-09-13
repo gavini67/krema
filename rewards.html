@@ -154,6 +154,15 @@
         <button id="link-secure-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
       </div>
 
+      <div id="view-claim-card" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">LINK THIS CARD</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">You’re already signed in. Confirm the phone number on this card to link it to your account.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">phone on this card</span><input id="claim-phone" type="tel" autocomplete="tel" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <button id="btn-claim-card" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">link this card →</button>
+        <div id="claim-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-claim-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
+      </div>
+
       <div id="view-verify-signup" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">CHECK YOUR EMAIL</div>
         <div id="verify-signup-copy" style="font-size:14px;line-height:1.45;color:#4a5a8a;">Enter the 6–8 digit code from your email to secure your card.</div>
@@ -406,11 +415,12 @@
 
   var pollTimer = null;
   var currentCard = null;
+  var currentCardLinked = false;
   var customerEmail = null;
   var accountContext = { code: null, phone: null, email: null };
   var captchaTokens = {};
   var captchaWidgets = {};
-  var ACCOUNT_VIEWS = ['view-signin', 'view-secure-card', 'view-verify-signup', 'view-forgot-pin', 'view-reset-pin'];
+  var ACCOUNT_VIEWS = ['view-signin', 'view-secure-card', 'view-claim-card', 'view-verify-signup', 'view-forgot-pin', 'view-reset-pin'];
 
   function $(id) { return document.getElementById(id); }
 
@@ -722,16 +732,21 @@
 
   function renderAccountRow() {
     var signedIn = !!customerEmail;
-    $('card-account-copy').textContent = signedIn
+    var canClaim = signedIn && !currentCardLinked;
+    $('card-account-copy').textContent = currentCardLinked
       ? ('Signed in as ' + customerEmail)
-      : 'Keep your card safe on any device.';
-    $('btn-secure-card').classList.toggle('hidden', signedIn);
+      : canClaim
+        ? ('Signed in as ' + customerEmail + '. Link this card to your account.')
+        : 'Keep your card safe on any device.';
+    $('btn-secure-card').textContent = canClaim ? 'claim this card' : 'secure your card';
+    $('btn-secure-card').classList.toggle('hidden', signedIn && currentCardLinked);
     $('btn-customer-logout').classList.toggle('hidden', !signedIn);
   }
 
   function showSignup() {
     stopPolling();
     currentCard = null;
+    currentCardLinked = false;
     hideAllViews();
     $('view-signup').classList.remove('hidden');
   }
@@ -759,6 +774,7 @@
         return null;
       }
       currentCard = res.data[0];
+      currentCardLinked = true;
       saveCode(currentCard.member_code);
       renderCard(currentCard);
       startPolling(currentCard.member_code);
@@ -779,9 +795,12 @@
     supabaseClient.auth.signInWithPassword({ email: email, password: pin, options: { captchaToken: captchaToken } }).then(function (res) {
       if (res.error) throw res.error;
       customerEmail = res.data && res.data.session && res.data.session.user && res.data.session.user.email || email;
-      return loadMyCard();
+      return loadMyCard().catch(function () {
+        showSignup();
+        showSignupError('You’re signed in, but we could not load your card. Please refresh or find your card below.');
+      });
     }).catch(function () {
-      setFormMessage('signin-error', 'Email or PIN is incorrect.');
+      if (!customerEmail) setFormMessage('signin-error', 'Email or PIN is incorrect.');
     }).finally(function () {
       setBusy('btn-signin', false);
       resetCaptcha('signin');
@@ -798,6 +817,10 @@
     accountContext.code = currentCard.member_code;
     accountContext.phone = null;
     accountContext.email = null;
+    if (customerEmail && !currentCardLinked) {
+      showAccountView('view-claim-card');
+      return;
+    }
     showAccountView('view-secure-card');
   }
 
@@ -806,11 +829,24 @@
       if (res.error) throw res.error;
       if (!res.data || res.data.length === 0) throw new Error('card claim failed');
       currentCard = res.data[0];
+      currentCardLinked = true;
       saveCode(currentCard.member_code);
       renderCard(currentCard);
       startPolling(currentCard.member_code);
       return currentCard;
     });
+  }
+
+  function handleClaimCard(e) {
+    if (e) e.preventDefault();
+    setFormMessage('claim-error', '');
+    var phone = ($('claim-phone').value || '').trim();
+    if (!normPhone(phone)) return setFormMessage('claim-error', 'Enter the mobile number attached to this card.');
+    accountContext.phone = phone;
+    setBusy('btn-claim-card', true);
+    claimCurrentCard().catch(function () {
+      setFormMessage('claim-error', 'We could not link this card. Check the number and try again.');
+    }).finally(function () { setBusy('btn-claim-card', false); });
   }
 
   function handleSecureSubmit(e) {
@@ -839,7 +875,9 @@
       }
       if (res.data && res.data.session) {
         customerEmail = res.data.session.user && res.data.session.user.email || email;
-        return claimCurrentCard();
+        return claimCurrentCard().catch(function () {
+          setFormMessage('secure-error', 'Your account is ready, but we could not link this card. Please try again from your card.');
+        });
       }
       showAccountView('view-verify-signup');
       return null;
@@ -860,9 +898,11 @@
     supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'signup' }).then(function (res) {
       if (res.error) throw res.error;
       customerEmail = accountContext.email;
-      return claimCurrentCard();
+      return claimCurrentCard().catch(function () {
+        setFormMessage('verify-signup-error', 'Your email was verified, but we could not link this card. Return to your card and try again.');
+      });
     }).catch(function () {
-      setFormMessage('verify-signup-error', 'That code could not be verified. Please try again.');
+      if (!customerEmail) setFormMessage('verify-signup-error', 'That code could not be verified. Please try again.');
     }).finally(function () { setBusy('btn-verify-signup', false); });
   }
 
@@ -875,12 +915,12 @@
     if (!captchaToken) return;
     accountContext.email = email;
     setBusy('btn-forgot-email', true);
-    supabaseClient.auth.resetPasswordForEmail(email, { captchaToken: captchaToken }).then(function () {
+    supabaseClient.auth.resetPasswordForEmail(email, { captchaToken: captchaToken }).then(function (res) {
+      if (res.error) throw res.error;
       showAccountView('view-reset-pin');
       setFormMessage('reset-error', 'If this email can receive a reset, a code is on its way.');
     }).catch(function () {
-      showAccountView('view-reset-pin');
-      setFormMessage('reset-error', 'If this email can receive a reset, a code is on its way.');
+      setFormMessage('forgot-error', 'We could not send a reset code. Please try again.');
     }).finally(function () {
       setBusy('btn-forgot-email', false);
       resetCaptcha('forgot');
@@ -899,13 +939,18 @@
     setBusy('btn-reset-pin', true);
     supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'recovery' }).then(function (res) {
       if (res.error) throw res.error;
-      return supabaseClient.auth.updateUser({ password: pin });
-    }).then(function (res) {
-      if (res.error) throw res.error;
-      customerEmail = accountContext.email;
-      return loadMyCard('Your new PIN is ready. Find or create a card to link it.');
+      return supabaseClient.auth.updateUser({ password: pin }).then(function (updateRes) {
+        if (updateRes.error) throw updateRes.error;
+        customerEmail = accountContext.email;
+        return loadMyCard('Your new PIN is ready. Find or create a card to link it.').catch(function () {
+          showSignup();
+          showSignupError('Your PIN was updated, but we could not load your card. Please refresh or find your card below.');
+        });
+      }).catch(function () {
+        setFormMessage('reset-error', 'We could not update your PIN. Please try again.');
+      });
     }).catch(function () {
-      setFormMessage('reset-error', 'We could not update your PIN. Please check the code and try again.');
+      setFormMessage('reset-error', 'That code could not be verified. Please try again.');
     }).finally(function () { setBusy('btn-reset-pin', false); });
   }
 
@@ -949,18 +994,34 @@
     if (code) fetchAndRenderCard(code, false);
   }
 
-  function fetchAndRenderCard(code, isInitialLoad) {
+  function getCardByCode(code) {
     return supabaseClient.rpc('get_card', { p_code: code }).then(function (res) {
       if (res.error) throw res.error;
       var rows = res.data;
-      if (!rows || rows.length === 0) {
+      return rows && rows.length ? rows[0] : null;
+    });
+  }
+
+  function displayAnonymousCard(card, code) {
+    currentCard = card;
+    currentCardLinked = false;
+    renderCard(currentCard);
+    if (!pollTimer) startPolling(code);
+  }
+
+  function fetchAndRenderCard(code, isInitialLoad) {
+    return getCardByCode(code).then(function (card) {
+      if (card) {
+        currentCard = card;
+        renderCard(currentCard);
+        if (!pollTimer) startPolling(code);
+        return card;
+      }
+      if (isInitialLoad) {
         clearCode();
         showSignup();
-        return;
       }
-      currentCard = rows[0];
-      renderCard(currentCard);
-      if (!pollTimer) startPolling(code);
+      return null;
     }).catch(function () {
       // on initial load a bad/stale code means "start fresh"; on background
       // polling ticks we just keep the last-known card on screen and retry later
@@ -968,6 +1029,7 @@
         clearCode();
         showSignup();
       }
+      return null;
     });
   }
 
@@ -1005,6 +1067,7 @@
       var card = rows[0];
       saveCode(card.member_code);
       currentCard = card;
+      currentCardLinked = false;
       renderCard(card);
       startPolling(card.member_code);
     }).catch(function (err) {
@@ -1043,6 +1106,7 @@
       var card = rows[0];
       saveCode(card.member_code);
       currentCard = card;
+      currentCardLinked = false;
       renderCard(card);
       startPolling(card.member_code);
     }).catch(function (err) {
@@ -1058,6 +1122,7 @@
     stopPolling();
     clearCode();
     currentCard = null;
+    currentCardLinked = false;
     hideSignupError();
     var nameInput = $('cust-name');
     var phoneInput = $('cust-phone');
@@ -1075,34 +1140,55 @@
     $('link-forgot-pin').addEventListener('click', function () { showAccountView('view-forgot-pin'); });
     $('link-forgot-back').addEventListener('click', function () { showAccountView('view-signin'); });
     $('link-reset-back').addEventListener('click', function () { showAccountView('view-signin'); });
-    $('link-secure-back').addEventListener('click', function () { if (currentCard) renderCard(currentCard); else showSignup(); });
+    $('link-secure-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
+    $('link-claim-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
     $('link-verify-restart').addEventListener('click', function () { showSignup(); });
     $('btn-signin').addEventListener('click', handleSignIn);
     $('btn-secure-card').addEventListener('click', handleOpenSecureCard);
     $('btn-secure-submit').addEventListener('click', handleSecureSubmit);
+    $('btn-claim-card').addEventListener('click', handleClaimCard);
     $('btn-verify-signup').addEventListener('click', handleVerifySignup);
     $('btn-forgot-email').addEventListener('click', handleForgotEmail);
     $('btn-reset-pin').addEventListener('click', handleResetPin);
     $('btn-customer-logout').addEventListener('click', handleCustomerLogout);
 
     var urlCode = getCodeFromUrl();
-    var code = urlCode || getSavedCode();
-    if (code) {
-      if (urlCode) saveCode(urlCode);
-      fetchAndRenderCard(code, true);
-    } else {
-      supabaseClient.auth.getSession().then(function (res) {
-        var session = res.data && res.data.session;
-        if (!session) {
-          showSignup();
-          return;
-        }
-        customerEmail = session.user && session.user.email || null;
-        return loadMyCard();
-      }).catch(function () {
-        showSignup();
-      });
-    }
+    var savedCode = getSavedCode();
+    supabaseClient.auth.getSession().then(function (res) {
+      var session = res.data && res.data.session;
+      customerEmail = session && session.user && session.user.email || null;
+      if (urlCode) {
+        return getCardByCode(urlCode).catch(function () { return null; }).then(function (card) {
+          if (card) {
+            saveCode(urlCode);
+            displayAnonymousCard(card, urlCode);
+            return true;
+          }
+          return false;
+        });
+      }
+      return false;
+    }).then(function (foundUrlCard) {
+      if (foundUrlCard) return true;
+      if (savedCode && savedCode !== urlCode) {
+        return getCardByCode(savedCode).catch(function () { return null; }).then(function (card) {
+          if (card) {
+            displayAnonymousCard(card, savedCode);
+            return true;
+          }
+          clearCode();
+          return false;
+        });
+      }
+      return false;
+    }).then(function (foundSavedCard) {
+      if (foundSavedCard) return null;
+      if (customerEmail) return loadMyCard();
+      showSignup();
+      return null;
+    }).catch(function () {
+      showSignup();
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
