@@ -80,3 +80,52 @@ The workspace does not include the `psql` client, so this task could not run a
 local PostgreSQL parse or execute the migration against a Supabase database.
 The Node contract tests and final SQL/permission diff review passed; applying
 the migration to the live database remains an owner deployment step.
+
+## Fix round 1 — concurrent secured-card reads
+
+### Status
+
+Completed. `signup_customer` and both `customer_lookup` overloads now lock an
+eligible existing customer row with `FOR SHARE` before returning its card.
+`claim_card` updates `customers.user_id`; that update conflicts with the share
+lock, so it cannot secure the card between the eligibility check and the
+returned card shape.
+
+The same locks are present in both `supabase-setup.sql` and
+`docs/migrations/2026-09-13-customer-accounts.sql`.
+
+### Covering tests
+
+- `tests/customer-accounts-sql.test.js`
+  - Requires the one-argument and named lookup functions to lock their
+    `user_id is null` result with `FOR SHARE`.
+  - Requires `signup_customer` to lock the existing row before reading its
+    `user_id`.
+  - Applies these assertions to both the source-of-truth SQL and migration,
+    and checks the relevant anonymous/authenticated grants in both artifacts.
+
+Red run after amending the tests and before production SQL changes:
+
+```text
+$ node --test tests/customer-accounts-sql.test.js
+ℹ tests 5
+ℹ pass 4
+ℹ fail 1
+✖ secured-card readers lock the eligible row through their return in setup and migration SQL
+  AssertionError [ERR_ASSERTION]: setup one-argument lookup must lock its unsecured result
+```
+
+Green run after adding the locks:
+
+```text
+$ node --test tests/customer-accounts-sql.test.js
+ℹ tests 5
+ℹ pass 5
+ℹ fail 0
+```
+
+### Concerns
+
+The no-local-Postgres limitation remains. The Node tests verify the required
+locking contract and source/migration parity, but live execution still needs a
+Supabase SQL Editor deployment check.

@@ -248,8 +248,11 @@ begin
     raise exception 'enter a valid mobile number, e.g. 0917 123 4567';
   end if;
 
+  -- Lock an existing card through the returned card shape. This conflicts
+  -- with claim_card's link update, so signup cannot return a newly secured
+  -- existing card after checking its previous user_id.
   select c.id, c.name, c.user_id into v_id, v_name, v_user_id
-    from public.customers c where c.phone = v_phone;
+    from public.customers c where c.phone = v_phone for share;
 
   if v_id is null then
     insert into public.customers (member_code, name, phone, stamps, lifetime)
@@ -295,7 +298,7 @@ begin
    where (c.phone = coalesce(krema_norm_phone(p_phone), '~none~')
       or c.phone = trim(p_phone))
      and c.user_id is null
-   limit 1;
+   limit 1 for share;
   if v_id is null then return; end if;
   return query select * from public.krema_card(v_id);
 end $$;
@@ -316,7 +319,7 @@ begin
    where c.phone = v_phone
      and lower(trim(c.name)) = lower(trim(p_name))
      and c.user_id is null
-   limit 1;
+   limit 1 for share;
   if v_id is null then return; end if;
   return query select * from public.krema_card(v_id);
 end $$;

@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const setupPath = path.join(root, 'supabase-setup.sql');
 const migrationPath = path.join(root, 'docs/migrations/2026-09-13-customer-accounts.sql');
 const setup = fs.readFileSync(setupPath, 'utf8');
+const migration = fs.readFileSync(migrationPath, 'utf8');
 
 function normalise(sql) {
   return sql.replace(/\s+/g, ' ').toLowerCase();
@@ -68,17 +69,20 @@ test('account RPCs scope cards to the authenticated user and preserve staff unli
   assert.match(unlinkCard, /insert into public\.card_claim_events \(customer_id, user_id, action\) values \(v_id, v_user_id, 'unlink'\)/);
 });
 
-test('customer lookup and signup do not disclose secured cards', () => {
-  const phoneLookup = functionBody(setup, 'customer_lookup(p_phone text)');
-  assert.match(phoneLookup, /c\.user_id is null/);
+test('secured-card readers lock the eligible row through their return in setup and migration SQL', () => {
+  for (const [label, sql] of [['setup', setup], ['migration', migration]]) {
+    const phoneLookup = functionBody(sql, 'customer_lookup(p_phone text)');
+    assert.match(phoneLookup, /c\.user_id is null limit 1 for share;/, `${label} one-argument lookup must lock its unsecured result`);
 
-  const namedLookup = functionBody(setup, 'customer_lookup(p_phone text, p_name text)');
-  assert.match(namedLookup, /v_phone := krema_norm_phone\(p_phone\)/);
-  assert.match(namedLookup, /lower\(trim\(c\.name\)\) = lower\(trim\(p_name\)\)/);
-  assert.match(namedLookup, /c\.user_id is null/);
+    const namedLookup = functionBody(sql, 'customer_lookup(p_phone text, p_name text)');
+    assert.match(namedLookup, /v_phone := krema_norm_phone\(p_phone\)/, `${label} named lookup must normalize the phone`);
+    assert.match(namedLookup, /lower\(trim\(c\.name\)\) = lower\(trim\(p_name\)\)/, `${label} named lookup must preserve name matching`);
+    assert.match(namedLookup, /c\.user_id is null limit 1 for share;/, `${label} named lookup must lock its unsecured result`);
 
-  const signup = functionBody(setup, 'signup_customer(p_name text, p_phone text)');
-  assert.match(signup, /elsif v_user_id is not null then raise exception 'this card is already secured — sign in to continue'/);
+    const signup = functionBody(sql, 'signup_customer(p_name text, p_phone text)');
+    assert.match(signup, /from public\.customers c where c\.phone = v_phone for share;/, `${label} signup must lock an existing card before checking user_id`);
+    assert.match(signup, /elsif v_user_id is not null then raise exception 'this card is already secured — sign in to continue'/, `${label} signup must reject a secured existing card`);
+  }
 });
 
 test('only the permitted RPCs remain anonymous and the migration is transactional', () => {
@@ -94,9 +98,19 @@ test('only the permitted RPCs remain anonymous and the migration is transactiona
   }
   assert.match(sql, /grant execute on function public\.customer_lookup\(text,text\) to anon, authenticated/);
 
-  const migration = normalise(fs.readFileSync(migrationPath, 'utf8')).trim();
-  assert.match(migration, /begin;/);
-  assert.ok(migration.endsWith('commit;'));
-  assert.match(migration, /create or replace function public\.claim_card\(p_code text, p_phone text\)/);
-  assert.match(migration, /grant execute on function public\.customer_lookup\(text,text\) to anon, authenticated/);
+  const normalizedMigration = normalise(migration).trim();
+  assert.match(normalizedMigration, /begin;/);
+  assert.ok(normalizedMigration.endsWith('commit;'));
+  assert.match(normalizedMigration, /create or replace function public\.claim_card\(p_code text, p_phone text\)/);
+
+  for (const [label, sqlText] of [['setup', sql], ['migration', normalizedMigration]]) {
+    assert.match(sqlText, /grant execute on function public\.signup_customer\(text,text\) to anon, authenticated/, `${label} must retain anon signup access`);
+    assert.match(sqlText, /grant execute on function public\.customer_lookup\(text\) to anon, authenticated/, `${label} must retain anon one-argument lookup access`);
+    assert.match(sqlText, /grant execute on function public\.customer_lookup\(text,text\) to anon, authenticated/, `${label} must retain anon named lookup access`);
+    for (const signature of ['claim_card(text,text)', 'get_my_card()', 'unlink_card(text)']) {
+      const escaped = signature.replace(/[()]/g, '\\$&');
+      assert.match(sqlText, new RegExp(`revoke all on function public\\.${escaped} from public, anon`), `${label} must revoke anonymous ${signature} access`);
+      assert.match(sqlText, new RegExp(`grant execute on function public\\.${escaped} to authenticated`), `${label} must grant ${signature} only to authenticated users`);
+    }
+  }
 });
