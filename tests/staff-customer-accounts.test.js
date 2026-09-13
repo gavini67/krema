@@ -46,8 +46,9 @@ function idsInPage() {
 function flush() { return new Promise((resolve) => setImmediate(resolve)); }
 function plain(value) { return JSON.parse(JSON.stringify(value)); }
 
-function makeApp({ hostname = 'localhost', width = 390, auth = {}, rpc = {}, session = null, turnstile = true, confirm = () => true } = {}) {
+function makeApp({ hostname = 'localhost', width = 390, turnstileWidth = width - 84, turnstileResults = [], auth = {}, rpc = {}, session = null, turnstile = true, confirm = () => true } = {}) {
   const elements = new Map(idsInPage().map((id) => [id, new FakeElement(id)]));
+  elements.get('staff-turnstile').clientWidth = turnstileWidth;
   const calls = { auth: [], rpc: [], turnstile: [], resets: [], confirms: [], createClient: [] };
   const documentListeners = new Map();
   const client = {
@@ -85,7 +86,12 @@ function makeApp({ hostname = 'localhost', width = 390, auth = {}, rpc = {}, ses
   };
   if (turnstile) {
     window.turnstile = {
-      render(container, options) { calls.turnstile.push({ container, options }); return `widget-${calls.turnstile.length}`; },
+      render(container, options) {
+        calls.turnstile.push({ container, options });
+        const result = turnstileResults.shift();
+        if (result instanceof Error) throw result;
+        return result || `widget-${calls.turnstile.length}`;
+      },
       reset(widgetId) { calls.resets.push(widgetId); },
     };
   }
@@ -129,9 +135,10 @@ test('staff login uses local and production keys, forwards a token, and resets t
   await flush();
   const captcha = production.calls.turnstile.at(-1).options;
   assert.equal(captcha.sitekey, '0x4AAAAAAEyPyxkgME5XT2-U');
-  const mobile = makeApp({ hostname: 'staff.krema.ph', width: 320 });
+  const mobile = makeApp({ hostname: 'staff.krema.ph', width: 375, turnstileWidth: 291 });
   await flush();
   assert.equal(mobile.calls.turnstile.at(-1).options.size, 'compact');
+  assert.equal(captcha.size, 'normal');
   production.elements.get('staff-email').value = 'crew@krema.ph';
   production.elements.get('staff-password').value = 'password';
   production.elements.get('btn-login').click();
@@ -156,6 +163,34 @@ test('a restored staff session skips Turnstile while keeping the staff gate and 
   assert.ok(app.elements.get('view-login').classList.contains('hidden'));
   assert.ok(!app.elements.get('view-scan').classList.contains('hidden'));
   assert.deepEqual(plain(app.calls.createClient[0].slice(2)), [{ auth: { storageKey: 'krema-staff-auth' } }]);
+});
+
+test('logging out from a restored staff session creates a fresh CAPTCHA-required login', async () => {
+  const app = makeApp({ session: { user: { email: 'crew@krema.ph' } } });
+  await flush(); await flush();
+  assert.equal(app.calls.turnstile.length, 0);
+  app.elements.get('link-logout-scan').click();
+  await flush();
+  const captcha = app.calls.turnstile.at(-1).options;
+  assert.equal(app.calls.turnstile.length, 1);
+  captcha.callback('after-logout-captcha');
+  app.elements.get('staff-email').value = 'crew@krema.ph';
+  app.elements.get('staff-password').value = 'password';
+  app.elements.get('btn-login').click();
+  await flush(); await flush();
+  assert.deepEqual(plain(app.calls.auth.find(([name]) => name === 'signInWithPassword').slice(1)), [
+    { email: 'crew@krema.ph', password: 'password', options: { captchaToken: 'after-logout-captcha' } },
+  ]);
+});
+
+test('a synchronous Turnstile render failure shows inline feedback and leaves a retryable widget state', async () => {
+  const app = makeApp({ turnstileResults: [new Error('blocked'), 'retry-widget'] });
+  await flush();
+  assert.equal(app.calls.turnstile.length, 1);
+  assert.match(app.elements.get('staff-turnstile-error').textContent, /security check.*reload/i);
+  app.elements.get('btn-login').click();
+  await flush();
+  assert.equal(app.calls.turnstile.length, 2);
 });
 
 test('a missing Turnstile blocks staff password login with inline feedback', async () => {

@@ -342,23 +342,31 @@
       showStaffTurnstileError('security check could not load — reload this page before logging in');
       return;
     }
-    staffTurnstileRendered = true;
-    staffTurnstileWidgetId = window.turnstile.render($('staff-turnstile'), {
-      sitekey: staffTurnstileSiteKey(),
-      size: window.innerWidth <= 360 ? 'compact' : 'normal',
-      callback: function (token) {
-        staffCaptchaToken = token;
-        $('staff-turnstile-error').classList.add('hidden');
-      },
-      'expired-callback': function () {
-        staffCaptchaToken = null;
-        showStaffTurnstileError('security check expired — complete it again');
-      },
-      'error-callback': function () {
-        staffCaptchaToken = null;
-        showStaffTurnstileError('security check could not load — reload this page before logging in');
-      }
-    });
+    var container = $('staff-turnstile');
+    try {
+      staffTurnstileWidgetId = window.turnstile.render(container, {
+        sitekey: staffTurnstileSiteKey(),
+        size: container.clientWidth < 300 ? 'compact' : 'normal',
+        callback: function (token) {
+          staffCaptchaToken = token;
+          $('staff-turnstile-error').classList.add('hidden');
+        },
+        'expired-callback': function () {
+          staffCaptchaToken = null;
+          showStaffTurnstileError('security check expired — complete it again');
+        },
+        'error-callback': function () {
+          staffCaptchaToken = null;
+          showStaffTurnstileError('security check could not load — reload this page before logging in');
+        }
+      });
+      staffTurnstileRendered = true;
+    } catch (err) {
+      staffCaptchaToken = null;
+      staffTurnstileWidgetId = null;
+      staffTurnstileRendered = false;
+      showStaffTurnstileError('security check could not load — reload this page before logging in');
+    }
   }
 
   function resetStaffTurnstile() {
@@ -516,6 +524,7 @@
     $('login-error').classList.add('hidden');
 
     if (!staffCaptchaToken) {
+      renderStaffTurnstile();
       $('login-error').textContent = 'complete the security check before logging in';
       $('login-error').classList.remove('hidden');
       return;
@@ -561,6 +570,8 @@
     supabaseClient.auth.signOut().catch(function () { /* ignore */ });
     current = null;
     showView('login');
+    resetStaffTurnstile();
+    renderStaffTurnstile();
   }
 
   // ── customer lookup ────────────────────────────────────────────

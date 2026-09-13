@@ -65,8 +65,14 @@ test('account RPCs scope cards to the authenticated user and preserve staff unli
   assertStandardCardShape(unlinkCard);
   assert.match(unlinkCard, /if not is_staff\(\) then raise exception 'staff only'; end if;/);
   assert.match(unlinkCard, /where c\.member_code = p_code for update/);
+  assert.match(unlinkCard, /if v_user_id is null then raise exception 'card is not linked'; end if;/);
   assert.match(unlinkCard, /update public\.customers c set user_id = null where c\.id = v_id/);
   assert.match(unlinkCard, /insert into public\.card_claim_events \(customer_id, user_id, action\) values \(v_id, v_user_id, 'unlink'\)/);
+  assert.equal(
+    functionBody(setup, 'unlink_card(p_code text)'),
+    functionBody(migration, 'unlink_card(p_code text)'),
+    'unlink_card must stay identical in setup and migration SQL',
+  );
 });
 
 test('secured-card readers lock the eligible row through their return in setup and migration SQL', () => {

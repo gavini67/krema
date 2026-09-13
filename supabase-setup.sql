@@ -384,6 +384,7 @@ begin
   select c.id, c.user_id into v_id, v_user_id
     from public.customers c where c.member_code = p_code for update;
   if v_id is null then raise exception 'card not found'; end if;
+  if v_user_id is null then raise exception 'card is not linked'; end if;
 
   update public.customers c set user_id = null where c.id = v_id;
   insert into public.card_claim_events (customer_id, user_id, action)
