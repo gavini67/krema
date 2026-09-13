@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://use.typekit.net/fct6adk.css"><!-- Adobe Fonts: Neighbor (Black) -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -67,7 +68,7 @@
     <div class="kr-body" style="padding:14px 22px 34px;display:flex;flex-direction:column;gap:20px;min-height:660px;">
 
       <!-- ════════════════ SIGNUP ════════════════ -->
-      <div id="view-signup" style="display:flex;flex-direction:column;gap:20px;">
+      <div id="view-signup" class="hidden" style="display:flex;flex-direction:column;gap:20px;">
         <div style="display:flex;align-items:center;gap:11px;">
           <img src="assets/krema-brandmark.png" alt="Krema" style="width:52px;height:52px;object-fit:contain;transform:rotate(-4deg);">
           <div>
@@ -102,7 +103,7 @@
 
         <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
 
-        <div id="signup-error" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <div id="signup-error" class="hidden" aria-live="polite" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
 
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
 
@@ -114,12 +115,73 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:9px;">
           <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">already have a card?</span>
+          <label style="display:flex;flex-direction:column;gap:7px;">
+            <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">exact name on your card</span>
+            <input id="lookup-name" type="text" placeholder="e.g. Bea Santos" style="width:100%;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+          </label>
           <div style="display:flex;gap:10px;">
-            <input id="lookup-phone" type="tel" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
+            <input id="lookup-phone" type="tel" aria-label="phone number" placeholder="09XX XXX XXXX" style="flex:1;min-width:0;padding:14px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             <button id="btn-lookup" style="flex:none;padding:0 20px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;background:#dcebf7;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6),4px 5px 0 #2b3a66;cursor:pointer;">find</button>
           </div>
-          <div id="lookup-error" class="hidden" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
+          <div id="lookup-error" class="hidden" aria-live="polite" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
         </div>
+        <button id="link-sign-in" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
+      </div>
+
+      <!-- ════════════════ CUSTOMER ACCOUNT VIEWS ════════════════ -->
+      <div id="view-signin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:0.95;">WELCOME BACK!</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Sign in to keep your card close, bestie.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="signin-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">6-digit PIN</span><input id="signin-pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <div id="captcha-signin"></div>
+        <button id="btn-signin" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">sign in →</button>
+        <div id="signin-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-forgot-pin" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">forgot your PIN?</button>
+        <button id="link-signin-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back</button>
+      </div>
+
+      <div id="view-secure-card" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">SECURE YOUR CARD</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Your PIN only opens this rewards card. Please don’t reuse a bank or GCash PIN.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="secure-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">phone on this card</span><input id="secure-phone" type="tel" autocomplete="tel" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">new 6-digit PIN</span><input id="secure-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">confirm PIN</span><input id="secure-confirm-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <div id="captcha-signup"></div>
+        <button id="btn-secure-submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">secure my card →</button>
+        <div id="secure-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-secure-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
+      </div>
+
+      <div id="view-verify-signup" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">CHECK YOUR EMAIL</div>
+        <div id="verify-signup-copy" style="font-size:14px;line-height:1.45;color:#4a5a8a;">Enter the 6–8 digit code from your email to secure your card.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">verification code</span><input id="verify-signup-token" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <button id="btn-verify-signup" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">verify & secure →</button>
+        <div id="verify-signup-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-verify-restart" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">start signup again</button>
+      </div>
+
+      <div id="view-forgot-pin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">RESET YOUR PIN</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">We’ll email a verification code if this address can receive one.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="forgot-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <div id="captcha-forgot"></div>
+        <button id="btn-forgot-email" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">email me a code →</button>
+        <div id="forgot-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-forgot-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
+      </div>
+
+      <div id="view-reset-pin" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">MAKE A NEW PIN</div>
+        <div id="reset-pin-copy" style="font-size:14px;line-height:1.45;color:#4a5a8a;">Enter the 6–8 digit code from your email, then choose a new PIN.</div>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">verification code</span><input id="reset-token" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">new 6-digit PIN</span><input id="reset-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">confirm PIN</span><input id="reset-confirm-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
+        <button id="btn-reset-pin" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">save new PIN →</button>
+        <div id="reset-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
+        <button id="link-reset-back" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to sign in</button>
       </div>
 
       <!-- ════════════════ PUNCH CARD ════════════════ -->
@@ -257,6 +319,12 @@
           <div id="history-items" style="display:flex;flex-direction:column;gap:11px;"></div>
         </div>
 
+        <div id="card-account-row" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div id="card-account-copy" style="font-size:13px;line-height:1.35;color:#4a5a8a;">Keep your card safe on any device.</div>
+          <button id="btn-secure-card" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">secure your card</button>
+          <button id="btn-customer-logout" class="hidden" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FEFFE6;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">log out</button>
+        </div>
+
         <div style="text-align:center;">
           <a id="link-start-over" data-action="start-over" href="#">start over</a>
           <style>#link-start-over { font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:13px;color:#4a5a8a;border-bottom:2px dashed #8695ba;padding-bottom:1px; }</style>
@@ -338,8 +406,83 @@
 
   var pollTimer = null;
   var currentCard = null;
+  var customerEmail = null;
+  var accountContext = { code: null, phone: null, email: null };
+  var captchaTokens = {};
+  var captchaWidgets = {};
+  var ACCOUNT_VIEWS = ['view-signin', 'view-secure-card', 'view-verify-signup', 'view-forgot-pin', 'view-reset-pin'];
 
   function $(id) { return document.getElementById(id); }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+  }
+
+  function isValidPin(value) {
+    var pin = String(value || '');
+    return /^\d{6}$/.test(pin) && pin !== '000000' && pin !== '123456' && !/^(\d)\1{5}$/.test(pin);
+  }
+
+  function isValidVerificationCode(value) {
+    return /^\d{6,8}$/.test(String(value || '').trim());
+  }
+
+  function setFormMessage(id, message) {
+    var el = $(id);
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('hidden', !message);
+  }
+
+  function turnstileSiteKey() {
+    var host = (window.location.hostname || '').toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1'
+      ? '1x00000000000000000000AA'
+      : '0x4AAAAAAEyPyxkgME5XT2-U';
+  }
+
+  function resetCaptcha(kind) {
+    captchaTokens[kind] = null;
+    if (window.turnstile && captchaWidgets[kind]) window.turnstile.reset(captchaWidgets[kind]);
+  }
+
+  function renderCaptcha(kind, errorId) {
+    var target = $('captcha-' + kind);
+    if (!target) return;
+    captchaTokens[kind] = null;
+    target.innerHTML = '';
+    if (!window.turnstile || typeof window.turnstile.render !== 'function') {
+      setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.');
+      return;
+    }
+    captchaWidgets[kind] = window.turnstile.render(target, {
+      sitekey: turnstileSiteKey(),
+      callback: function (token) { captchaTokens[kind] = token; setFormMessage(errorId, ''); },
+      'error-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check is unavailable. Please refresh and try again.'); },
+      'expired-callback': function () { captchaTokens[kind] = null; setFormMessage(errorId, 'Security check expired. Please complete it again.'); }
+    });
+  }
+
+  function requireCaptcha(kind, errorId) {
+    if (captchaTokens[kind]) return captchaTokens[kind];
+    setFormMessage(errorId, window.turnstile ? 'Please complete the security check.' : 'Security check is unavailable. Please refresh and try again.');
+    return null;
+  }
+
+  function hideAllViews() {
+    $('view-signup').classList.add('hidden');
+    $('view-card').classList.add('hidden');
+    ACCOUNT_VIEWS.forEach(function (id) { $(id).classList.add('hidden'); });
+  }
+
+  function showAccountView(id) {
+    stopPolling();
+    hideAllViews();
+    $(id).classList.remove('hidden');
+    if (id === 'view-signin') renderCaptcha('signin', 'signin-error');
+    if (id === 'view-secure-card') renderCaptcha('signup', 'secure-error');
+    if (id === 'view-forgot-pin') renderCaptcha('forgot', 'forgot-error');
+  }
 
   // PH mobile → 09XXXXXXXXX, or null if it isn't one.
   // Must stay in sync with krema_norm_phone() in supabase-setup.sql.
@@ -520,6 +663,7 @@
 
   function renderCard(c) {
     $('view-signup').classList.add('hidden');
+    ACCOUNT_VIEWS.forEach(function (id) { $(id).classList.add('hidden'); });
     $('view-card').classList.remove('hidden');
 
     var state = deriveState(c);
@@ -573,12 +717,22 @@
     renderQR(c.member_code);
 
     $('history-block').classList.add('hidden');
+    renderAccountRow();
+  }
+
+  function renderAccountRow() {
+    var signedIn = !!customerEmail;
+    $('card-account-copy').textContent = signedIn
+      ? ('Signed in as ' + customerEmail)
+      : 'Keep your card safe on any device.';
+    $('btn-secure-card').classList.toggle('hidden', signedIn);
+    $('btn-customer-logout').classList.toggle('hidden', !signedIn);
   }
 
   function showSignup() {
     stopPolling();
     currentCard = null;
-    $('view-card').classList.add('hidden');
+    hideAllViews();
     $('view-signup').classList.remove('hidden');
   }
 
@@ -590,6 +744,181 @@
 
   function hideSignupError() {
     $('signup-error').classList.add('hidden');
+  }
+
+  function setBusy(buttonId, busy) {
+    $(buttonId).disabled = busy;
+  }
+
+  function loadMyCard(noCardMessage) {
+    return supabaseClient.rpc('get_my_card').then(function (res) {
+      if (res.error) throw res.error;
+      if (!res.data || res.data.length === 0) {
+        showSignup();
+        showSignupError(noCardMessage || 'You’re signed in, but don’t have a linked card yet. Find an existing card or start a new one.');
+        return null;
+      }
+      currentCard = res.data[0];
+      saveCode(currentCard.member_code);
+      renderCard(currentCard);
+      startPolling(currentCard.member_code);
+      return currentCard;
+    });
+  }
+
+  function handleSignIn(e) {
+    if (e) e.preventDefault();
+    setFormMessage('signin-error', '');
+    var email = ($('signin-email').value || '').trim();
+    var pin = $('signin-pin').value || '';
+    if (!isValidEmail(email)) return setFormMessage('signin-error', 'Enter a valid email address.');
+    if (!isValidPin(pin)) return setFormMessage('signin-error', 'Use a six-digit PIN that is not easy to guess.');
+    var captchaToken = requireCaptcha('signin', 'signin-error');
+    if (!captchaToken) return;
+    setBusy('btn-signin', true);
+    supabaseClient.auth.signInWithPassword({ email: email, password: pin, options: { captchaToken: captchaToken } }).then(function (res) {
+      if (res.error) throw res.error;
+      customerEmail = res.data && res.data.session && res.data.session.user && res.data.session.user.email || email;
+      return loadMyCard();
+    }).catch(function () {
+      setFormMessage('signin-error', 'Email or PIN is incorrect.');
+    }).finally(function () {
+      setBusy('btn-signin', false);
+      resetCaptcha('signin');
+    });
+  }
+
+  function handleOpenSecureCard(e) {
+    if (e) e.preventDefault();
+    if (!currentCard || !currentCard.member_code) {
+      showSignup();
+      showSignupError('Open your card first, then choose secure your card.');
+      return;
+    }
+    accountContext.code = currentCard.member_code;
+    accountContext.phone = null;
+    accountContext.email = null;
+    showAccountView('view-secure-card');
+  }
+
+  function claimCurrentCard() {
+    return supabaseClient.rpc('claim_card', { p_code: accountContext.code, p_phone: accountContext.phone }).then(function (res) {
+      if (res.error) throw res.error;
+      if (!res.data || res.data.length === 0) throw new Error('card claim failed');
+      currentCard = res.data[0];
+      saveCode(currentCard.member_code);
+      renderCard(currentCard);
+      startPolling(currentCard.member_code);
+      return currentCard;
+    });
+  }
+
+  function handleSecureSubmit(e) {
+    if (e) e.preventDefault();
+    setFormMessage('secure-error', '');
+    var email = ($('secure-email').value || '').trim();
+    var phone = ($('secure-phone').value || '').trim();
+    var pin = $('secure-pin').value || '';
+    var confirmation = $('secure-confirm-pin').value || '';
+    if (!isValidEmail(email)) return setFormMessage('secure-error', 'Enter a valid email address.');
+    if (!normPhone(phone)) return setFormMessage('secure-error', 'Enter the mobile number attached to this card.');
+    if (!isValidPin(pin)) return setFormMessage('secure-error', 'Use a six-digit PIN that is not easy to guess.');
+    if (pin !== confirmation) return setFormMessage('secure-error', 'Your PINs do not match.');
+    var captchaToken = requireCaptcha('signup', 'secure-error');
+    if (!captchaToken) return;
+    accountContext.email = email;
+    accountContext.phone = phone;
+    setBusy('btn-secure-submit', true);
+    supabaseClient.auth.signUp({ email: email, password: pin, options: { captchaToken: captchaToken } }).then(function (res) {
+      if (res.error) throw res.error;
+      var user = res.data && res.data.user;
+      if (user && Array.isArray(user.identities) && user.identities.length === 0) {
+        showAccountView('view-signin');
+        setFormMessage('signin-error', 'Please sign in or reset your PIN to continue.');
+        return null;
+      }
+      if (res.data && res.data.session) {
+        customerEmail = res.data.session.user && res.data.session.user.email || email;
+        return claimCurrentCard();
+      }
+      showAccountView('view-verify-signup');
+      return null;
+    }).catch(function () {
+      setFormMessage('secure-error', 'We could not secure your card. Please try again.');
+    }).finally(function () {
+      setBusy('btn-secure-submit', false);
+      resetCaptcha('signup');
+    });
+  }
+
+  function handleVerifySignup(e) {
+    if (e) e.preventDefault();
+    setFormMessage('verify-signup-error', '');
+    var token = ($('verify-signup-token').value || '').trim();
+    if (!isValidVerificationCode(token)) return setFormMessage('verify-signup-error', 'Enter the 6–8 digit code from your email.');
+    setBusy('btn-verify-signup', true);
+    supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'signup' }).then(function (res) {
+      if (res.error) throw res.error;
+      customerEmail = accountContext.email;
+      return claimCurrentCard();
+    }).catch(function () {
+      setFormMessage('verify-signup-error', 'That code could not be verified. Please try again.');
+    }).finally(function () { setBusy('btn-verify-signup', false); });
+  }
+
+  function handleForgotEmail(e) {
+    if (e) e.preventDefault();
+    setFormMessage('forgot-error', '');
+    var email = ($('forgot-email').value || '').trim();
+    if (!isValidEmail(email)) return setFormMessage('forgot-error', 'Enter a valid email address.');
+    var captchaToken = requireCaptcha('forgot', 'forgot-error');
+    if (!captchaToken) return;
+    accountContext.email = email;
+    setBusy('btn-forgot-email', true);
+    supabaseClient.auth.resetPasswordForEmail(email, { captchaToken: captchaToken }).then(function () {
+      showAccountView('view-reset-pin');
+      setFormMessage('reset-error', 'If this email can receive a reset, a code is on its way.');
+    }).catch(function () {
+      showAccountView('view-reset-pin');
+      setFormMessage('reset-error', 'If this email can receive a reset, a code is on its way.');
+    }).finally(function () {
+      setBusy('btn-forgot-email', false);
+      resetCaptcha('forgot');
+    });
+  }
+
+  function handleResetPin(e) {
+    if (e) e.preventDefault();
+    setFormMessage('reset-error', '');
+    var token = ($('reset-token').value || '').trim();
+    var pin = $('reset-pin').value || '';
+    var confirmation = $('reset-confirm-pin').value || '';
+    if (!isValidVerificationCode(token)) return setFormMessage('reset-error', 'Enter the 6–8 digit code from your email.');
+    if (!isValidPin(pin)) return setFormMessage('reset-error', 'Use a six-digit PIN that is not easy to guess.');
+    if (pin !== confirmation) return setFormMessage('reset-error', 'Your PINs do not match.');
+    setBusy('btn-reset-pin', true);
+    supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'recovery' }).then(function (res) {
+      if (res.error) throw res.error;
+      return supabaseClient.auth.updateUser({ password: pin });
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      customerEmail = accountContext.email;
+      return loadMyCard('Your new PIN is ready. Find or create a card to link it.');
+    }).catch(function () {
+      setFormMessage('reset-error', 'We could not update your PIN. Please check the code and try again.');
+    }).finally(function () { setBusy('btn-reset-pin', false); });
+  }
+
+  function handleCustomerLogout(e) {
+    if (e) e.preventDefault();
+    $('btn-customer-logout').disabled = true;
+    supabaseClient.auth.signOut().then(function () {
+      customerEmail = null;
+      showSignup();
+      showSignupError('You’re signed out. Sign in again whenever you need your card.');
+    }).catch(function () {
+      renderAccountRow();
+    }).finally(function () { $('btn-customer-logout').disabled = false; });
   }
 
   // ── live updates: poll get_card every few seconds while the card is open,
@@ -689,20 +1018,23 @@
     if (e) e.preventDefault();
     $('lookup-error').classList.add('hidden');
     var input = $('lookup-phone');
+    var nameInput = $('lookup-name');
     var phone = (input.value || '').trim();
-    if (phone.length < 5) {
+    var name = (nameInput.value || '').trim();
+    if (phone.length < 5 || !name) {
       input.focus();
       input.style.borderColor = '#c0392b';
+      if (!name) nameInput.focus();
       return;
     }
     input.style.borderColor = '#2b3a66';
     var btn = $('btn-lookup');
     btn.disabled = true;
-    supabaseClient.rpc('customer_lookup', { p_phone: phone }).then(function (res) {
+    supabaseClient.rpc('customer_lookup', { p_phone: phone, p_name: name }).then(function (res) {
       if (res.error) throw res.error;
       var rows = res.data;
       if (!rows || rows.length === 0) {
-        $('lookup-error').textContent = 'no card with that number yet — join below!';
+        $('lookup-error').textContent = 'No card matched that exact name and number. Check them, or sign in if your card is already secured.';
         $('lookup-error').classList.remove('hidden');
         $('cust-phone').value = phone;   // prefill the join form
         $('cust-name').focus();
@@ -738,6 +1070,20 @@
     $('btn-join').addEventListener('click', handleJoin);
     $('btn-lookup').addEventListener('click', handleLookup);
     $('link-start-over').addEventListener('click', handleStartOver);
+    $('link-sign-in').addEventListener('click', function () { showAccountView('view-signin'); });
+    $('link-signin-back').addEventListener('click', showSignup);
+    $('link-forgot-pin').addEventListener('click', function () { showAccountView('view-forgot-pin'); });
+    $('link-forgot-back').addEventListener('click', function () { showAccountView('view-signin'); });
+    $('link-reset-back').addEventListener('click', function () { showAccountView('view-signin'); });
+    $('link-secure-back').addEventListener('click', function () { if (currentCard) renderCard(currentCard); else showSignup(); });
+    $('link-verify-restart').addEventListener('click', function () { showSignup(); });
+    $('btn-signin').addEventListener('click', handleSignIn);
+    $('btn-secure-card').addEventListener('click', handleOpenSecureCard);
+    $('btn-secure-submit').addEventListener('click', handleSecureSubmit);
+    $('btn-verify-signup').addEventListener('click', handleVerifySignup);
+    $('btn-forgot-email').addEventListener('click', handleForgotEmail);
+    $('btn-reset-pin').addEventListener('click', handleResetPin);
+    $('btn-customer-logout').addEventListener('click', handleCustomerLogout);
 
     var urlCode = getCodeFromUrl();
     var code = urlCode || getSavedCode();
@@ -745,7 +1091,17 @@
       if (urlCode) saveCode(urlCode);
       fetchAndRenderCard(code, true);
     } else {
-      showSignup();
+      supabaseClient.auth.getSession().then(function (res) {
+        var session = res.data && res.data.session;
+        if (!session) {
+          showSignup();
+          return;
+        }
+        customerEmail = session.user && session.user.email || null;
+        return loadMyCard();
+      }).catch(function () {
+        showSignup();
+      });
     }
   }
 
