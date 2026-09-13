@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://use.typekit.net/fct6adk.css"><!-- Adobe Fonts: Neighbor (Black) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -102,6 +103,8 @@
               <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#4a5a8a;">password</span>
               <input id="staff-password" data-field="password" type="password" placeholder="••••••••" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#ffffff;border:2.5px solid #2b3a66;border-radius:16px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.6);outline:none;">
             </label>
+            <div id="staff-turnstile" aria-label="security verification" style="min-height:65px;max-width:100%;overflow:hidden;"></div>
+            <div id="staff-turnstile-error" class="hidden" role="alert" aria-live="polite" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#c0392b;"></div>
             <div id="login-error" class="hidden" style="font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#c0392b;"></div>
             <button id="btn-login" data-action="login" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#2b3a66;color:#FCEC60;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.18),inset 0 -3px 0 rgba(0,0,0,0.22),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;margin-top:2px;">log in →</button>
           </div>
@@ -230,6 +233,8 @@
 
         <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
 
+        <button id="btn-unlink-customer-login" data-action="unlink-customer-login" style="align-self:center;max-width:100%;padding:8px 12px;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-weight:700;line-height:1.2;color:#4a5a8a;background:transparent;border:1.5px dashed #8695ba;border-radius:999px;cursor:pointer;">unlink customer login</button>
+
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;">each treat can only be claimed once per card</div>
       </div>
 
@@ -272,6 +277,11 @@
 
   var GOAL = 20;
   var TIERS = [6, 10, 16, 20];
+  var TURNSTILE_PRODUCTION_SITE_KEY = '0x4AAAAAAEyPyxkgME5XT2-U';
+  var TURNSTILE_LOCAL_SITE_KEY = '1x00000000000000000000AA';
+  var staffCaptchaToken = null;
+  var staffTurnstileWidgetId = null;
+  var staffTurnstileRendered = false;
 
   // tier metadata — short/big come straight from the design spec
   var TIER_META = {
@@ -313,6 +323,50 @@
   var qrScanning = false;
 
   function $(id) { return document.getElementById(id); }
+
+  function staffTurnstileSiteKey() {
+    var hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1'
+      ? TURNSTILE_LOCAL_SITE_KEY
+      : TURNSTILE_PRODUCTION_SITE_KEY;
+  }
+
+  function showStaffTurnstileError(message) {
+    $('staff-turnstile-error').textContent = message;
+    $('staff-turnstile-error').classList.remove('hidden');
+  }
+
+  function renderStaffTurnstile() {
+    if (staffTurnstileRendered) return;
+    if (!window.turnstile || typeof window.turnstile.render !== 'function') {
+      showStaffTurnstileError('security check could not load — reload this page before logging in');
+      return;
+    }
+    staffTurnstileRendered = true;
+    staffTurnstileWidgetId = window.turnstile.render($('staff-turnstile'), {
+      sitekey: staffTurnstileSiteKey(),
+      size: window.innerWidth <= 360 ? 'compact' : 'normal',
+      callback: function (token) {
+        staffCaptchaToken = token;
+        $('staff-turnstile-error').classList.add('hidden');
+      },
+      'expired-callback': function () {
+        staffCaptchaToken = null;
+        showStaffTurnstileError('security check expired — complete it again');
+      },
+      'error-callback': function () {
+        staffCaptchaToken = null;
+        showStaffTurnstileError('security check could not load — reload this page before logging in');
+      }
+    });
+  }
+
+  function resetStaffTurnstile() {
+    staffCaptchaToken = null;
+    if (window.turnstile && staffTurnstileWidgetId !== null && typeof window.turnstile.reset === 'function') {
+      window.turnstile.reset(staffTurnstileWidgetId);
+    }
+  }
 
   // ── view switching ─────────────────────────────────────────────
   function showView(name) {
@@ -461,7 +515,14 @@
     var password = $('staff-password').value || '';
     $('login-error').classList.add('hidden');
 
-    supabaseClient.auth.signInWithPassword({ email: email, password: password }).then(function (res) {
+    if (!staffCaptchaToken) {
+      $('login-error').textContent = 'complete the security check before logging in';
+      $('login-error').classList.remove('hidden');
+      return;
+    }
+    var captchaToken = staffCaptchaToken;
+
+    supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: captchaToken } }).then(function (res) {
       if (res.error) throw res.error;
       return requireStaff();
     }).then(function () {
@@ -471,6 +532,8 @@
         ? "that's not a staff account"
         : 'wrong email or password';
       $('login-error').classList.remove('hidden');
+    }).then(function () {
+      resetStaffTurnstile();
     });
   }
 
@@ -631,6 +694,33 @@
     completeCard();
   }
 
+  function unlinkCustomerLoginMessage(err) {
+    var message = (err && err.message) || '';
+    if (/not linked/i.test(message)) return 'customer login is not linked';
+    if (/card not found/i.test(message)) return 'customer card not found';
+    if (/staff only/i.test(message)) return 'you are not allowed to unlink customer logins';
+    return 'could not unlink customer login — try again';
+  }
+
+  function handleUnlinkCustomerLogin() {
+    if (!current) return;
+    var ok = window.confirm(
+      'Unlink this customer login only to correct a wrong or lost email.\n\n' +
+      'This does not change stamps or rewards.\n\n' +
+      'Continue?'
+    );
+    if (!ok) return;
+    supabaseClient.rpc('unlink_card', { p_code: current.member_code }).then(function (res) {
+      if (res.error) throw res.error;
+      if (!res.data || !res.data[0]) throw new Error('card not found');
+      current = res.data[0];
+      renderResult();
+      showToast('customer login unlinked');
+    }).catch(function (err) {
+      showToast(unlinkCustomerLoginMessage(err));
+    });
+  }
+
   function completeCard() {
     return supabaseClient.rpc('claim_reward', { p_code: current.member_code, p_tier: 20 }).then(function (res) {
       if (res.error) throw res.error;
@@ -671,6 +761,7 @@
     $('btn-redeem').addEventListener('click', handleRedeem);
     $('btn-scan-next').addEventListener('click', handleScanNext);
     $('btn-redeem-done').addEventListener('click', handleScanNext);
+    $('btn-unlink-customer-login').addEventListener('click', handleUnlinkCustomerLogin);
 
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) {
@@ -686,12 +777,13 @@
     // non-staff session must not walk straight into the barista UI.
     supabaseClient.auth.getSession().then(function (res) {
       var session = res && res.data ? res.data.session : null;
-      if (!session) { showView('login'); return; }
+      if (!session) { showView('login'); renderStaffTurnstile(); return; }
       return requireStaff().then(function () {
         showView('scan');
       });
     }).catch(function () {
       showView('login');
+      renderStaffTurnstile();
     });
   }
 
