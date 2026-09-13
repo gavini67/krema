@@ -792,15 +792,17 @@
     var captchaToken = requireCaptcha('signin', 'signin-error');
     if (!captchaToken) return;
     setBusy('btn-signin', true);
+    var signInSucceeded = false;
     supabaseClient.auth.signInWithPassword({ email: email, password: pin, options: { captchaToken: captchaToken } }).then(function (res) {
       if (res.error) throw res.error;
+      signInSucceeded = true;
       customerEmail = res.data && res.data.session && res.data.session.user && res.data.session.user.email || email;
       return loadMyCard().catch(function () {
         showSignup();
         showSignupError('You’re signed in, but we could not load your card. Please refresh or find your card below.');
       });
     }).catch(function () {
-      if (!customerEmail) setFormMessage('signin-error', 'Email or PIN is incorrect.');
+      if (!signInSucceeded) setFormMessage('signin-error', 'Email or PIN is incorrect.');
     }).finally(function () {
       setBusy('btn-signin', false);
       resetCaptcha('signin');
@@ -895,14 +897,16 @@
     var token = ($('verify-signup-token').value || '').trim();
     if (!isValidVerificationCode(token)) return setFormMessage('verify-signup-error', 'Enter the 6–8 digit code from your email.');
     setBusy('btn-verify-signup', true);
+    var verificationSucceeded = false;
     supabaseClient.auth.verifyOtp({ email: accountContext.email, token: token, type: 'signup' }).then(function (res) {
       if (res.error) throw res.error;
+      verificationSucceeded = true;
       customerEmail = accountContext.email;
       return claimCurrentCard().catch(function () {
         setFormMessage('verify-signup-error', 'Your email was verified, but we could not link this card. Return to your card and try again.');
       });
     }).catch(function () {
-      if (!customerEmail) setFormMessage('verify-signup-error', 'That code could not be verified. Please try again.');
+      if (!verificationSucceeded) setFormMessage('verify-signup-error', 'That code could not be verified. Please try again.');
     }).finally(function () { setBusy('btn-verify-signup', false); });
   }
 

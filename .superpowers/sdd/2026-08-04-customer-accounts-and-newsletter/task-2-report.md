@@ -100,3 +100,47 @@ fail 0
 - `rewards.html`
 - `tests/customer-accounts-ui.test.js`
 - `.superpowers/sdd/2026-08-04-customer-accounts-and-newsletter/task-2-report.md`
+
+## Fix round 2
+
+### Status
+
+Completed.
+
+### Root cause and repair
+
+`customerEmail` persists after session restoration by design. Sign-in and signup-verification catch branches incorrectly treated that persistent state as proof that the current Auth request had succeeded, suppressing generic feedback for failed credentials or verification codes.
+
+Both handlers now use an attempt-local success flag. A failed `signInWithPassword` or `verifyOtp` always reports feedback for the active form. Once that individual request succeeds, the existing downstream `get_my_card()` and `claim_card()` recovery paths retain the signed-in state and their distinct messages.
+
+### Test-first record
+
+The two regression tests were added before production changes and run with:
+
+```text
+node --test tests/customer-accounts-ui.test.js
+
+tests 17
+pass 15
+fail 2
+```
+
+The red assertions showed empty feedback for failed sign-in credentials and failed signup verification when a prior session had populated `customerEmail`.
+
+After the repair, the focused command produced:
+
+```text
+node --test tests/customer-accounts-ui.test.js
+
+tests 17
+pass 17
+fail 0
+```
+
+The full suite is recorded with this round’s commit verification.
+
+### Covering files
+
+- `rewards.html`
+- `tests/customer-accounts-ui.test.js`
+- `.superpowers/sdd/2026-08-04-customer-accounts-and-newsletter/task-2-report.md`

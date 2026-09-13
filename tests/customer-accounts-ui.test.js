@@ -45,7 +45,7 @@ function idsInPage() {
 
 function flush() { return new Promise((resolve) => setImmediate(resolve)); }
 
-function makeApp({ hostname = 'localhost', auth = {}, rpc = {}, savedCode = null, locationSearch = '' } = {}) {
+function makeApp({ hostname = 'localhost', auth = {}, rpc = {}, savedCode = null, locationSearch = '', exposeTestHooks = false } = {}) {
   const elements = new Map(idsInPage().map((id) => [id, new FakeElement(id)]));
   const storage = new Map();
   if (savedCode) storage.set('krema_member_code', savedCode);
@@ -114,9 +114,16 @@ function makeApp({ hostname = 'localhost', auth = {}, rpc = {}, savedCode = null
     clearInterval() {},
     console: { error() {} },
   };
-  vm.runInNewContext(page.match(/<script>\s*([\s\S]*?)\s*<\/script>/)[1], context, { filename: 'rewards-inline.js' });
+  let script = page.match(/<script>\s*([\s\S]*?)\s*<\/script>/)[1];
+  if (exposeTestHooks) {
+    script = script.replace(
+      "document.addEventListener('DOMContentLoaded', init);",
+      "window.__accountTestHooks = { setCustomerEmail: function (email) { customerEmail = email; }, setAccountContext: function (context) { accountContext = context; }, showAccountView: showAccountView }; document.addEventListener('DOMContentLoaded', init);",
+    );
+  }
+  vm.runInNewContext(script, context, { filename: 'rewards-inline.js' });
   documentListeners.get('DOMContentLoaded')();
-  return { elements, calls, storage };
+  return { elements, calls, storage, hooks: window.__accountTestHooks };
 }
 
 function showSignIn(app) {
@@ -363,4 +370,37 @@ test('returning from secure-card restarts polling and customer Auth uses its iso
   assert.equal(app.calls.intervals, 2);
   assert.deepEqual(plain(app.calls.createClient[0].slice(2)), [{ auth: { storageKey: 'krema-customer-auth', detectSessionInUrl: false } }]);
   assert.notEqual(app.calls.createClient[0][2].auth.storageKey, 'krema-staff-auth');
+});
+
+test('a retained session does not hide failed sign-in credentials feedback', async () => {
+  const app = makeApp({
+    auth: {
+      getSession: async () => ({ data: { session: { user: { email: 'existing@krema.ph' } } }, error: null }),
+      signInWithPassword: async () => ({ data: { session: null }, error: { message: 'invalid credentials' } }),
+    },
+    rpc: { get_my_card: { data: [] } },
+  });
+  await flush(); await flush();
+  const captcha = showSignIn(app);
+  app.elements.get('signin-email').value = 'other@krema.ph';
+  app.elements.get('signin-pin').value = '183726';
+  captcha.callback('signin-captcha');
+  app.elements.get('btn-signin').click();
+  await flush();
+  assert.match(app.elements.get('signin-error').textContent, /email or PIN is incorrect/i);
+});
+
+test('a retained session does not hide failed signup-verification feedback', async () => {
+  const app = makeApp({
+    exposeTestHooks: true,
+    auth: { verifyOtp: async () => ({ data: null, error: { message: 'invalid token' } }) },
+  });
+  await flush();
+  app.hooks.setCustomerEmail('existing@krema.ph');
+  app.hooks.setAccountContext({ code: 'KREMA1', phone: '09171234567', email: 'other@krema.ph' });
+  app.hooks.showAccountView('view-verify-signup');
+  app.elements.get('verify-signup-token').value = '12345678';
+  app.elements.get('btn-verify-signup').click();
+  await flush();
+  assert.match(app.elements.get('verify-signup-error').textContent, /could not be verified/i);
 });
