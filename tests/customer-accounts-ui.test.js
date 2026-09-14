@@ -62,7 +62,7 @@ function makeApp({ hostname = 'localhost', auth = {}, rpc = {}, savedCode = null
   elements.forEach((el) => { el.clientWidth = turnstileWidth; });
   const storage = new Map();
   if (savedCode) storage.set('krema_member_code', savedCode);
-  const calls = { auth: [], rpc: [], turnstile: [], resets: [], storage: [], createClient: [], intervals: 0, intervalCallbacks: [], activeIntervals: new Set(), windowListeners: [] };
+  const calls = { auth: [], rpc: [], turnstile: [], resets: [], storage: [], createClient: [], intervals: 0, intervalCallbacks: [], activeIntervals: new Set(), windowListeners: [], scrolls: [] };
   const documentListeners = new Map();
   const client = {
     auth: {
@@ -100,6 +100,7 @@ function makeApp({ hostname = 'localhost', auth = {}, rpc = {}, savedCode = null
     location: { hostname, search: locationSearch },
     addEventListener(name, handler) { calls.windowListeners.push(['add', name, handler]); },
     removeEventListener(name, handler) { calls.windowListeners.push(['remove', name, handler]); },
+    scrollTo(options) { calls.scrolls.push(options); },
     QRCode: { toCanvas() {} },
     localStorage: {
       getItem: (key) => storage.get(key) || null,
@@ -243,6 +244,80 @@ test('existing-card guidance offers sign-in or saved-card/staff access without p
   await flush();
   assert.ok(!app.elements.get('view-signin').classList.contains('hidden'));
   assert.ok(!app.calls.rpc.some(([name]) => name === 'customer_lookup'));
+});
+
+test('an open unsecured card clearly offers email and PIN recovery', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ savedCode: 'KREMA1', rpc: { get_card: { data: [card] } } });
+  await flush();
+  assert.match(app.elements.get('card-account-copy').textContent, /email.*PIN.*another phone/i);
+  assert.match(app.elements.get('btn-secure-card').textContent, /add recovery/i);
+  assert.match(page, /recovery QR/i);
+  app.elements.get('btn-secure-card').click();
+  assert.ok(idsInPage().includes('link-secure-signin'));
+});
+
+test('an existing account can sign in from an open recovered card and link it', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ savedCode: 'KREMA1', rpc: { get_card: { data: [card] }, claim_card: { data: [card] } } });
+  await flush();
+  app.elements.get('btn-secure-card').click();
+  assert.ok(app.elements.has('link-secure-signin'), 'missing existing-account sign-in route');
+  app.elements.get('link-secure-signin').click();
+  const captcha = app.calls.turnstile.at(-1).options;
+  app.elements.get('signin-email').value = 'bea@krema.ph';
+  app.elements.get('signin-pin').value = '183726';
+  captcha.callback('signin-captcha');
+  app.elements.get('btn-signin').click();
+  await flush(); await flush();
+
+  assert.ok(!app.elements.get('view-claim-card').classList.contains('hidden'));
+  app.elements.get('claim-phone').value = '09171234567';
+  app.elements.get('btn-claim-card').click();
+  await flush();
+  assert.deepEqual(plain(app.calls.rpc.find(([name]) => name === 'claim_card')), ['claim_card', { p_code: 'KREMA1', p_phone: '09171234567' }]);
+  assert.equal(app.elements.get('member-code').textContent, 'KREMA1');
+});
+
+test('forgot-PIN recovery keeps an open recovered card ready to link', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ savedCode: 'KREMA1', rpc: { get_card: { data: [card] }, get_my_card: { data: [] } } });
+  await flush();
+  app.elements.get('btn-secure-card').click();
+  app.elements.get('link-secure-signin').click();
+  app.elements.get('link-forgot-pin').click();
+  app.elements.get('forgot-email').value = 'bea@krema.ph';
+  app.calls.turnstile.at(-1).options.callback('forgot-captcha');
+  app.elements.get('btn-forgot-email').click();
+  await flush();
+  app.elements.get('reset-token').value = '12345678';
+  app.elements.get('reset-pin').value = '183726';
+  app.elements.get('reset-confirm-pin').value = '183726';
+  app.elements.get('btn-reset-pin').click();
+  await flush(); await flush();
+
+  assert.ok(!app.elements.get('view-claim-card').classList.contains('hidden'));
+  assert.equal(app.elements.get('member-code').textContent, 'KREMA1');
+});
+
+test('opening an account screen resets the old card scroll position', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ savedCode: 'KREMA1', rpc: { get_card: { data: [card] } } });
+  await flush();
+  app.elements.get('btn-secure-card').click();
+  assert.deepEqual(plain(app.calls.scrolls.at(-1)), { top: 0, left: 0, behavior: 'auto' });
+});
+
+test('customer logout ends only this device session', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({
+    auth: { getSession: async () => ({ data: { session: { user: { email: 'bea@krema.ph' } } }, error: null }) },
+    rpc: { get_my_card: { data: [card] } },
+  });
+  await flush(); await flush();
+  app.elements.get('btn-customer-logout').click();
+  await flush();
+  assert.deepEqual(plain(app.calls.auth.find(([name]) => name === 'signOut').slice(1)), [{ scope: 'local' }]);
 });
 
 test('Turnstile uses the visible local test key only on localhost and never ships a secret key', () => {

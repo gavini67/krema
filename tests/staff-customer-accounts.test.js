@@ -46,10 +46,10 @@ function idsInPage() {
 function flush() { return new Promise((resolve) => setImmediate(resolve)); }
 function plain(value) { return JSON.parse(JSON.stringify(value)); }
 
-function makeApp({ hostname = 'localhost', width = 390, turnstileWidth = width - 84, turnstileResults = [], auth = {}, rpc = {}, session = null, turnstile = true, confirm = () => true } = {}) {
+function makeApp({ hostname = 'localhost', origin = `http://${hostname}:3000`, width = 390, turnstileWidth = width - 84, turnstileResults = [], auth = {}, rpc = {}, session = null, turnstile = true, qrCode = true, confirm = () => true } = {}) {
   const elements = new Map(idsInPage().map((id) => [id, new FakeElement(id)]));
   elements.get('staff-turnstile').clientWidth = turnstileWidth;
-  const calls = { auth: [], rpc: [], turnstile: [], resets: [], confirms: [], createClient: [] };
+  const calls = { auth: [], rpc: [], turnstile: [], resets: [], confirms: [], createClient: [], qrCodes: [], scannerSuccess: null };
   const documentListeners = new Map();
   const client = {
     auth: {
@@ -79,11 +79,19 @@ function makeApp({ hostname = 'localhost', width = 390, turnstileWidth = width -
     return originalRpc(name, payload);
   };
   const window = {
-    location: { hostname },
+    location: { hostname, origin },
     innerWidth: width,
     addEventListener() {},
     confirm(message) { calls.confirms.push(message); return confirm(message); },
   };
+  if (qrCode) {
+    window.QRCode = {
+      toCanvas(canvas, value, options, callback) {
+        calls.qrCodes.push({ canvas, value, options });
+        if (callback) callback(null);
+      },
+    };
+  }
   if (turnstile) {
     window.turnstile = {
       render(container, options) {
@@ -104,6 +112,11 @@ function makeApp({ hostname = 'localhost', width = 390, turnstileWidth = width -
       addEventListener(name, handler) { documentListeners.set(name, handler); },
     },
     supabase: { createClient: (...args) => { calls.createClient.push(args); return client; } },
+    Html5Qrcode: class {
+      start(_camera, _options, onSuccess) { calls.scannerSuccess = onSuccess; return Promise.resolve(); }
+      stop() { return Promise.resolve(); }
+      clear() {}
+    },
     localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
     setTimeout() { return 1; },
     clearTimeout() {},
@@ -232,4 +245,56 @@ test('staff sees a clear non-technical message when an unlink target is not link
   await flush();
   assert.match(app.elements.get('toast-msg').textContent, /not linked/i);
   assert.doesNotMatch(app.elements.get('toast-msg').textContent, /rpc|postgres|exception/i);
+});
+
+test('phone recovery shows a scannable link to the exact customer card', async () => {
+  const card = { member_code: 'KREMA-GT9J58', name: 'Angel', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ rpc: { staff_lookup: { data: [card] } } });
+  await flush();
+  app.elements.get('staff-phone-lookup').value = '09171234567';
+  app.elements.get('btn-find').click();
+  await flush();
+
+  assert.ok(!app.elements.get('btn-show-recovery-qr').classList.contains('hidden'));
+  app.elements.get('btn-show-recovery-qr').click();
+
+  assert.ok(!app.elements.get('recovery-qr-panel').classList.contains('hidden'));
+  assert.equal(app.calls.qrCodes.length, 1);
+  assert.equal(app.calls.qrCodes[0].value, 'https://kremadesserthaus.com/rewards.html?c=KREMA-GT9J58');
+  assert.equal(app.elements.get('recovery-card-code').textContent, 'KREMA-GT9J58');
+  assert.match(page, /qrcode@1\.5\.1\/build\/qrcode\.min\.js/);
+});
+
+test('a scanned card does not offer recovery QR and a missing QR library fails clearly', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const scanned = makeApp({ rpc: { get_card: { data: [card] } } });
+  await flush();
+  scanned.elements.get('btn-scan').click();
+  await flush();
+  scanned.calls.scannerSuccess('KREMA1');
+  await flush();
+  assert.ok(scanned.elements.get('btn-show-recovery-qr').classList.contains('hidden'));
+
+  const missing = makeApp({ qrCode: false, rpc: { staff_lookup: { data: [card] } } });
+  await flush();
+  missing.elements.get('staff-phone-lookup').value = '09171234567';
+  missing.elements.get('btn-find').click();
+  await flush();
+  missing.elements.get('btn-show-recovery-qr').click();
+  assert.match(missing.elements.get('toast-msg').textContent, /recovery QR.*reload/i);
+});
+
+test('a Vercel preview recovery QR stays on that private preview', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({
+    hostname: 'krema-email-pin-recovery.vercel.app',
+    origin: 'https://krema-email-pin-recovery.vercel.app',
+    rpc: { staff_lookup: { data: [card] } },
+  });
+  await flush();
+  app.elements.get('staff-phone-lookup').value = '09171234567';
+  app.elements.get('btn-find').click();
+  await flush();
+  app.elements.get('btn-show-recovery-qr').click();
+  assert.equal(app.calls.qrCodes[0].value, 'https://krema-email-pin-recovery.vercel.app/rewards.html?c=KREMA1');
 });

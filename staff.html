@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://use.typekit.net/fct6adk.css"><!-- Adobe Fonts: Neighbor (Black) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
 <style>
   * { box-sizing: border-box; }
@@ -233,6 +234,18 @@
 
         <button id="btn-scan-next" data-action="scan-next" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;line-height:1;background:#FEFFE6;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.7),4px 5px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">scan next customer →</button>
 
+        <button id="btn-show-recovery-qr" class="hidden" data-action="show-recovery-qr" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:15px;line-height:1;background:#dcebf7;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:4px 5px 0 #2b3a66;cursor:pointer;">customer lost card? show recovery QR</button>
+
+        <div id="recovery-qr-panel" class="hidden" style="background:#FEFFE6;border:3px solid #2b3a66;border-radius:24px;padding:18px;box-shadow:6px 7px 0 #2b3a66;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:20px;">RECOVERY QR</div>
+          <div style="font-size:13px;line-height:1.4;color:#4a5a8a;">Let the customer scan this on their own phone. Their card opens there, then they can tap <strong>add recovery</strong>.</div>
+          <div style="background:#fff;border:2.5px solid #2b3a66;border-radius:16px;padding:10px;line-height:0;">
+            <canvas id="recovery-qr-canvas" width="180" height="180" aria-label="customer recovery QR code"></canvas>
+          </div>
+          <div id="recovery-card-code" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:12px;letter-spacing:.05em;color:#4a5a8a;"></div>
+          <button id="btn-close-recovery-qr" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">close</button>
+        </div>
+
         <button id="btn-unlink-customer-login" data-action="unlink-customer-login" style="align-self:center;max-width:100%;padding:8px 12px;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-weight:700;line-height:1.2;color:#4a5a8a;background:transparent;border:1.5px dashed #8695ba;border-radius:999px;cursor:pointer;">unlink customer login</button>
 
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;">each treat can only be claimed once per card</div>
@@ -297,6 +310,7 @@
 
   var toastTimer = null;
   var current = null; // currently-loaded card object, as returned by the RPCs
+  var currentSource = null; // recovery QR is offered only after an in-person phone lookup
 
   // derive client-side state from (stamps, tiers, claimed, reward_ready) per the backend contract.
   // `pending` = every unclaimed-but-reached tier, ascending — drives one claim button per tier so
@@ -382,6 +396,10 @@
       $('view-' + v).classList.toggle('hidden', v !== name);
     });
     if (name === 'scan') { startScanner(); refreshTodayCount(); } else stopScanner();
+  }
+
+  function hideRecoveryQr() {
+    $('recovery-qr-panel').classList.add('hidden');
   }
 
   // ── camera / QR scanner (html5-qrcode renders into #qr-reader-region,
@@ -495,6 +513,8 @@
     $('result-code').textContent = current.member_code;
     $('result-counter').setAttribute('data-counter', String(stamps));
     $('result-counter').textContent = String(stamps);
+    hideRecoveryQr();
+    $('btn-show-recovery-qr').classList.toggle('hidden', currentSource !== 'phone');
 
     renderSlots($('result-grid'), stamps, goal, state.tiers);
     renderClaimButtons(state);
@@ -586,6 +606,7 @@
       }
       $('scan-not-found').classList.add('hidden');
       current = rows[0];
+      currentSource = 'scan';
       renderResult();
       showView('result');
     }).catch(function (err) {
@@ -614,12 +635,38 @@
         return;
       }
       current = rows[0];
+      currentSource = 'phone';
       renderResult();
       showView('result');
     }).catch(function (err) {
       $('scan-not-found').textContent = (err && err.message) || 'customer not found';
       $('scan-not-found').classList.remove('hidden');
     });
+  }
+
+  function handleShowRecoveryQr() {
+    if (!current || currentSource !== 'phone') return;
+    if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+      showToast('recovery QR could not load — reload and try again');
+      return;
+    }
+    var recoveryOrigin = /\.vercel\.app$/i.test(window.location.hostname)
+      ? window.location.origin
+      : 'https://kremadesserthaus.com';
+    var recoveryUrl = recoveryOrigin + '/rewards.html?c=' + encodeURIComponent(current.member_code);
+    $('recovery-card-code').textContent = current.member_code;
+    window.QRCode.toCanvas(
+      $('recovery-qr-canvas'),
+      recoveryUrl,
+      { width: 180, margin: 2, color: { dark: '#2b3a66', light: '#ffffff' } },
+      function (err) {
+        if (err) {
+          showToast('recovery QR could not load — reload and try again');
+          return;
+        }
+        $('recovery-qr-panel').classList.remove('hidden');
+      }
+    );
   }
 
   // ── stamp / redeem actions ─────────────────────────────────────
@@ -751,6 +798,7 @@
   function handleScanNext() {
     hideToast();
     current = null;
+    currentSource = null;
     $('scan-not-found').classList.add('hidden');
     showView('scan');
   }
@@ -772,6 +820,8 @@
     $('btn-redeem').addEventListener('click', handleRedeem);
     $('btn-scan-next').addEventListener('click', handleScanNext);
     $('btn-redeem-done').addEventListener('click', handleScanNext);
+    $('btn-show-recovery-qr').addEventListener('click', handleShowRecoveryQr);
+    $('btn-close-recovery-qr').addEventListener('click', hideRecoveryQr);
     $('btn-unlink-customer-login').addEventListener('click', handleUnlinkCustomerLogin);
 
     document.addEventListener('visibilitychange', function () {
