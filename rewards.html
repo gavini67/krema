@@ -101,16 +101,16 @@
           </label>
         </div>
 
-        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
+        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join or open my card →</button>
 
         <div id="signup-error" class="hidden" aria-live="polite" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
 
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
 
-        <!-- Existing cards require prior code possession or staff assistance. -->
+        <!-- Legacy cards can reopen with matching details until recovery is added. -->
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">
-          Still have your card open? Add an email and PIN from the card so you can reopen it anywhere.
-          Lost access to an older card? Ask staff for a recovery QR.
+          Returning customer? Use the same name and phone to reopen an unsecured card.
+          Once you add recovery, use your email and PIN instead.
         </div>
         <button id="link-sign-in" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
       </div>
@@ -1143,18 +1143,26 @@
     var btn = $('btn-join');
     btn.disabled = true;
 
-    supabaseClient.rpc('signup_customer', { p_name: name, p_phone: phone }).then(function (res) {
-      if (res.error) throw res.error;
-      var rows = res.data;
-      if (!rows || rows.length === 0) throw new Error('signup failed — try again');
-      var card = rows[0];
+    supabaseClient.rpc('customer_lookup', { p_phone: phone, p_name: name }).then(function (lookupRes) {
+      if (lookupRes.error) throw lookupRes.error;
+      if (lookupRes.data && lookupRes.data.length) return lookupRes.data[0];
+      return supabaseClient.rpc('signup_customer', { p_name: name, p_phone: phone }).then(function (signupRes) {
+        if (signupRes.error) throw signupRes.error;
+        if (!signupRes.data || signupRes.data.length === 0) throw new Error('signup failed — try again');
+        return signupRes.data[0];
+      });
+    }).then(function (card) {
       saveCode(card.member_code);
       currentCard = card;
       currentCardLinked = false;
       renderCard(card);
       startPolling(card.member_code);
     }).catch(function (err) {
-      showSignupError((err && err.message) || 'something went wrong — try again');
+      var message = (err && err.message) || 'something went wrong — try again';
+      if (/please sign in or ask staff to reopen your card/i.test(message)) {
+        message = 'Card already found. Check that the name matches, or sign in below with your email and PIN.';
+      }
+      showSignupError(message);
     }).finally(function () {
       btn.disabled = false;
     });

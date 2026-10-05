@@ -75,15 +75,22 @@ test('account RPCs scope cards to the authenticated user and preserve staff unli
   );
 });
 
-test('anonymous recovery shims disclose no cards and signup rejects every existing phone', () => {
+test('anonymous recovery reopens only an exact-match unsecured card and signup rejects every existing phone', () => {
   for (const sql of [setup, migration]) {
-    for (const signature of ['customer_lookup(p_phone text)', 'customer_lookup(p_phone text, p_name text)']) {
-      const body = functionBody(sql, signature);
-      assertStandardCardShape(body);
-      assert.match(body, /begin return; end \$\$;/);
-      assert.doesNotMatch(body, /from public\.customers|krema_card/);
-      assert.equal(body, functionBody(setup, signature));
-    }
+    const phoneOnly = functionBody(sql, 'customer_lookup(p_phone text)');
+    assertStandardCardShape(phoneOnly);
+    assert.match(phoneOnly, /begin return; end \$\$;/);
+    assert.doesNotMatch(phoneOnly, /from public\.customers|krema_card/);
+    assert.equal(phoneOnly, functionBody(setup, 'customer_lookup(p_phone text)'));
+
+    const named = functionBody(sql, 'customer_lookup(p_phone text, p_name text)');
+    assertStandardCardShape(named);
+    assert.match(named, /v_phone := krema_norm_phone\(p_phone\)/);
+    assert.match(named, /v_name := lower\(trim\(p_name\)\)/);
+    assert.match(named, /where c\.phone = v_phone and lower\(trim\(c\.name\)\) = v_name and c\.user_id is null/);
+    assert.match(named, /return query select \* from public\.krema_card\(v_id\)/);
+    assert.equal(named, functionBody(setup, 'customer_lookup(p_phone text, p_name text)'));
+
     const signup = functionBody(sql, 'signup_customer(p_name text, p_phone text)');
     assert.match(signup, /v_phone := krema_norm_phone\(p_phone\)/);
     assert.match(signup, /on conflict \(phone\) do nothing/);

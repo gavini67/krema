@@ -233,17 +233,41 @@ test('secure-card signup claims the open card after Auth returns a session', asy
   assert.deepEqual(JSON.parse(JSON.stringify(app.calls.rpc.find(([name]) => name === 'claim_card').slice(1))), [{ p_code: 'KREMA1', p_phone: '09171234567' }]);
 });
 
-test('existing-card guidance offers sign-in or saved-card/staff access without phone lookup', async () => {
-  const app = makeApp();
+test('same name and phone reopen an unsecured existing card without creating another card', async () => {
+  const card = { member_code: 'KREMA1', name: 'Bea', stamps: 3, goal: 20, tiers: [6, 10, 16, 20], claimed: [], reward_ready: false };
+  const app = makeApp({ rpc: { customer_lookup: { data: [card] } } });
   await flush();
-  assert.ok(!app.elements.has('lookup-phone'));
-  assert.ok(!app.elements.has('lookup-name'));
-  assert.match(page, /saved card|bookmark/i);
-  assert.match(page, /ask staff/i);
+  app.elements.get('cust-name').value = ' Bea ';
+  app.elements.get('cust-phone').value = '0917 123 4567';
+  app.elements.get('btn-join').click();
+  await flush(); await flush();
+  assert.deepEqual(plain(app.calls.rpc.find(([name]) => name === 'customer_lookup')), [
+    'customer_lookup',
+    { p_phone: '0917 123 4567', p_name: 'Bea' },
+  ]);
+  assert.ok(!app.calls.rpc.some(([name]) => name === 'signup_customer'));
+  assert.equal(app.elements.get('member-code').textContent, 'KREMA1');
+  assert.equal(app.storage.get('krema_member_code'), 'KREMA1');
+  assert.match(page, /same name and phone/i);
+});
+
+test('a secured existing card still routes customers to email and PIN sign-in', async () => {
+  const app = makeApp({
+    rpc: {
+      customer_lookup: { data: [] },
+      signup_customer: { data: null, error: { message: 'please sign in or ask staff to reopen your card' } },
+    },
+  });
+  await flush();
+  app.elements.get('cust-name').value = 'Bea';
+  app.elements.get('cust-phone').value = '09171234567';
+  app.elements.get('btn-join').click();
+  await flush(); await flush();
+  assert.match(app.elements.get('signup-error').textContent, /check.*name.*email.*PIN/i);
+  assert.doesNotMatch(app.elements.get('signup-error').textContent, /ask staff/i);
   app.elements.get('link-sign-in').click();
   await flush();
   assert.ok(!app.elements.get('view-signin').classList.contains('hidden'));
-  assert.ok(!app.calls.rpc.some(([name]) => name === 'customer_lookup'));
 });
 
 test('an open unsecured card clearly offers email and PIN recovery', async () => {
