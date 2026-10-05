@@ -101,42 +101,44 @@
           </label>
         </div>
 
-        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join the club →</button>
+        <button id="btn-join" data-action="join" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:17px 22px;font-family:'futura-100-book',system-ui,sans-serif;font-weight:700;font-size:17px;line-height:1;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.55),inset 0 -3px 0 rgba(14,14,14,0.13),5px 7px 0 #2b3a66;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease;">join or open my card →</button>
 
         <div id="signup-error" class="hidden" aria-live="polite" style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#c0392b;"></div>
 
         <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;font-style:italic;color:#4a5a8a;">free to join — start collecting stamps &#10024;</div>
 
-        <!-- Existing cards require prior code possession or staff assistance. -->
+        <!-- Legacy cards can reopen with matching details until recovery is added. -->
         <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">
-          Already have a card? Open your saved card or bookmark.
-          Lost access? Ask staff in person to help reopen it.
+          Returning customer? Use the same name and phone to reopen an unsecured card.
+          Once you add recovery, use your email and PIN instead.
         </div>
-        <button id="link-sign-in" class="hidden" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
+        <button id="link-sign-in" style="align-self:center;background:transparent;border:0;color:#4a5a8a;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already secured your card? sign in</button>
       </div>
 
       <!-- ════════════════ CUSTOMER ACCOUNT VIEWS ════════════════ -->
       <form id="view-signin" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
         <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:0.95;">WELCOME BACK!</div>
-        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Sign in to keep your card close, bestie.</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Sign in once and your card stays ready on this phone.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="signin-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">6-digit PIN</span><input id="signin-pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <div id="captcha-signin"></div>
         <button id="btn-signin" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">sign in →</button>
+        <div style="text-align:center;font-size:12px;color:#8695ba;">You’ll stay signed in unless you log out or clear this browser.</div>
         <div id="signin-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
         <button id="link-forgot-pin" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">forgot your PIN?</button>
         <button id="link-signin-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back</button>
       </form>
 
       <form id="view-secure-card" novalidate class="hidden" style="display:flex;flex-direction:column;gap:16px;">
-        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">SECURE YOUR CARD</div>
-        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Your PIN only opens this rewards card. Please don’t reuse a bank or GCash PIN.</div>
+        <div style="font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:30px;line-height:.95;">ADD RECOVERY</div>
+        <div style="font-size:14px;line-height:1.45;color:#4a5a8a;">Add an email and PIN once. Your card will stay signed in here and can be reopened on another phone.</div>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">email</span><input id="secure-email" type="email" autocomplete="email" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">phone on this card</span><input id="secure-phone" type="tel" autocomplete="tel" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">new 6-digit PIN</span><input id="secure-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <label style="display:flex;flex-direction:column;gap:7px;"><span style="font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;">confirm PIN</span><input id="secure-confirm-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" style="width:100%;padding:15px 16px;font-size:16px;color:#2b3a66;background:#FEFFE6;border:2.5px solid #2b3a66;border-radius:16px;outline:none;"></label>
         <div id="captcha-signup"></div>
-        <button id="btn-secure-submit" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">secure my card →</button>
+        <button id="btn-secure-submit" type="submit" style="padding:17px 22px;font-weight:700;font-size:17px;background:#FCEC60;color:#2b3a66;border:2.5px solid #2b3a66;border-radius:999px;box-shadow:5px 7px 0 #2b3a66;cursor:pointer;">add recovery →</button>
+        <button id="link-secure-signin" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;text-decoration:underline;text-decoration-style:dashed;cursor:pointer;">already have an email and PIN? sign in</button>
         <div id="secure-error" class="hidden" aria-live="polite" style="text-align:center;font-size:13px;font-style:italic;color:#c0392b;"></div>
         <button id="link-secure-back" type="button" style="background:transparent;border:0;color:#4a5a8a;font:inherit;cursor:pointer;">← back to my card</button>
       </form>
@@ -316,9 +318,9 @@
         </div>
 
         <div id="card-account-error" class="hidden" aria-live="polite" style="font-size:13px;color:#c0392b;"></div>
-        <div id="card-account-row" class="hidden" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <div id="card-account-copy" style="font-size:13px;line-height:1.35;color:#4a5a8a;">Keep your card safe on any device.</div>
-          <button id="btn-secure-card" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">secure your card</button>
+        <div id="card-account-row" style="background:#dcebf7;border:2.5px solid #2b3a66;border-radius:18px;padding:13px 16px;box-shadow:4px 5px 0 rgba(43,58,102,0.28);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div id="card-account-copy" style="font-size:13px;line-height:1.35;color:#4a5a8a;">Add an email and PIN to reopen this card on another phone.</div>
+          <button id="btn-secure-card" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FCEC60;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">add recovery</button>
           <button id="btn-customer-logout" class="hidden" style="flex:none;padding:10px 14px;font-weight:700;font-size:13px;background:#FEFFE6;color:#2b3a66;border:2px solid #2b3a66;border-radius:999px;cursor:pointer;">log out</button>
         </div>
 
@@ -406,9 +408,6 @@
   var currentCard = null;
   var currentCardLinked = false;
   var customerEmail = null;
-  // Production hold: the complete account flow is preserved on
-  // feature/customer-accounts-ready while the owner finishes testing.
-  var CUSTOMER_ACCOUNTS_ENABLED = false;
   var verifiedRecovery = false;
   var accountContext = { code: null, phone: null, email: null };
   var captchaTokens = {};
@@ -494,6 +493,7 @@
     stopPolling();
     hideAllViews();
     $(id).classList.remove('hidden');
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     if (id === 'view-signin') renderCaptcha('signin', 'signin-error');
     if (id === 'view-secure-card') renderCaptcha('signup', 'secure-error');
     if (id === 'view-forgot-pin') renderCaptcha('forgot', 'forgot-error');
@@ -745,8 +745,8 @@
       ? ('Signed in as ' + customerEmail)
       : canClaim
         ? ('Signed in as ' + customerEmail + '. Link this card to your account.')
-        : 'Keep your card safe on any device.';
-    $('btn-secure-card').textContent = canClaim ? 'claim this card' : 'secure your card';
+        : 'Add an email and PIN to reopen this card on another phone.';
+    $('btn-secure-card').textContent = canClaim ? 'link this card' : 'add recovery';
     $('btn-secure-card').classList.toggle('hidden', signedIn && currentCardLinked !== false);
     $('btn-customer-logout').classList.toggle('hidden', !signedIn);
   }
@@ -756,6 +756,7 @@
     stopPolling();
     currentCard = null;
     currentCardLinked = false;
+    accountContext = { code: null, phone: null, email: null };
     hideAllViews();
     $('view-signup').classList.remove('hidden');
   }
@@ -781,7 +782,7 @@
       if (res.error) throw res.error;
       if (!res.data || res.data.length === 0) {
         showSignup();
-        showSignupError(noCardMessage || 'You’re signed in, but don’t have a linked card yet. Open your saved card or ask staff for help. You can also start a new card.');
+        showSignupError(noCardMessage || 'You’re signed in, but no card is linked yet. For an older card, ask staff for a recovery QR. You can also start a new card.');
         return null;
       }
       currentCard = res.data[0];
@@ -791,6 +792,21 @@
       startPolling(currentCard.member_code);
       return currentCard;
     });
+  }
+
+  function continueAfterCustomerAuth(noCardMessage) {
+    if (currentCard && accountContext.code === currentCard.member_code && currentCardLinked === false) {
+      if (!accountContext.phone) {
+        showAccountView('view-claim-card');
+        return Promise.resolve(null);
+      }
+      return claimCurrentCard().catch(function () {
+        showAccountView('view-claim-card');
+        setFormMessage('claim-error', 'You’re signed in. Enter the phone number on this card to finish linking it.');
+        return null;
+      });
+    }
+    return loadMyCard(noCardMessage);
   }
 
   function handleSignIn(e) {
@@ -813,9 +829,9 @@
       if (res.error) throw res.error;
       signInSucceeded = true;
       customerEmail = res.data && res.data.session && res.data.session.user && res.data.session.user.email || email;
-      return loadMyCard().catch(function () {
+      return continueAfterCustomerAuth().catch(function () {
         showSignup();
-        showSignupError('You’re signed in, but we could not load your card. Please refresh, open your saved card, or ask staff for help.');
+        showSignupError('You’re signed in, but we could not load your card. Please refresh or ask staff for a recovery QR.');
       });
     }).catch(function () {
       if (!signInSucceeded) setFormMessage('signin-error', 'Email or PIN is incorrect.');
@@ -829,7 +845,7 @@
     if (e) e.preventDefault();
     if (!currentCard || !currentCard.member_code) {
       showSignup();
-      showSignupError('Open your card first, then choose secure your card.');
+      showSignupError('Open your card first, then choose add recovery.');
       return;
     }
     accountContext.code = currentCard.member_code;
@@ -988,9 +1004,9 @@
         if (updateRes.error) throw updateRes.error;
         verifiedRecovery = false;
         customerEmail = email;
-        return loadMyCard('Your new PIN is ready. Open your saved card, ask staff for help, or create a new card.').catch(function () {
+        return continueAfterCustomerAuth('Your new PIN is ready. Ask staff for a recovery QR if this is an older card, or create a new card.').catch(function () {
           showSignup();
-          showSignupError('Your PIN was updated, but we could not load your card. Please refresh, open your saved card, or ask staff for help.');
+          showSignupError('Your PIN was updated, but we could not load your card. Please refresh or ask staff for a recovery QR.');
         });
       }).catch(function () {
         if (epoch === cardEpoch) setFormMessage('reset-error', 'We could not update your PIN. Please try again.');
@@ -1004,7 +1020,7 @@
     if (e) e.preventDefault();
     $('btn-customer-logout').disabled = true;
     setFormMessage('card-account-error', '');
-    supabaseClient.auth.signOut().then(function (res) {
+    supabaseClient.auth.signOut({ scope: 'local' }).then(function (res) {
       if (res.error) throw res.error;
       verifiedRecovery = false;
       customerEmail = null;
@@ -1127,18 +1143,26 @@
     var btn = $('btn-join');
     btn.disabled = true;
 
-    supabaseClient.rpc('signup_customer', { p_name: name, p_phone: phone }).then(function (res) {
-      if (res.error) throw res.error;
-      var rows = res.data;
-      if (!rows || rows.length === 0) throw new Error('signup failed — try again');
-      var card = rows[0];
+    supabaseClient.rpc('customer_lookup', { p_phone: phone, p_name: name }).then(function (lookupRes) {
+      if (lookupRes.error) throw lookupRes.error;
+      if (lookupRes.data && lookupRes.data.length) return lookupRes.data[0];
+      return supabaseClient.rpc('signup_customer', { p_name: name, p_phone: phone }).then(function (signupRes) {
+        if (signupRes.error) throw signupRes.error;
+        if (!signupRes.data || signupRes.data.length === 0) throw new Error('signup failed — try again');
+        return signupRes.data[0];
+      });
+    }).then(function (card) {
       saveCode(card.member_code);
       currentCard = card;
       currentCardLinked = false;
       renderCard(card);
       startPolling(card.member_code);
     }).catch(function (err) {
-      showSignupError((err && err.message) || 'something went wrong — try again');
+      var message = (err && err.message) || 'something went wrong — try again';
+      if (/please sign in or ask staff to reopen your card/i.test(message)) {
+        message = 'Card already found. Check that the name matches, or sign in below with your email and PIN.';
+      }
+      showSignupError(message);
     }).finally(function () {
       btn.disabled = false;
     });
@@ -1167,6 +1191,7 @@
     $('link-forgot-back').addEventListener('click', function () { showAccountView('view-signin'); });
     $('link-reset-back').addEventListener('click', function () { showAccountView('view-signin'); });
     $('link-secure-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
+    $('link-secure-signin').addEventListener('click', function () { showAccountView('view-signin'); });
     $('link-claim-back').addEventListener('click', function () { if (currentCard) { renderCard(currentCard); startPolling(currentCard.member_code); } else showSignup(); });
     $('link-verify-restart').addEventListener('click', function () { showSignup(); });
     $('view-signin').addEventListener('submit', handleSignIn);
@@ -1184,7 +1209,7 @@
     supabaseClient.auth.getSession().then(function (res) {
       if (epoch !== cardEpoch) return true;
       var session = res.data && res.data.session;
-      customerEmail = CUSTOMER_ACCOUNTS_ENABLED && session && session.user && session.user.email || null;
+      customerEmail = session && session.user && session.user.email || null;
       if (urlCode) {
         return getCardByCode(urlCode).catch(function () { return null; }).then(function (card) {
           if (epoch !== cardEpoch) return true;

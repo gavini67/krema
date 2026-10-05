@@ -283,14 +283,26 @@ begin
   return;
 end $$;
 
--- Compatibility shim for stale pages: always zero rows, for every phone/name.
--- Reopen a saved QR/member-code card or ask staff in person; no online recovery.
+-- Legacy self-service recovery. Exact name + phone can reopen only a card that
+-- has not been secured with an Auth account yet.
 create or replace function public.customer_lookup(p_phone text, p_name text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
+declare v_id uuid; v_phone text; v_name text;
 begin
-  return;
+  v_phone := krema_norm_phone(p_phone);
+  v_name := lower(trim(p_name));
+  if v_phone is null or v_name is null or length(v_name) < 1 then return; end if;
+
+  select c.id into v_id
+    from public.customers c
+   where c.phone = v_phone
+     and lower(trim(c.name)) = v_name
+     and c.user_id is null;
+  if v_id is null then return; end if;
+
+  return query select * from public.krema_card(v_id);
 end $$;
 
 -- ── Customer account: secure an existing card ──────────────────────────

@@ -1,8 +1,9 @@
 -- Phase 3 — customer accounts
 -- Paste once into Supabase SQL Editor after the Phase 1 hardening migration.
 -- This is additive: it preserves existing customers, stamps, rewards, staff,
--- and Auth users. Activating accounts retires online phone/name recovery:
--- both customer_lookup signatures always return zero rows; signup never
+-- and Auth users. Activating accounts limits online name/phone recovery to
+-- unsecured legacy cards: phone-only customer_lookup always returns zero rows;
+-- exact name + phone can reopen an unsecured card; signup never
 -- returns an existing card. Keep get_card(code) anonymous, claim_card(code,phone)
 -- authenticated, and staff_lookup staff-only for in-person help.
 begin;
@@ -54,14 +55,26 @@ begin
   return;
 end $$;
 
--- Compatibility shim for stale pages: always zero rows, for every phone/name.
--- Reopen a saved QR/member-code card or ask staff in person; no online recovery.
+-- Legacy self-service recovery. Exact name + phone can reopen only a card that
+-- has not been secured with an Auth account yet.
 create or replace function public.customer_lookup(p_phone text, p_name text)
   returns table (member_code text, name text, stamps int, goal int,
                  tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
   language plpgsql security definer set search_path = public as $$
+declare v_id uuid; v_phone text; v_name text;
 begin
-  return;
+  v_phone := krema_norm_phone(p_phone);
+  v_name := lower(trim(p_name));
+  if v_phone is null or v_name is null or length(v_name) < 1 then return; end if;
+
+  select c.id into v_id
+    from public.customers c
+   where c.phone = v_phone
+     and lower(trim(c.name)) = v_name
+     and c.user_id is null;
+  if v_id is null then return; end if;
+
+  return query select * from public.krema_card(v_id);
 end $$;
 
 create or replace function public.claim_card(p_code text, p_phone text)

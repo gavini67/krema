@@ -27,6 +27,8 @@ async function verify(applyMigration) {
     if (applyMigration) {
       await db.exec(read('docs/migrations/2026-09-13-customer-accounts.sql'));
       await db.exec(read('docs/migrations/2026-09-13-customer-accounts.sql')); // rerunnable
+      await db.exec(read('docs/migrations/2026-10-05-legacy-card-recovery.sql'));
+      await db.exec(read('docs/migrations/2026-10-05-legacy-card-recovery.sql')); // rerunnable
     }
     const alice = '00000000-0000-4000-8000-000000000001';
     const other = '00000000-0000-4000-8000-000000000002';
@@ -45,7 +47,12 @@ async function verify(applyMigration) {
       for (const phone of ['09171234567', '+63 917 123 4567', '9171234567', '09999999999', '', null]) {
         assert.deepEqual((await db.query('select * from customer_lookup($1)', [phone])).rows, []);
         for (const name of ['Bea', ' bea ', 'Wrong', '', null]) {
-          assert.deepEqual((await db.query('select * from customer_lookup($1, $2)', [phone, name])).rows, []);
+          const rows = (await db.query('select * from customer_lookup($1, $2)', [phone, name])).rows;
+          const exactUnsecuredMatch = !linked
+            && ['09171234567', '+63 917 123 4567', '9171234567'].includes(phone)
+            && ['Bea', ' bea '].includes(name);
+          if (exactUnsecuredMatch) assert.equal(rows[0].member_code, card.member_code);
+          else assert.deepEqual(rows, []);
         }
       }
       for (const phone of ['09171234567', '+63 917 123 4567', '9171234567']) {
@@ -78,7 +85,7 @@ async function verify(applyMigration) {
     await db.query('insert into staff (uid) values ($1)', [other]);
     await db.exec('set role authenticated');
     assert.equal((await db.query("select * from staff_lookup('09171234567')")).rows[0].member_code, card.member_code);
-    console.log(`PASS: ${applyMigration ? 'migration (applied twice)' : 'setup'} — zero-row shims, generic duplicate signup, new-card mechanics, code access, authenticated claim/idempotency/audit, ownership, staff-only lookup`);
+    console.log(`PASS: ${applyMigration ? 'migrations (applied twice)' : 'setup'} — legacy recovery, protected linked cards, generic duplicate signup, new-card mechanics, authenticated claim/idempotency/audit, ownership, staff-only lookup`);
   } finally { await db.close(); }
 }
 (async () => { await verify(false); await verify(true); })().catch((error) => { console.error(error); process.exitCode = 1; });
