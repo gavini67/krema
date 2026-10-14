@@ -3374,7 +3374,10 @@ function Gram({ palette, scriptFont }) {
     // iframe that rendered but collapsed — Instagram serves a ~14px empty
     // frame for posts that are deleted, private or otherwise unavailable, and
     // without this check that slot just leaves a hole in the grid.
-    const t2 = setTimeout(() => {
+    // The clock only runs while the tab is visible: Instagram doesn't size its
+    // iframes in a background tab, so a page opened behind another tab would
+    // otherwise mark every healthy post as failed.
+    const check = () => {
       setFailed((prev) => {
         const next = { ...prev };
         posts.forEach((p, i) => {
@@ -3385,8 +3388,22 @@ function Gram({ palette, scriptFont }) {
         });
         return next;
       });
-    }, 6000);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    };
+    let t2 = null;
+    const arm = () => {
+      if (t2 || document.visibilityState !== 'visible') return;
+      t2 = setTimeout(check, 6000);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') arm();
+      else { clearTimeout(t2); t2 = null; }
+    };
+    arm();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      clearTimeout(t1); clearTimeout(t2);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   return (
