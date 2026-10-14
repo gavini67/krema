@@ -1519,6 +1519,16 @@
         var(--bevel-bot),
         4px 5px 0 rgba(0, 0, 0, 0.5);
     }
+    .kh-newsletter button:disabled { opacity: 0.6; cursor: wait; transform: none; }
+    .kh-newsletter-consent {
+      display: flex; gap: 8px; align-items: flex-start;
+      margin-top: 10px; font-size: 12.5px; line-height: 1.45; opacity: 0.8; cursor: pointer;
+    }
+    .kh-newsletter-consent input { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+    .kh-newsletter-consent a { display: inline; padding: 0; font-size: inherit; color: var(--accent); text-decoration: underline; }
+    .kh-newsletter-msg { margin-top: 10px; font-size: 14px; font-weight: 700; color: var(--accent); }
+    .kh-newsletter-msg.is-error { color: #ffb4b4; font-weight: 600; }
+    .kh-footer-base a { color: inherit; text-decoration: underline; }
     .kh-footer-base {
       max-width: 1300px;
       margin: 22px auto 0;
@@ -2616,12 +2626,13 @@ const MENU_CATEGORIES = [
     id: 'bingsu', name: 'Bingsu', tag: 'the signature', emoji: '🍧',
     badge: 'must-try',
     desc: "Snowy shaved milk, real fruit, mochi & the works. Solo or Family size — sharing encouraged but not required.",
-    priceRange: '₱250 – 380',
+    priceRange: '₱250 – 390',
     items: [
       { name: 'Halo Supreme',  variants: [{ label: 'Family', price: 380 }] },
       { name: 'Mango Magic',   variants: [{ label: 'Solo', price: 270 }, { label: 'Family', price: 370 }] },
       { name: 'Buko Pandan',   variants: [{ label: 'Solo', price: 250 }, { label: 'Family', price: 350 }] },
       { name: 'Choco Snow',    variants: [{ label: 'Solo', price: 250 }, { label: 'Family', price: 350 }] },
+      { name: 'Mais Con',      variants: [{ label: 'Solo', price: 290 }, { label: 'Family', price: 390 }] },
     ],
     addons: [
       { name: 'Sea Salt Cream', price: '+₱25' },
@@ -2636,12 +2647,19 @@ const MENU_CATEGORIES = [
     priceRange: '₱150 – 220',
     items: [
       { name: 'Americano',             variants: [{ label: 'Hot', price: 150 }, { label: 'Cold', price: 160 }] },
-      { name: 'Sweet Cream Americano', variants: [{ label: '', price: 180 }] },
+      { name: 'Sweet Cream Americano', variants: [{ label: '', price: 180 }], note: 'iced only' },
       { name: 'Kastilatte',            variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 195 }] },
       { name: 'Latte',                 variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 190 }] },
       { name: 'Flavored Latte',        variants: [{ label: 'Hot', price: 195 }, { label: 'Cold', price: 210 }] },
       { name: 'Krema Latte',           variants: [{ label: 'Hot', price: 200 }, { label: 'Cold', price: 220 }] },
-      { name: 'Salty Kreme Latte',     variants: [{ label: '', price: 210 }] },
+      { name: 'Salty Kreme Latte',     variants: [{ label: '', price: 210 }], note: 'iced only' },
+      { name: 'Cereal Latte',          variants: [{ label: '', price: 220 }] },
+    ],
+    addons: [
+      { name: 'Sub Oat Milk',    price: '+₱40' },
+      { name: 'Add Salty Kreme', price: '+₱20' },
+      { name: 'Add Sweet Cream', price: '+₱20' },
+      { name: 'Add Espresso',    price: '+₱50' },
     ],
   },
   {
@@ -2654,18 +2672,20 @@ const MENU_CATEGORIES = [
       { name: 'Berry Matcha',           variants: [{ label: '', price: 220 }], note: 'iced only' },
       { name: 'Salty Kreme Matcha',     variants: [{ label: '', price: 220 }], note: 'iced only' },
       { name: 'White Chocolate Matcha', variants: [{ label: '', price: 240 }], note: 'hot or iced' },
+      { name: 'Cereal Matcha',          variants: [{ label: '', price: 240 }] },
     ],
   },
   {
     id: 'milktea', name: 'Milk Tea', tag: 'the classic sip', emoji: '🧋',
     badge: null,
     desc: "OG or loaded with extras — the Krema Milktea gets reordered way more than we expected.",
-    priceRange: '₱140 – 180',
+    priceRange: '₱140 – 200',
     items: [
       { name: 'OG Milktea',          variants: [{ label: '', price: 140 }] },
       { name: 'Krema Milktea',       variants: [{ label: '', price: 180 }] },
       { name: 'Salty Kreme Milktea', variants: [{ label: '', price: 170 }] },
       { name: 'Banana Milktea',      variants: [{ label: '', price: 170 }] },
+      { name: 'Cereal Milktea',      variants: [{ label: '', price: 200 }] },
     ],
   },
   {
@@ -2685,7 +2705,7 @@ const MENU_CATEGORIES = [
   {
     id: 'snacks', name: 'Snacks', tag: 'lil bites', emoji: '🥐',
     badge: null,
-    desc: "The kind of snack you didn't plan on ordering but absolutely will.",
+    desc: "The kind of snack you didn't plan on ordering but absolutely will. More pastries waiting at the counter.",
     priceRange: '₱160 – 180',
     items: [
       { name: '3-Cheese Nachos',        variants: [{ label: '', price: 160 }] },
@@ -2695,12 +2715,15 @@ const MENU_CATEGORIES = [
   },
 ];
 
+// Mirrors the "Off the Menu" chalkboard in the shop — update when the board changes.
 const MONTHLY_SPECIALS = [
-  { name: 'Atin Oreo Storm',     price: '₱200',        note: 'bingsu' },
-  { name: 'Chocolate Campfire',  price: '₱200',        note: 'bingsu' },
-  { name: 'Horchata',            price: '₱200',        note: 'drink' },
-  { name: 'Mango Matcha',        price: '₱240',        note: 'drink' },
-  { name: 'Mango Graham Bingsu', price: '₱280 · ₱380', note: 'solo · family' },
+  { name: 'Mango Graham Bingsu',         price: '₱280 · ₱380', note: 'best seller · solo · family' },
+  { name: 'Ube Keso Bingsu',             price: '₱280 · ₱380', note: 'solo · family' },
+  { name: 'Banana Pudding Milk Tea',     price: '₱220',        note: 'drink' },
+  { name: 'Banana Pudding Latte',        price: '₱280',        note: 'drink' },
+  { name: 'Banana Pudding Matcha',       price: '₱290',        note: 'drink' },
+  { name: 'Dirty Horchata',              price: 'ask us',      note: 'drink' },
+  { name: 'Brown Sugar Shaken Espresso', price: '₱200',        note: 'drink' },
 ];
 
 // ── PhotoSlot — intentional placeholder for the real photoshoot ──────────
@@ -3054,7 +3077,7 @@ function MonthlySpecials({ palette }) {
       <div style={{ textAlign: 'center', marginBottom: 28, position: 'relative', zIndex: 1 }}>
         <div className="kh-section-eyebrow" style={{ justifyContent: 'center' }}>
           <Sparkle size={18} color={palette.accent} />
-          <span style={{ color: palette.accent }}>this month only</span>
+          <span style={{ color: palette.accent }}>off the menu</span>
           <Sparkle size={18} color={palette.accent} />
         </div>
         <h3 style={{
@@ -3065,7 +3088,7 @@ function MonthlySpecials({ palette }) {
           margin: '4px 0 6px', letterSpacing: '0.01em',
         }}>Barista's Blackboard</h3>
         <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, letterSpacing: '0.14em', fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase' }}>
-          Monthly Specials · While Supplies Last
+          Secret Menu · Just Ask Your Barista
         </p>
       </div>
       <div className="kh-specials-list">
@@ -3272,11 +3295,11 @@ function Events({ palette, vibe }) {
 // ▸ Posts with permalink === null render the styled fallback card below — which
 //   ALSO appears automatically if a real embed fails to load (offline / removed).
 const COMMUNITY_POSTS = [
-  { permalink: 'https://www.instagram.com/p/DXyOx-ND-A4/', img: 'assets/photo_gram4.jpg', handle: 'rib.onn_', loc: 'Krema Dessert Haus', likes: null,
+  { permalink: 'https://www.instagram.com/p/DeHeXg-EpzP/', img: 'assets/photo_gram4.jpg', handle: 'kc.eaaats', loc: 'Krema Dessert Haus', likes: null,
     caption: 'Tagged @kremadesserthaus on Instagram ✨' },
-  { permalink: 'https://www.instagram.com/p/DYjlkdIDy-O/', img: 'assets/photo_gram2.jpg', handle: 'black.bird_05', loc: 'Krema Dessert Haus', likes: null,
+  { permalink: 'https://www.instagram.com/p/DYjlkdIDy-O/', img: 'assets/photo_gram2.jpg', handle: 'its.xeline', loc: 'Krema Dessert Haus', likes: null,
     caption: 'Tagged @kremadesserthaus on Instagram ✨' },
-  { permalink: 'https://www.instagram.com/p/DZ-eiDCk8Lk/', img: 'assets/photo_gram6.jpg', handle: 'chayincafes', loc: 'Krema Dessert Haus', likes: null,
+  { permalink: 'https://www.instagram.com/p/DbS3SohgZ7-/', img: 'assets/photo_gram6.jpg', handle: 'niksmanarang', loc: 'Krema Dessert Haus', likes: null,
     caption: 'Tagged @kremadesserthaus on Instagram ✨' },
   { permalink: 'https://www.instagram.com/p/DZ2Y8mBEu-I/', img: 'assets/photo_gram1.jpg', handle: 'thefoodieatty', loc: 'Krema Dessert Haus', likes: null,
     caption: 'Tagged @kremadesserthaus on Instagram ✨' },
@@ -3641,6 +3664,65 @@ function FindUs({ palette, scriptFont, vibe }) {
 }
 
 // ── footer ────────────────────────────────────────────────────────────────
+// K-list sign-up. Plain PostgREST fetch — no Supabase SDK on this page.
+// The publishable key is public-safe; subscribe_newsletter is the only thing it can reach here.
+const SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
+// Must match v_consent in subscribe_newsletter() word for word (tests/newsletter.test.js).
+const NEWSLETTER_CONSENT = 'Yes, email me Krema news, new drops & promos. I can unsubscribe anytime.';
+
+function NewsletterForm() {
+  const [email, setEmail] = useState('');
+  const [consent, setConsent] = useState(false);
+  const [status, setStatus] = useState('idle'); // idle | sending | done | error
+  const [error, setError] = useState('');
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (status === 'sending') return;
+    if (!consent) { setStatus('error'); setError('Tick the box first, bestie.'); return; }
+    setStatus('sending'); setError('');
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/subscribe_newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
+        body: JSON.stringify({ p_email: email, p_source: 'footer' }),
+      });
+      if (res.ok) { setStatus('done'); return; }
+      const body = await res.json().catch(() => ({}));
+      const msg = String(body.message || '');
+      setStatus('error');
+      setError(msg.includes('invalid email') ? "That email doesn't look right."
+        : msg.includes('too many') ? 'Too many sign-ups from here — try again in a bit.'
+        : "Couldn't sign you up. Try again?");
+    } catch {
+      setStatus('error'); setError("Couldn't reach us. Check your connection & try again.");
+    }
+  };
+
+  if (status === 'done') {
+    return <p className="kh-newsletter-msg" role="status">You're on the K-list! ✦ Watch your inbox.</p>;
+  }
+  return (
+    <form className="kh-newsletter-form" onSubmit={onSubmit}>
+      <div className="kh-newsletter">
+        <input id="kh-newsletter-email" name="email" type="email" required autoComplete="email"
+               placeholder="you@krema.life" aria-label="Email address"
+               value={email} onChange={(e) => setEmail(e.target.value)} />
+        <button type="submit" disabled={status === 'sending'}>
+          {status === 'sending' ? 'Sending…' : 'Subscribe'}
+        </button>
+      </div>
+      <label className="kh-newsletter-consent">
+        <input type="checkbox" name="consent" required
+               checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        <span>{NEWSLETTER_CONSENT} <a href="privacy.html">Privacy notice</a></span>
+      </label>
+      {status === 'error' && <p className="kh-newsletter-msg is-error" role="alert">{error}</p>}
+    </form>
+  );
+}
+
 function Footer({ palette, scriptFont, vibe }) {
   const copy = COPY[vibe] || COPY.cheeky;
   return (
@@ -3692,15 +3774,12 @@ function Footer({ palette, scriptFont, vibe }) {
         <div className="kh-footer-col kh-footer-col-wide">
           <h4>K-list</h4>
           <p>The bingsu drop, K-pop nights, happy-hour reminders. No spam, pinky promise.</p>
-          <form className="kh-newsletter" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="you@krema.life" />
-            <button type="submit">Subscribe</button>
-          </form>
+          <NewsletterForm />
         </div>
       </div>
       <div className="kh-footer-base">
         <span>© 2026 Krema Dessert Haus · Made with ube in Parañaque</span>
-        <span>privacy · terms · accessibility</span>
+        <a href="privacy.html">privacy notice</a>
       </div>
     </footer>
   );
