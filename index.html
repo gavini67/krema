@@ -2625,14 +2625,15 @@ const MENU_CATEGORIES = [
   {
     id: 'bingsu', name: 'Bingsu', tag: 'the signature', emoji: '🍧',
     badge: 'must-try',
-    desc: "Snowy shaved milk, real fruit, mochi & the works. Solo or Family size — sharing encouraged but not required.",
-    priceRange: '₱250 – 390',
+    desc: "Finely shaved ice, sweet toppings & our signature fluffy Krema. Solo (1–2 pax) or Family (3–5 pax) — sharing encouraged but not required.",
+    priceRange: '₱250 – 380',
     items: [
       { name: 'Halo Supreme',  variants: [{ label: 'Family', price: 380 }] },
+      { name: 'Mango Graham',  variants: [{ label: 'Solo', price: 280 }, { label: 'Family', price: 380 }] },
+      { name: 'Ube Keso',      variants: [{ label: 'Solo', price: 280 }, { label: 'Family', price: 380 }] },
       { name: 'Mango Magic',   variants: [{ label: 'Solo', price: 270 }, { label: 'Family', price: 370 }] },
       { name: 'Buko Pandan',   variants: [{ label: 'Solo', price: 250 }, { label: 'Family', price: 350 }] },
       { name: 'Choco Snow',    variants: [{ label: 'Solo', price: 250 }, { label: 'Family', price: 350 }] },
-      { name: 'Mais Con',      variants: [{ label: 'Solo', price: 290 }, { label: 'Family', price: 390 }] },
     ],
     addons: [
       { name: 'Sea Salt Cream', price: '+₱25' },
@@ -2646,20 +2647,21 @@ const MENU_CATEGORIES = [
     desc: "Espresso-based, hot or iced. Prices differ — cold costs a little more. The Krema Latte gets reordered way more than we expected.",
     priceRange: '₱150 – 220',
     items: [
-      { name: 'Americano',             variants: [{ label: 'Hot', price: 150 }, { label: 'Cold', price: 160 }] },
-      { name: 'Sweet Cream Americano', variants: [{ label: '', price: 180 }], note: 'iced only' },
-      { name: 'Kastilatte',            variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 195 }] },
-      { name: 'Latte',                 variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 190 }] },
-      { name: 'Flavored Latte',        variants: [{ label: 'Hot', price: 195 }, { label: 'Cold', price: 210 }] },
-      { name: 'Krema Latte',           variants: [{ label: 'Hot', price: 200 }, { label: 'Cold', price: 220 }] },
-      { name: 'Salty Kreme Latte',     variants: [{ label: '', price: 210 }], note: 'iced only' },
-      { name: 'Cereal Latte',          variants: [{ label: '', price: 220 }] },
+      { name: 'Americano',            variants: [{ label: 'Hot', price: 150 }, { label: 'Cold', price: 160 }] },
+      { name: 'Latte',                variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 190 }] },
+      { name: 'Vanilla Latte',        variants: [{ label: 'Hot', price: 195 }, { label: 'Cold', price: 210 }] },
+      { name: 'Mocha Latte',          variants: [{ label: 'Hot', price: 195 }, { label: 'Cold', price: 210 }] },
+      { name: 'Caramel Latte',        variants: [{ label: 'Hot', price: 195 }, { label: 'Cold', price: 210 }] },
+      { name: 'Kastilatte',           variants: [{ label: 'Hot', price: 180 }, { label: 'Cold', price: 195 }] },
+      { name: 'Krema Latte',          variants: [{ label: 'Hot', price: 200 }, { label: 'Cold', price: 220 }] },
+      { name: 'Salty Kreme',          variants: [{ label: '', price: 210 }], note: 'iced only' },
+      { name: 'Dirty Horchata',       variants: [{ label: '', price: 200 }], note: 'iced only' },
+      { name: 'Brown Sugar Oat Latte', variants: [{ label: '', price: 200 }], note: 'iced only' },
     ],
     addons: [
-      { name: 'Sub Oat Milk',    price: '+₱40' },
-      { name: 'Add Salty Kreme', price: '+₱20' },
-      { name: 'Add Sweet Cream', price: '+₱20' },
-      { name: 'Add Espresso',    price: '+₱50' },
+      { name: 'Add Salty Kreme / Krema',  price: '+₱20' },
+      { name: 'Sub Oat / Sub Horchata',   price: '+₱40' },
+      { name: 'Add Espresso',             price: '+₱50' },
     ],
   },
   {
@@ -2668,38 +2670,40 @@ const MENU_CATEGORIES = [
     desc: "Ceremonial-grade powder, real milk, frothed loud. Matcha Latte available hot or iced.",
     priceRange: '₱200 – 240',
     items: [
-      { name: 'Matcha Latte',           variants: [{ label: '', price: 200 }], note: 'hot or iced' },
-      { name: 'Berry Matcha',           variants: [{ label: '', price: 220 }], note: 'iced only' },
-      { name: 'Salty Kreme Matcha',     variants: [{ label: '', price: 220 }], note: 'iced only' },
-      { name: 'White Chocolate Matcha', variants: [{ label: '', price: 240 }], note: 'hot or iced' },
-      { name: 'Cereal Matcha',          variants: [{ label: '', price: 240 }] },
+      { name: 'Matcha Latte',       variants: [{ label: '', price: 200 }], note: 'hot or iced' },
+      { name: 'Vanilla Matcha',     variants: [{ label: '', price: 220 }] },
+      { name: 'Salty Kreme Matcha', variants: [{ label: '', price: 220 }], note: 'iced only' },
+      { name: 'Krema Matcha',       variants: [{ label: '', price: 230 }] },
+      { name: 'Berry Matcha',       variants: [{ label: '', price: 220 }], note: 'iced only' },
+      { name: 'Mango Matcha',       variants: [{ label: '', price: 240 }] },
+      { name: 'White Choco Matcha', variants: [{ label: '', price: 240 }] },
     ],
   },
   {
     id: 'milktea', name: 'Milk Tea', tag: 'the classic sip', emoji: '🧋',
     badge: null,
     desc: "OG or loaded with extras — the Krema Milktea gets reordered way more than we expected.",
-    priceRange: '₱140 – 200',
+    priceRange: '₱140 – 180',
     items: [
       { name: 'OG Milktea',          variants: [{ label: '', price: 140 }] },
       { name: 'Krema Milktea',       variants: [{ label: '', price: 180 }] },
       { name: 'Salty Kreme Milktea', variants: [{ label: '', price: 170 }] },
       { name: 'Banana Milktea',      variants: [{ label: '', price: 170 }] },
-      { name: 'Cereal Milktea',      variants: [{ label: '', price: 200 }] },
+      { name: 'Berry Milktea',       variants: [{ label: '', price: 180 }] },
+      { name: 'Mango Milktea',       variants: [{ label: '', price: 180 }] },
     ],
   },
   {
     id: 'refreshers', name: 'Refreshers', tag: 'fruity & fizzy', emoji: '🍹',
     badge: null,
-    desc: "Real fruit, really cold. Mango, lychee, peach, strawberry — the IG-friendly lineup.",
+    desc: "Real fruit, really cold. Lemon, mango, peach, strawberry — the IG-friendly lineup.",
     priceRange: '₱150 – 165',
     items: [
       { name: 'Fresh Lemon',  variants: [{ label: '', price: 150 }] },
-      { name: 'Lychee',       variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
-      { name: 'Strawberry',   variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
-      { name: 'Peach',        variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
-      { name: 'Mango',        variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
       { name: 'Peach Mango',  variants: [{ label: '', price: 165 }] },
+      { name: 'Strawberry',   variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
+      { name: 'Mango',        variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
+      { name: 'Peach',        variants: [{ label: 'Tea', price: 150 }, { label: 'Soda', price: 160 }] },
     ],
   },
   {
@@ -2709,21 +2713,22 @@ const MENU_CATEGORIES = [
     priceRange: '₱160 – 180',
     items: [
       { name: '3-Cheese Nachos',        variants: [{ label: '', price: 160 }] },
-      { name: 'Sausage Cheese Puff',    variants: [{ label: '', price: 180 }] },
+      { name: 'Truffle Cheese Puff',    variants: [{ label: '', price: 180 }] },
       { name: 'Ham & Cheese Croissant', variants: [{ label: '', price: 180 }] },
     ],
   },
 ];
 
-// Mirrors the "Off the Menu" chalkboard in the shop — update when the board changes.
+// Monthly specials / off-the-menu items — the printed menu says "ask our staff
+// for our monthly specials". Mirror the shop's chalkboard + counter promos here.
 const MONTHLY_SPECIALS = [
-  { name: 'Mango Graham Bingsu',         price: '₱280 · ₱380', note: 'best seller · solo · family' },
-  { name: 'Ube Keso Bingsu',             price: '₱280 · ₱380', note: 'solo · family' },
-  { name: 'Banana Pudding Milk Tea',     price: '₱220',        note: 'drink' },
-  { name: 'Banana Pudding Latte',        price: '₱280',        note: 'drink' },
-  { name: 'Banana Pudding Matcha',       price: '₱290',        note: 'drink' },
-  { name: 'Dirty Horchata',              price: 'ask us',      note: 'drink' },
-  { name: 'Brown Sugar Shaken Espresso', price: '₱200',        note: 'drink' },
+  { name: 'Mais Con Bingsu',         price: '₱290 · ₱390', note: 'solo · family' },
+  { name: 'Banana Pudding Milk Tea', price: '₱220',        note: 'drink' },
+  { name: 'Banana Pudding Latte',    price: '₱280',        note: 'drink' },
+  { name: 'Banana Pudding Matcha',   price: '₱290',        note: 'drink' },
+  { name: 'Cereal Milktea',          price: '₱200',        note: 'cereal milk series' },
+  { name: 'Cereal Latte',            price: '₱220',        note: 'cereal milk series' },
+  { name: 'Cereal Matcha',           price: '₱240',        note: 'cereal milk series' },
 ];
 
 // ── PhotoSlot — intentional placeholder for the real photoshoot ──────────
@@ -3088,7 +3093,7 @@ function MonthlySpecials({ palette }) {
           margin: '4px 0 6px', letterSpacing: '0.01em',
         }}>Barista's Blackboard</h3>
         <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, letterSpacing: '0.14em', fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase' }}>
-          Secret Menu · Just Ask Your Barista
+          Monthly Specials · Just Ask Your Barista
         </p>
       </div>
       <div className="kh-specials-list">
@@ -3106,13 +3111,14 @@ function MonthlySpecials({ palette }) {
 }
 
 function Menu({ palette, featuredBingsu, scriptFont }) {
-  const bingsuPrices = { 'Mango Graham': '₱280 – 380', 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
+  const bingsuPrices = { 'Mango Graham': '₱280 – 380', 'Ube Keso': '₱280 – 380', 'Mango Magic': '₱270 – 370', 'Buko Pandan': '₱250 – 350', 'Choco Snow': '₱250 – 350', 'Halo Supreme': '₱380' };
   const bingsuDescs = {
-    'Mango Graham':  "Milky shaved snow piled with real mango, graham crumble, and condensed milk swirl. Sweet, creamy, crunchy — the one everyone orders twice.",
-    'Mango Magic':   "Milky shaved snow piled with real mango, condensed milk swirl, and mochi. The one everyone orders twice.",
-    'Buko Pandan':   "Shaved snow meets coconut jelly, pandan syrup, and buko strips. Tropical, creamy, completely addictive.",
-    'Choco Snow':    "Chocolate shaved milk, fudge drizzle, mochi, and more chocolate. For when you mean it.",
-    'Halo Supreme':  "All the classics at once — ube, gulaman, beans, leche flan, ube ice cream. Family size only, because it should be.",
+    'Mango Graham':  "Creamy mango shaved ice layered with graham crackers and sweet mangoes, topped with whipped cream and more mango chunks.",
+    'Ube Keso':      "Fluffy ube shaved ice layered with creamy leche flan, topped with grated cheese and crunchy cornflakes.",
+    'Mango Magic':   "Mango shaved ice topped with fresh mangoes and our signature Krema. The crowd favorite.",
+    'Buko Pandan':   "Pandan shaved ice topped with pandan jelly, buko jelly, milk sauce and our signature Krema.",
+    'Choco Snow':    "Milk shaved ice topped with chocolate shavings, chocolate syrup, chocolate bits, and our signature Krema.",
+    'Halo Supreme':  "Ube shaved ice, macapuno, ube halaya, nata de coco, langka, buko jelly, special leche flan and our signature Krema. Family size only, because it should be.",
   };
   return (
     <section id="menu" className="kh-menu">
@@ -3850,7 +3856,7 @@ function App() {
         <TweakToggle label='"We are open" pill' value={t.showOpenBadge}
                      onChange={(v) => setTweak('showOpenBadge', v)} />
         <TweakSelect label="Featured bingsu" value={t.featuredBingsu}
-                     options={['Mango Graham', 'Mango Magic', 'Buko Pandan', 'Choco Snow', 'Halo Supreme']}
+                     options={['Mango Graham', 'Ube Keso', 'Mango Magic', 'Buko Pandan', 'Choco Snow', 'Halo Supreme']}
                      onChange={(v) => setTweak('featuredBingsu', v)} />
       </TweaksPanel>
     </div>

@@ -152,7 +152,7 @@ Three things the planning turned up that must be respected:
 - [ ] **Customer "recent stamps" history** — hidden; the RPCs don't return history yet.
 - [ ] Real camera QR *decode* is wired (html5-qrcode) but only tested statically — verify on a phone (needs HTTPS + camera permission; Vercel gives HTTPS).
 
-- [x] **Menu synced to the in-store menu (2026-10-14):** Mais Con bingsu, Cereal Latte/Matcha/Milktea, coffee add-ons, iced-only flags, and the Barista's Blackboard now mirrors the shop's *Off the Menu* chalkboard (`MONTHLY_SPECIALS`). Dirty Horchata price unknown → shows "ask us". Sausage Cheese Puff is taped "sold out" in store but still listed.
+- [x] **Menu synced to the owner's printed menu PDF (2026-10-15).** `MENU_CATEGORIES` = the PDF (2 pages: bingsu + snacks; coffee/matcha/milktea/refreshers). Items NOT in the PDF (Mais Con Bingsu, Banana Pudding ×3, Cereal Milk ×3) live in `MONTHLY_SPECIALS` (Barista's Blackboard). Assumed chalkboard "Brown Sugar Shaken Espresso" = PDF "Brown Sugar Oat Latte". Cold-only prices are marked iced only.
 
 ## 7. GOTCHAS / house rules (important)
 - **CDN PINNING — never use `@latest` / unpinned.** On 2026-06-26 an unpinned `@babel/standalone` auto-upgraded to Babel 8 and blanked the whole site (Babel 8 injects ES imports illegal in `text/babel`). Pinned versions in use: Babel `7.26.4`, React/ReactDOM `18.3.1`, `@supabase/supabase-js@2.45.4`, `html5-qrcode@2.3.8`, `qrcode@1.5.1`.
