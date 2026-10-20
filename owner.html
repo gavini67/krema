@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Krema · Owner dashboard</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+<style>
+  :root {
+    --navy: #2b3a66; --muted: #4a5a8a; --cream: #FEFFE6; --yellow: #FCEC60;
+    --sky: #d4e8f5; --blue: #76B3D0; --lilac: #e6dff8; --pink: #ffe0ec;
+    --green: #4EC97A; --grey: #e3e8f1; --line: #cbd7ee; --red: #8f2d23; --red-bg: #fbe9e7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--cream); color: var(--navy); font-family: Inter, system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--navy); }
+  button { font: inherit; color: inherit; }
+  .hidden { display: none !important; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+  @media (min-width: 720px) { .wrap { padding: 28px 24px 56px; gap: 22px; } }
+
+  .card { background: #fff; border: 2.5px solid var(--navy); border-radius: 20px; padding: 18px; box-shadow: 4px 5px 0 var(--navy); display: flex; flex-direction: column; gap: 12px; position: relative; min-width: 0; }
+  @media (min-width: 720px) { .card { padding: 20px; } }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .card h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .sub { font-size: 13px; color: var(--muted); }
+  .note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .sticker { position: absolute; pointer-events: none; object-fit: contain; }
+
+  /* header */
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 44px; height: 56px; object-fit: contain; transform: rotate(-8deg); }
+  .brand h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.15; }
+  @media (min-width: 720px) { .brand h1 { font-size: 24px; } }
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .seg { display: flex; gap: 4px; padding: 4px; background: #fff; border: 2px solid var(--navy); border-radius: 999px; }
+  .seg button { font-size: 14px; font-weight: 600; background: transparent; border: 0; border-radius: 999px; padding: 10px 14px; min-height: 44px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--yellow); }
+  .seg button:focus-visible, .linkbtn:focus-visible, .group-row:focus-visible, .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .linkbtn { background: none; border: 0; padding: 10px 4px; min-height: 44px; font-size: 14px; font-weight: 500; text-decoration: underline; cursor: pointer; }
+
+  /* tiles */
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (min-width: 900px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } }
+  .tile { border: 2.5px solid var(--navy); border-radius: 20px; padding: 14px; box-shadow: 4px 5px 0 var(--navy); display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  @media (min-width: 720px) { .tile { padding: 18px 20px; gap: 6px; } }
+  .tile .label { font-size: 15px; font-weight: 500; }
+  .tile .num { font-size: 34px; font-weight: 700; line-height: 1; }
+  @media (min-width: 720px) { .tile .num { font-size: 40px; } }
+  .tile .small { font-size: 13px; }
+
+  .row2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  @media (min-width: 820px) { .row2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+  .row3 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  @media (min-width: 900px) { .row3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .trio div { border: 2px solid var(--navy); border-radius: 14px; padding: 10px 6px; text-align: center; }
+  .trio b { display: block; font-size: 26px; font-weight: 700; }
+  .trio span { font-size: 13px; }
+  .trio .exp { border-color: #b03a2e; background: var(--red-bg); color: var(--red); }
+  .trio .wait { background: var(--yellow); }
+
+  .list-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px dashed var(--line); font-size: 15px; min-width: 0; }
+  .list-row > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .chip { font-size: 13px; font-weight: 600; background: #fff; border: 1.5px solid var(--navy); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+  .chip.yellow { background: var(--yellow); }
+  .empty { font-size: 14px; color: var(--muted); padding: 10px 0; border-top: 1px dashed var(--line); }
+
+  .stack { display: flex; height: 26px; border: 2px solid var(--navy); border-radius: 999px; overflow: hidden; }
+  .stack div + div { border-left: 2px solid var(--navy); }
+  .group-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 0; border: 0; border-top: 1px dashed var(--line); background: transparent; text-align: left; cursor: pointer; }
+  .group-row .sw { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--navy); flex: none; }
+  .group-row .txt { flex: 1; display: flex; flex-direction: column; font-size: 15px; }
+  .group-row .txt b { font-weight: 600; }
+  .group-row .n { font-size: 20px; font-weight: 700; }
+
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 190px; }
+  @media (min-width: 720px) { .bars { gap: 10px; } }
+  .bars.hours { gap: 3px; height: 170px; }
+  @media (min-width: 720px) { .bars.hours { gap: 6px; } }
+  .bar { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; }
+  .bar .v { font-size: 13px; font-weight: 600; }
+  .bar .b { width: 100%; border: 2px solid var(--navy); border-radius: 8px 8px 3px 3px; background: var(--blue); }
+  .bars.hours .b { border-radius: 6px 6px 2px 2px; background: var(--sky); }
+  .bar .b.hi { background: var(--yellow); }
+  .bar .l { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .klist { background: var(--navy); color: var(--cream); box-shadow: 4px 5px 0 var(--blue); }
+  .klist h2 { color: var(--yellow); }
+
+  .banner { border: 2px solid #b03a2e; background: var(--red-bg); color: var(--red); border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+  .loading .num, .loading .trio b, .loading .n { opacity: .35; }
+
+  /* login */
+  .login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .login .card { width: min(420px, 100%); gap: 14px; }
+  .login label { font-size: 14px; font-weight: 600; display: flex; flex-direction: column; gap: 6px; }
+  .login input { font: 400 16px Inter, system-ui, sans-serif; color: var(--navy); padding: 13px 14px; border: 2px solid var(--navy); border-radius: 14px; background: var(--cream); min-height: 48px; }
+  .login input:focus { outline: 3px solid var(--blue); outline-offset: 1px; background: #fff; }
+  .btn { font-size: 16px; font-weight: 600; background: var(--yellow); border: 2.5px solid var(--navy); border-radius: 999px; padding: 14px 20px; min-height: 52px; box-shadow: 4px 5px 0 var(--navy); cursor: pointer; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .err { font-size: 14px; color: var(--red); }
+
+  /* members sheet */
+  .sheet-bg { position: fixed; inset: 0; background: rgba(43,58,102,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+  @media (min-width: 720px) { .sheet-bg { align-items: center; } }
+  .sheet { background: var(--cream); border: 2.5px solid var(--navy); border-radius: 22px 22px 0 0; width: min(560px, 100%); max-height: 86vh; display: flex; flex-direction: column; box-shadow: 0 -4px 0 var(--navy); }
+  @media (min-width: 720px) { .sheet { border-radius: 22px; box-shadow: 6px 7px 0 var(--navy); } }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px 10px; }
+  .sheet-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .sheet-body { overflow-y: auto; padding: 0 18px 18px; }
+  .member { padding: 12px 0; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 3px; font-size: 15px; }
+  .member .top { display: flex; justify-content: space-between; gap: 10px; }
+  .member .meta { font-size: 13px; color: var(--muted); }
+  .closebtn { background: #fff; border: 2px solid var(--navy); border-radius: 999px; min-width: 44px; min-height: 44px; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0 14px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<main id="view-login" class="login hidden">
+  <form id="login-form" class="card" novalidate>
+    <div class="brand">
+      <img src="assets/krema-brandmark.png" alt="Krema Dessert Haus">
+      <h1>Owner dashboard</h1>
+    </div>
+    <p class="note" style="color:var(--navy);font-size:14px;">Sign in with the owner account. Staff logins can't open this page.</p>
+    <label>Email<input id="owner-email" type="email" autocomplete="username" required></label>
+    <label>Password<input id="owner-password" type="password" autocomplete="current-password" required></label>
+    <div id="owner-turnstile" aria-label="security verification" style="min-height:65px;max-width:100%;overflow:hidden;"></div>
+    <div id="login-error" class="err hidden" role="alert" aria-live="polite"></div>
+    <button id="btn-login" class="btn" type="submit">Sign in</button>
+  </form>
+</main>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="view-dash" class="hidden">
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="assets/krema-brandmark.png" alt="Krema Dessert Haus">
+        <div>
+          <h1>Owner dashboard</h1>
+          <span class="sub" id="today-label">Krema Club</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Period">
+          <button type="button" data-days="1" aria-pressed="false">Today</button>
+          <button type="button" data-days="7" aria-pressed="true">7 days</button>
+          <button type="button" data-days="30" aria-pressed="false">30 days</button>
+        </div>
+        <button type="button" id="btn-logout" class="linkbtn">Log out</button>
+      </div>
+    </header>
+
+    <div id="load-error" class="banner hidden" role="alert"></div>
+
+    <section class="tiles" aria-label="Period totals" id="tiles">
+      <div class="tile" style="background:var(--yellow)"><span class="label">Stamps given</span><span class="num" id="t-stamps">—</span><span class="small" id="t-stamps-sub">&nbsp;</span></div>
+      <div class="tile" style="background:var(--sky)"><span class="label">Customers</span><span class="num" id="t-customers">—</span><span class="small" id="t-customers-sub">&nbsp;</span></div>
+      <div class="tile" style="background:var(--lilac)"><span class="label">Rewards claimed</span><span class="num" id="t-rewards">—</span><span class="small" id="t-rewards-sub">&nbsp;</span></div>
+      <div class="tile" style="background:var(--pink)"><span class="label">New members</span><span class="num" id="t-members">—</span><span class="small" id="t-members-sub">&nbsp;</span></div>
+    </section>
+
+    <div class="row2">
+      <section class="card" aria-labelledby="h-rewards">
+        <div class="card-head"><h2 id="h-rewards">Rewards</h2><span class="sub">last 30 days</span></div>
+        <div class="trio">
+          <div><b id="r-claimed">—</b><span>claimed</span></div>
+          <div class="exp"><b id="r-expired">—</b><span>expired</span></div>
+          <div class="wait"><b id="r-waiting">—</b><span>waiting now</span></div>
+        </div>
+        <div>
+          <span class="sub" style="font-weight:600;display:block;padding-bottom:4px;">Waiting to be claimed</span>
+          <div id="waiting-list"></div>
+        </div>
+        <p class="note">From 21 October, a reward not claimed on the day it's earned expires at midnight.</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-members">
+        <img class="sticker" src="assets/sticker-blob-chill.png" alt="" aria-hidden="true" style="top:-26px;right:14px;width:70px;height:66px;transform:rotate(8deg);">
+        <div class="card-head" style="padding-right:76px;"><h2 id="h-members">Members</h2><span class="sub" id="m-total">&nbsp;</span></div>
+        <div class="stack" aria-hidden="true" id="m-stack"></div>
+        <div id="group-rows"></div>
+        <p class="note">Tap a group to see who's in it.</p>
+      </section>
+    </div>
+
+    <div class="row2">
+      <section class="card" aria-labelledby="h-weekly">
+        <div class="card-head"><h2 id="h-weekly">Stamps per week</h2><span class="sub">last 8 weeks</span></div>
+        <div class="bars" id="weekly" role="img"></div>
+      </section>
+      <section class="card" aria-labelledby="h-hours">
+        <div class="card-head"><h2 id="h-hours">Busiest hours</h2><span class="sub">all time</span></div>
+        <div class="bars hours" id="hours" role="img"></div>
+        <p class="note" id="hours-note" style="color:var(--navy);font-size:14px;"></p>
+      </section>
+    </div>
+
+    <div class="row3">
+      <section class="card" aria-labelledby="h-regulars" style="gap:6px;">
+        <h2 id="h-regulars" style="margin-bottom:6px;">Top regulars</h2>
+        <div id="regulars"></div>
+      </section>
+      <section class="card" aria-labelledby="h-staff" style="gap:6px;">
+        <div class="card-head" style="margin-bottom:6px;"><h2 id="h-staff">Staff</h2><span class="sub" id="staff-sub">stamps</span></div>
+        <div id="staff"></div>
+      </section>
+      <section class="card klist" aria-labelledby="h-klist" style="gap:8px;">
+        <img class="sticker" src="assets/sticker-coffee.png" alt="" aria-hidden="true" style="top:-22px;right:12px;width:62px;height:62px;transform:rotate(-10deg);">
+        <h2 id="h-klist">K-list newsletter</h2>
+        <span style="font-size:40px;font-weight:700;line-height:1;" id="k-count">—</span>
+        <span style="font-size:14px;">subscribers · sign-up live since 14 Oct</span>
+      </section>
+    </div>
+
+    <p class="note">Counts only drinks stamped on Krema Club cards, not all sales. Test cards are left out. Times are Manila time. <span id="updated"></span></p>
+  </div>
+</div>
+
+<!-- ══ MEMBERS SHEET ══ -->
+<div id="sheet" class="sheet-bg hidden">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Members</h2>
+      <button type="button" class="closebtn" id="sheet-close">Close</button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var SUPABASE_URL = 'https://skwppxosekdctjtxxvme.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_ftoEouVkkZUVkLWPQ4XQdA_nV0X8hha';
+  // Own storage key: owner, staff and customer pages share one origin, and the
+  // default key would let one sign-in silently replace another's session.
+  var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { storageKey: 'krema-owner-auth', detectSessionInUrl: false }
+  });
+
+  var TURNSTILE_PRODUCTION_SITE_KEY = '0x4AAAAAAEyPyxkgME5XT2-U';
+  var TURNSTILE_LOCAL_SITE_KEY = '1x00000000000000000000AA';
+  var REFRESH_MS = 60000;
+  var REWARD_NAMES = { 6: '10% off', 10: 'free drink', 16: 'free merch', 20: 'free bingsu' };
+  var GROUPS = [
+    { key: 'active',  name: 'Active',        note: 'visited in the last 2 weeks', color: 'var(--green)' },
+    { key: 'cooling', name: 'Cooling off',   note: 'no visit for 2–4 weeks',      color: 'var(--yellow)' },
+    { key: 'lapsed',  name: 'Lapsed',        note: 'no visit for 30+ days',       color: 'var(--blue)' },
+    { key: 'never',   name: 'Never stamped', note: 'signed up, no stamp recorded', color: 'var(--grey)' }
+  ];
+
+  var captchaToken = null, turnstileId = null, turnstileRendered = false;
+  var days = 7, timer = null, loading = false, lastFocus = null;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = String(text);
+    return n;
+  }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); }
+
+  // ── login / Turnstile ─────────────────────────────────────────
+  function siteKey() {
+    var h = window.location.hostname;
+    return h === 'localhost' || h === '127.0.0.1' ? TURNSTILE_LOCAL_SITE_KEY : TURNSTILE_PRODUCTION_SITE_KEY;
+  }
+  function loginError(msg) {
+    $('login-error').textContent = msg;
+    $('login-error').classList.toggle('hidden', !msg);
+  }
+  function renderTurnstile() {
+    if (turnstileRendered) return;
+    if (!window.turnstile || typeof window.turnstile.render !== 'function') {
+      loginError('Security check could not load. Reload the page before signing in.');
+      return;
+    }
+    var box = $('owner-turnstile');
+    try {
+      turnstileId = window.turnstile.render(box, {
+        sitekey: siteKey(),
+        size: box.clientWidth < 300 ? 'compact' : 'normal',
+        callback: function (token) { captchaToken = token; loginError(''); },
+        'expired-callback': function () { captchaToken = null; loginError('Security check expired. Complete it again.'); },
+        'error-callback': function () { captchaToken = null; loginError('Security check could not load. Reload the page before signing in.'); }
+      });
+      turnstileRendered = true;
+    } catch (e) {
+      turnstileRendered = false;
+      loginError('Security check could not load. Reload the page before signing in.');
+    }
+  }
+  function resetTurnstile() {
+    captchaToken = null;
+    if (window.turnstile && turnstileId !== null && typeof window.turnstile.reset === 'function') {
+      window.turnstile.reset(turnstileId);
+    }
+  }
+
+  // A signed-in account is not enough: staff and customers are Auth users
+  // too. Only uids in public.owners pass; anyone else is signed straight out.
+  function requireOwner() {
+    return supabaseClient.rpc('is_owner').then(function (res) {
+      if (res.error) throw res.error;
+      if (res.data !== true) {
+        return supabaseClient.auth.signOut({ scope: 'local' }).catch(function () {}).then(function () {
+          var e = new Error('not owner'); e.notOwner = true; throw e;
+        });
+      }
+    });
+  }
+
+  function showLogin() {
+    stopTimer();
+    $('view-dash').classList.add('hidden');
+    $('view-login').classList.remove('hidden');
+    renderTurnstile();
+  }
+  function showDash() {
+    $('view-login').classList.add('hidden');
+    $('view-dash').classList.remove('hidden');
+    $('today-label').textContent = new Date().toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', weekday: 'long', day: 'numeric', month: 'long' }) + ' · Krema Club';
+    load();
+    startTimer();
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    var email = $('owner-email').value.trim();
+    var password = $('owner-password').value;
+    if (!email || !password) { loginError('Enter the owner email and password.'); return; }
+    if (!captchaToken) { renderTurnstile(); loginError('Complete the security check first.'); return; }
+    $('btn-login').disabled = true;
+    loginError('');
+    supabaseClient.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: captchaToken } })
+      .then(function (res) { if (res.error) throw res.error; return requireOwner(); })
+      .then(function () { $('owner-password').value = ''; showDash(); })
+      .catch(function (err) {
+        loginError(err && err.notOwner ? "That account isn't an owner account." : 'Wrong email or password.');
+        resetTurnstile();
+      })
+      .then(function () { $('btn-login').disabled = false; });
+  }
+
+  function handleLogout() {
+    closeSheet();
+    supabaseClient.auth.signOut({ scope: 'local' }).catch(function () {}).then(function () {
+      resetTurnstile();
+      showLogin();
+    });
+  }
+
+  // ── data ───────────────────────────────────────────────────────
+  function load() {
+    if (loading) return;
+    loading = true;
+    $('view-dash').classList.add('loading');
+    supabaseClient.rpc('owner_dashboard', { p_days: days }).then(function (res) {
+      if (res.error) throw res.error;
+      $('load-error').classList.add('hidden');
+      render(res.data || {});
+    }).catch(function (err) {
+      if (err && /owner only/i.test(err.message || '')) { handleLogout(); return; }
+      $('load-error').textContent = "Couldn't load the numbers. Check the connection — it will retry automatically.";
+      $('load-error').classList.remove('hidden');
+    }).then(function () {
+      loading = false;
+      $('view-dash').classList.remove('loading');
+    });
+  }
+  function startTimer() {
+    stopTimer();
+    timer = setInterval(function () { if (document.visibilityState === 'visible') load(); }, REFRESH_MS);
+  }
+  function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+
+  function prevLabel() {
+    return days === 1 ? 'same day last week' : days === 7 ? 'the week before' : 'the 30 days before';
+  }
+
+  function render(d) {
+    var n = function (v) { return typeof v === 'number' ? v : 0; };
+    $('t-stamps').textContent = n(d.stamps);
+    $('t-stamps-sub').textContent = n(d.stamps_prev) + ' ' + prevLabel();
+    $('t-customers').textContent = n(d.customers);
+    $('t-customers-sub').textContent = plural(n(d.first_timers), 'first-timer');
+    $('t-rewards').textContent = n(d.rewards);
+    var r30 = d.rewards_30d || {};
+    $('t-rewards-sub').textContent = plural(n(r30.waiting), 'member') + ' waiting';
+    $('t-members').textContent = n(d.new_members);
+    $('t-members-sub').textContent = n(d.members_total) + ' members in total';
+
+    $('r-claimed').textContent = n(r30.claimed);
+    $('r-expired').textContent = n(r30.expired);
+    $('r-waiting').textContent = n(r30.waiting);
+    renderWaiting(d.waiting || []);
+
+    renderGroups(d.groups || {}, n(d.members_total));
+    renderWeekly(d.weekly || []);
+    renderHours(d.hours || []);
+    renderRegulars(d.regulars || []);
+    renderStaff(d.staff || []);
+    $('k-count').textContent = n(d.newsletter);
+    $('updated').textContent = 'Updated ' + new Date(d.generated_at || Date.now()).toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' }) + '.';
+  }
+
+  function renderWaiting(rows) {
+    var box = $('waiting-list');
+    box.textContent = '';
+    if (!rows.length) { box.appendChild(el('div', 'empty', 'Nobody is waiting on a reward.')); return; }
+    rows.forEach(function (w) {
+      var row = el('div', 'list-row');
+      row.appendChild(el('span', null, w.name || w.member_code));
+      var names = (w.tiers || []).map(function (t) { return REWARD_NAMES[t] || (t + ' stamps'); }).join(' + ');
+      row.appendChild(el('span', 'chip', names));
+      box.appendChild(row);
+    });
+  }
+
+  function renderGroups(g, total) {
+    $('m-total').textContent = total + ' total';
+    var stack = $('m-stack'), rows = $('group-rows');
+    stack.textContent = ''; rows.textContent = '';
+    GROUPS.forEach(function (grp) {
+      var count = typeof g[grp.key] === 'number' ? g[grp.key] : 0;
+      if (count > 0) {
+        var seg = el('div');
+        seg.style.flex = String(count);
+        seg.style.background = grp.color;
+        stack.appendChild(seg);
+      }
+      var btn = el('button', 'group-row');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', grp.name + ', ' + count + ' members — show list');
+      var sw = el('span', 'sw'); sw.style.background = grp.color; btn.appendChild(sw);
+      var txt = el('span', 'txt'); txt.appendChild(el('b', null, grp.name)); txt.appendChild(el('span', 'sub', grp.note)); btn.appendChild(txt);
+      btn.appendChild(el('span', 'n', count));
+      btn.addEventListener('click', function () { openGroup(grp); });
+      rows.appendChild(btn);
+    });
+  }
+
+  function barsInto(box, items, maxPx) {
+    box.textContent = '';
+    var max = items.reduce(function (m, it) { return Math.max(m, it.value); }, 0) || 1;
+    items.forEach(function (it) {
+      var bar = el('div', 'bar');
+      if (it.showValue) bar.appendChild(el('span', 'v', it.value));
+      var b = el('div', 'b' + (it.hi ? ' hi' : ''));
+      b.style.height = Math.round(it.value / max * maxPx + 4) + 'px';
+      bar.appendChild(b);
+      bar.appendChild(el('span', 'l', it.label));
+      box.appendChild(bar);
+    });
+  }
+
+  function renderWeekly(weeks) {
+    var items = weeks.map(function (w, i) {
+      var dt = new Date(w.week + 'T00:00:00');
+      var label = i === weeks.length - 1 ? 'this wk' : dt.getDate() + ' ' + dt.toLocaleDateString('en-PH', { month: 'short' });
+      return { label: label, value: w.stamps || 0, hi: i === weeks.length - 1, showValue: true };
+    });
+    barsInto($('weekly'), items, 130);
+    $('weekly').setAttribute('aria-label', 'Stamps per week: ' + items.map(function (it) { return it.label + ' ' + it.value; }).join(', '));
+  }
+
+  function hourLabel(h) {
+    if (h === 10) return '10a';
+    if (h === 12) return '12p';
+    return String(h > 12 ? h - 12 : h);
+  }
+  function renderHours(hours) {
+    var max = hours.reduce(function (m, h) { return Math.max(m, h.stamps || 0); }, 0);
+    var items = hours.map(function (h) {
+      return { label: hourLabel(h.hour), value: h.stamps || 0, hi: max > 0 && (h.stamps || 0) >= max * 0.75 };
+    });
+    barsInto($('hours'), items, 130);
+    var peaks = hours.filter(function (h) { return max > 0 && (h.stamps || 0) >= max * 0.75; }).map(function (h) { return h.hour; });
+    var fmt = function (h) { return (h > 12 ? h - 12 : h) + (h >= 12 ? 'pm' : 'am'); };
+    $('hours-note').textContent = peaks.length ? 'Busiest: ' + fmt(peaks[0]) + '–' + fmt(peaks[peaks.length - 1] + 1) + '.' : 'No stamps yet.';
+    $('hours').setAttribute('aria-label', 'Stamps by hour of day, all time');
+  }
+
+  function renderRegulars(regs) {
+    var box = $('regulars');
+    box.textContent = '';
+    if (!regs.length) { box.appendChild(el('div', 'empty', 'No stamps yet.')); return; }
+    regs.forEach(function (r, i) {
+      var row = el('div', 'list-row');
+      var who = el('span'); who.appendChild(el('b', null, (i + 1) + '  ')); who.appendChild(document.createTextNode(r.name || r.member_code));
+      row.appendChild(who);
+      row.appendChild(el('span', 'chip yellow', plural(r.lifetime || 0, 'stamp')));
+      box.appendChild(row);
+    });
+  }
+
+  function renderStaff(staff) {
+    $('staff-sub').textContent = 'stamps · ' + (days === 1 ? 'today' : days + ' days');
+    var box = $('staff');
+    box.textContent = '';
+    staff.forEach(function (s) {
+      var row = el('div', 'list-row');
+      row.appendChild(el('span', null, s.login));
+      row.appendChild(el('b', null, s.stamps || 0));
+      box.appendChild(row);
+    });
+  }
+
+  // ── members sheet ───────────────────────────────────────────────
+  function ago(ts) {
+    if (!ts) return 'no stamp recorded';
+    var dd = Math.floor((Date.now() - new Date(ts).getTime()) / 86400000);
+    return dd <= 0 ? 'last visit today' : dd === 1 ? 'last visit yesterday' : 'last visit ' + dd + ' days ago';
+  }
+  function openGroup(grp) {
+    lastFocus = document.activeElement;
+    $('sheet-title').textContent = grp.name + ' · ' + grp.note;
+    var body = $('sheet-body');
+    body.textContent = '';
+    body.appendChild(el('div', 'empty', 'Loading…'));
+    $('sheet').classList.remove('hidden');
+    $('sheet-close').focus();
+    supabaseClient.rpc('owner_members', { p_group: grp.key }).then(function (res) {
+      if (res.error) throw res.error;
+      body.textContent = '';
+      var rows = res.data || [];
+      if (!rows.length) { body.appendChild(el('div', 'empty', 'Nobody in this group.')); return; }
+      rows.forEach(function (m) {
+        var item = el('div', 'member');
+        var top = el('div', 'top');
+        top.appendChild(el('b', null, m.name || m.member_code));
+        top.appendChild(el('span', 'chip', plural(m.stamps || 0, 'stamp') + ' now'));
+        item.appendChild(top);
+        var meta = el('div', 'meta');
+        if (m.phone) {
+          var tel = el('a', null, m.phone);
+          tel.href = 'tel:' + String(m.phone).replace(/[^0-9+]/g, '');
+          meta.appendChild(tel);
+          meta.appendChild(document.createTextNode(' · '));
+        }
+        meta.appendChild(document.createTextNode(ago(m.last_visit) + ' · ' + plural(m.lifetime || 0, 'stamp') + ' all time'));
+        item.appendChild(meta);
+        body.appendChild(item);
+      });
+    }).catch(function () {
+      body.textContent = '';
+      body.appendChild(el('div', 'empty', "Couldn't load this list. Try again."));
+    });
+  }
+  function closeSheet() {
+    if ($('sheet').classList.contains('hidden')) return;
+    $('sheet').classList.add('hidden');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // ── wiring ─────────────────────────────────────────────────────
+  function init() {
+    $('login-form').addEventListener('submit', handleLogin);
+    $('btn-logout').addEventListener('click', handleLogout);
+    Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function (b) {
+      b.addEventListener('click', function () {
+        days = parseInt(b.getAttribute('data-days'), 10);
+        Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function (o) {
+          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+        });
+        load();
+      });
+    });
+    $('sheet-close').addEventListener('click', closeSheet);
+    $('sheet').addEventListener('click', function (e) { if (e.target === $('sheet')) closeSheet(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && !$('view-dash').classList.contains('hidden')) load();
+    });
+
+    supabaseClient.auth.getSession().then(function (res) {
+      var session = res && res.data ? res.data.session : null;
+      if (!session) { showLogin(); return; }
+      return requireOwner().then(showDash);
+    }).catch(function () { showLogin(); });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
