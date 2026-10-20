@@ -21,11 +21,18 @@ function functionBody(sql, signature) {
   return normalise(sql.slice(start, end + 'end $$;'.length));
 }
 
+// The 2026-10-20 same-day-expiry migration appended `expired int[]` to the
+// card shape; older migrations keep the original 8 columns.
 function assertStandardCardShape(body) {
   assert.match(
     body,
-    /returns table \(member_code text, name text, stamps int, goal int, tiers int\[\], claimed int\[\], expires_at timestamptz, reward_ready boolean\)/,
+    /returns table \(member_code text, name text, stamps int, goal int, tiers int\[\], claimed int\[\], expires_at timestamptz, reward_ready boolean(, expired int\[\])?\)/,
   );
+}
+
+// Compare function logic across migrations without the card-shape clause.
+function logic(body) {
+  return body.replace(/returns table \([^)]*\)/, 'returns table (…)');
 }
 
 test('customer account schema links cards to Auth users without exposing an email field', () => {
@@ -69,8 +76,8 @@ test('account RPCs scope cards to the authenticated user and preserve staff unli
   assert.match(unlinkCard, /update public\.customers c set user_id = null where c\.id = v_id/);
   assert.match(unlinkCard, /insert into public\.card_claim_events \(customer_id, user_id, action\) values \(v_id, v_user_id, 'unlink'\)/);
   assert.equal(
-    functionBody(setup, 'unlink_card(p_code text)'),
-    functionBody(migration, 'unlink_card(p_code text)'),
+    logic(functionBody(setup, 'unlink_card(p_code text)')),
+    logic(functionBody(migration, 'unlink_card(p_code text)')),
     'unlink_card must stay identical in setup and migration SQL',
   );
 });
@@ -81,7 +88,7 @@ test('anonymous recovery reopens only an exact-match unsecured card and signup r
     assertStandardCardShape(phoneOnly);
     assert.match(phoneOnly, /begin return; end \$\$;/);
     assert.doesNotMatch(phoneOnly, /from public\.customers|krema_card/);
-    assert.equal(phoneOnly, functionBody(setup, 'customer_lookup(p_phone text)'));
+    assert.equal(logic(phoneOnly), logic(functionBody(setup, 'customer_lookup(p_phone text)')));
 
     const named = functionBody(sql, 'customer_lookup(p_phone text, p_name text)');
     assertStandardCardShape(named);
@@ -89,14 +96,14 @@ test('anonymous recovery reopens only an exact-match unsecured card and signup r
     assert.match(named, /v_name := lower\(trim\(p_name\)\)/);
     assert.match(named, /where c\.phone = v_phone and lower\(trim\(c\.name\)\) = v_name and c\.user_id is null/);
     assert.match(named, /return query select \* from public\.krema_card\(v_id\)/);
-    assert.equal(named, functionBody(setup, 'customer_lookup(p_phone text, p_name text)'));
+    assert.equal(logic(named), logic(functionBody(setup, 'customer_lookup(p_phone text, p_name text)')));
 
     const signup = functionBody(sql, 'signup_customer(p_name text, p_phone text)');
     assert.match(signup, /v_phone := krema_norm_phone\(p_phone\)/);
     assert.match(signup, /on conflict \(phone\) do nothing/);
     assert.match(signup, /if v_id is null then raise exception 'please sign in or ask staff to reopen your card'/);
     assert.doesNotMatch(signup, /v_user_id|v_name|from public\.customers/);
-    assert.equal(signup, functionBody(setup, 'signup_customer(p_name text, p_phone text)'));
+    assert.equal(logic(signup), logic(functionBody(setup, 'signup_customer(p_name text, p_phone text)')));
   }
 });
 

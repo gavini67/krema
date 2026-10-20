@@ -151,6 +151,11 @@ drop function if exists public.customer_lookup(text);
 drop function if exists public.add_stamp(text);
 drop function if exists public.staff_lookup(text);
 drop function if exists public.claim_reward(text,int);
+drop function if exists public.waive_reward(text,int);
+drop function if exists public.customer_lookup(text,text);
+drop function if exists public.claim_card(text,text);
+drop function if exists public.get_my_card();
+drop function if exists public.unlink_card(text);
 drop function if exists public.stamps_today();
 drop function if exists public.krema_card(uuid);
 drop function if exists public.krema_claimed(uuid,timestamptz);
@@ -218,24 +223,83 @@ create or replace function public.krema_claimed(p_customer uuid, p_seq int)
   where r.customer_id = p_customer and r.tier is not null and r.cycle_seq = p_seq
 $$;
 
+-- First Manila day on which the same-day rule applies.
+create or replace function public.krema_expiry_start() returns date
+  language sql immutable as $$ select date '2026-10-21' $$;
+
+-- Tiers in the customer's CURRENT cycle that were reached on an earlier
+-- Manila day (on/after krema_expiry_start) and never claimed or waived.
+-- The k-th stamp of the cycle is matched to its stamp_events row; any
+-- stamps without an event row are the oldest ones (offset), unlock unknown.
+create or replace function public.krema_expired(p_id uuid)
+  returns int[]
+  language sql security definer set search_path = public stable as $$
+  with c as (
+    select c.id, c.stamps, c.cycle_seq, c.cycle_started_at
+      from public.customers c where c.id = p_id
+  ), ev as (
+    select e.created_at,
+           row_number() over (order by e.created_at, e.id) as n,
+           count(*) over () as total
+      from public.stamp_events e join c on e.customer_id = c.id
+     where e.created_at >= c.cycle_started_at
+  )
+  select coalesce(array_agg(t order by t), '{}')
+    from c
+    cross join unnest(krema_tiers()) t
+    join ev on c.stamps - ev.total + ev.n = t
+   where t <= c.stamps
+     and not (t = any (krema_claimed(c.id, c.cycle_seq)))
+     and (ev.created_at at time zone 'Asia/Manila')::date >= krema_expiry_start()
+     and (ev.created_at at time zone 'Asia/Manila')::date < (now() at time zone 'Asia/Manila')::date
+$$;
+
+-- If the free bingsu expired, start the next cycle for real. Called by every
+-- staff mutation so stamps/claims always act on the card the customer sees.
+create or replace function public.krema_roll_cycle(p_id uuid)
+  returns void
+  language plpgsql security definer set search_path = public as $$
+begin
+  if krema_goal() = any (krema_expired(p_id)) then
+    update public.customers c
+       set stamps = 0, cycle_seq = c.cycle_seq + 1,
+           cycle_started_at = now(), discount_available = false
+     where c.id = p_id;
+  end if;
+end $$;
+
 -- ── The card shape every client receives ────────────────────────────────
---   member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready
+--   member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready, expired[]
+--  When the free bingsu expired, the card is shown as already reset (0 stamps)
+--  with expired = {20} so the customer page can explain why; the row itself is
+--  reset by krema_roll_cycle at the next staff action.
 create or replace function public.krema_card(p_id uuid)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language sql security definer set search_path = public stable as $$
-  select c.member_code, c.name, c.stamps, krema_goal(), krema_tiers(),
-         krema_claimed(c.id, c.cycle_seq),
-         c.cycle_started_at + krema_validity(),
+  with c as (
+    select c.*, krema_claimed(c.id, c.cycle_seq) as clm, krema_expired(c.id) as exp
+      from public.customers c where c.id = p_id
+  )
+  select c.member_code, c.name,
+         case when krema_goal() = any (c.exp) then 0 else c.stamps end,
+         krema_goal(), krema_tiers(),
+         case when krema_goal() = any (c.exp) then '{}'::int[] else c.clm end,
+         case when krema_goal() = any (c.exp) then now() + krema_validity()
+              else c.cycle_started_at + krema_validity() end,
          (c.stamps >= krema_goal()
-          and not (krema_goal() = any (krema_claimed(c.id, c.cycle_seq))))
-  from public.customers c where c.id = p_id
+          and not (krema_goal() = any (c.clm))
+          and not (krema_goal() = any (c.exp))),
+         case when krema_goal() = any (c.exp) then array[krema_goal()] else c.exp end
+  from c
 $$;
 
 -- ── Customer signup (anon) — EMPTY card; staff add the first stamp ───────
 create or replace function public.signup_customer(p_name text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_phone text;
 begin
@@ -264,7 +328,8 @@ end $$;
 -- ── Get card by member code (anon — customer viewing their own card) ────
 create or replace function public.get_card(p_code text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid;
 begin
@@ -277,7 +342,8 @@ end $$;
 -- Reopen a saved QR/member-code card or ask staff in person; no online recovery.
 create or replace function public.customer_lookup(p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 begin
   return;
@@ -287,7 +353,8 @@ end $$;
 -- has not been secured with an Auth account yet.
 create or replace function public.customer_lookup(p_phone text, p_name text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_phone text; v_name text;
 begin
@@ -308,7 +375,8 @@ end $$;
 -- ── Customer account: secure an existing card ──────────────────────────
 create or replace function public.claim_card(p_code text, p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_user_id uuid; v_phone text;
 begin
@@ -340,7 +408,8 @@ end $$;
 -- ── Customer account: read every card linked to the signed-in user ──────
 create or replace function public.get_my_card()
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then raise exception 'sign in required'; end if;
@@ -356,7 +425,8 @@ end $$;
 -- ── Staff: unlink a card from a customer account ───────────────────────
 create or replace function public.unlink_card(p_code text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_user_id uuid;
 begin
@@ -377,15 +447,19 @@ end $$;
 -- ── Staff: add a stamp ──────────────────────────────────────────────────
 create or replace function public.add_stamp(p_code text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_stamps int;
 begin
   if not is_staff() then raise exception 'staff only'; end if;
 
-  select c.id, c.stamps into v_id, v_stamps
-    from public.customers c where c.member_code = p_code;
+  select c.id into v_id
+    from public.customers c where c.member_code = p_code for update;
   if v_id is null then raise exception 'card not found'; end if;
+
+  perform krema_roll_cycle(v_id);                      -- expired bingsu → fresh card
+  select c.stamps into v_stamps from public.customers c where c.id = v_id;
   if v_stamps >= krema_goal() then
     raise exception 'card is full — claim the free bingsu first';
   end if;
@@ -405,31 +479,41 @@ end $$;
 --  Claiming the final tier (20) completes the card: stamps → 0, new cycle.
 create or replace function public.claim_reward(p_code text, p_tier int)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_stamps int; v_seq int; v_pending text;
+declare v_id uuid; v_stamps int; v_seq int; v_pending text; v_expired int[];
 begin
   if not is_staff() then raise exception 'staff only'; end if;
   if not (p_tier = any (krema_tiers())) then raise exception 'unknown reward'; end if;
 
-  select c.id, c.stamps, c.cycle_seq into v_id, v_stamps, v_seq
-    from public.customers c where c.member_code = p_code;
+  select c.id into v_id
+    from public.customers c where c.member_code = p_code for update;
   if v_id is null then raise exception 'card not found'; end if;
+
+  perform krema_roll_cycle(v_id);
+  select c.stamps, c.cycle_seq into v_stamps, v_seq
+    from public.customers c where c.id = v_id;
   if v_stamps < p_tier then raise exception 'not enough stamps yet'; end if;
   if p_tier = any (krema_claimed(v_id, v_seq)) then
     raise exception 'already claimed';
   end if;
+  v_expired := krema_expired(v_id);
+  if p_tier = any (v_expired) then
+    raise exception 'reward expired — rewards must be claimed the day they are earned';
+  end if;
 
   -- Completing the card resets the cycle, which permanently discards any
   -- reward the customer earned but never collected. Refuse until every
-  -- reached lower tier is either claimed or explicitly waived by staff
-  -- (waive_reward), so nothing is lost by a mis-tap at the counter.
+  -- reached, still-valid lower tier is either claimed or explicitly waived
+  -- by staff (waive_reward), so nothing is lost by a mis-tap at the counter.
   if p_tier = krema_goal() then
     select string_agg(t::text, ', ' order by t) into v_pending
       from unnest(krema_tiers()) t
      where t < krema_goal()
        and t <= v_stamps
-       and not (t = any (krema_claimed(v_id, v_seq)));
+       and not (t = any (krema_claimed(v_id, v_seq)))
+       and not (t = any (v_expired));
     if v_pending is not null then
       raise exception 'unclaimed rewards at % stamps — claim or skip them first', v_pending;
     end if;
@@ -460,7 +544,8 @@ end $$;
 --  from a real redemption in reporting — nothing was actually handed over.
 create or replace function public.waive_reward(p_code text, p_tier int)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_stamps int; v_seq int;
 begin
@@ -470,12 +555,19 @@ begin
     raise exception 'the final reward cannot be skipped';
   end if;
 
-  select c.id, c.stamps, c.cycle_seq into v_id, v_stamps, v_seq
-    from public.customers c where c.member_code = p_code;
+  select c.id into v_id
+    from public.customers c where c.member_code = p_code for update;
   if v_id is null then raise exception 'card not found'; end if;
+
+  perform krema_roll_cycle(v_id);
+  select c.stamps, c.cycle_seq into v_stamps, v_seq
+    from public.customers c where c.id = v_id;
   if v_stamps < p_tier then raise exception 'not enough stamps yet'; end if;
   if p_tier = any (krema_claimed(v_id, v_seq)) then
     raise exception 'already claimed';
+  end if;
+  if p_tier = any (krema_expired(v_id)) then
+    raise exception 'reward already expired';
   end if;
 
   insert into public.redemptions (customer_id, tier, kind, cycle_seq)
@@ -487,7 +579,8 @@ end $$;
 -- ── Staff: look up a card by phone (camera-fail fallback) ───────────────
 create or replace function public.staff_lookup(p_phone text)
   returns table (member_code text, name text, stamps int, goal int,
-                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean)
+                 tiers int[], claimed int[], expires_at timestamptz, reward_ready boolean,
+                 expired int[])
   language plpgsql security definer set search_path = public as $$
 declare v_id uuid;
 begin
@@ -576,6 +669,9 @@ revoke all on function public.krema_card(uuid)        from public, anon, authent
 revoke all on function public.is_staff() from public, anon;
 grant execute on function public.is_staff() to authenticated;
 
+revoke all on function public.krema_expiry_start()             from public, anon, authenticated;
+revoke all on function public.krema_expired(uuid)              from public, anon, authenticated;
+revoke all on function public.krema_roll_cycle(uuid)           from public, anon, authenticated;
 revoke all on function public.signup_customer(text,text)       from public, anon, authenticated;
 revoke all on function public.get_card(text)                   from public, anon, authenticated;
 revoke all on function public.customer_lookup(text)            from public, anon, authenticated;

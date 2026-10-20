@@ -39,6 +39,7 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
   | 20 | free bingsu | solo · regular flavors only |
 - Claiming **tier 20** completes the card → server resets stamps to 0 and starts a new cycle.
 - **Tier 20 is refused while any reached lower tier is still unclaimed** (fixed + verified live on a test card 2026-08-04 — before this, completing the card silently discarded them). Staff either hand the pending rewards over, or skip them explicitly via `waive_reward(code, tier)`, which records `kind='waived'` so reporting can tell a skip from a real handover. `staff.html` prompts before doing this.
+- **Same-day claim rule (owner, 2026-10-20; enforced from 2026-10-21 Manila time):** each reward must be claimed on the Manila calendar day the stamp that unlocked it was added — at midnight it expires. `krema_expired(id)` derives this from `stamp_events` (the k-th stamp of the cycle ↔ its event row); stamps with no event row (pre-audit legacy) and rewards unlocked before `krema_expiry_start()` = 2026-10-21 are honored forever. Expired lower tiers no longer block the tier-20 claim. **An expired free bingsu starts a fresh card:** `krema_card` already shows it as 0/20 with `expired = {20}`, and `krema_roll_cycle` resets the row at the next `add_stamp` / `claim_reward` / `waive_reward`. The card shape gained a 9th column, `expired int[]` (migration `docs/migrations/2026-10-20-same-day-reward-expiry.sql`, applied live + verified; tests in `tests/reward-expiry.test.js`).
 - "Card valid for 2 months" is **displayed only, NOT enforced** (`expires_at` is returned for the UI; nothing expires server-side — deliberate choice).
 - The old *1-redeem-per-day* rule is gone; once-per-tier-per-cycle replaces it (stronger).
 - Only **staff** can add stamps / claim rewards. Enforced server-side (see §5).
@@ -49,7 +50,7 @@ Digital "buy N, get one free" punch card. Replaces a paper card.
 
 **Staff flow:** open `/staff.html` → log in (Supabase Auth) → scan customer QR (html5-qrcode camera) or phone-lookup fallback → add stamp / apply the pending milestone / redeem the free bingsu.
 
-**RPCs** (card rows use this shape; lookup shims return zero rows: `member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready`):
+**RPCs** (card rows use this shape; lookup shims return zero rows: `member_code, name, stamps, goal, tiers[], claimed[], expires_at, reward_ready, expired[]`):
 `signup_customer(name,phone)` (new cards only), `get_card(code)` — anon ·
 `customer_lookup(phone)` — anon compatibility shim, always zero rows after activation · `customer_lookup(phone,name)` — anon, exact-match recovery for unsecured legacy cards only ·
 `add_stamp(code)`, `claim_reward(code,tier)`, `staff_lookup(phone)` — staff only.

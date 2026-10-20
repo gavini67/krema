@@ -81,7 +81,7 @@
           <img src="assets/sticker-boba.png" alt="" style="position:absolute;top:-42px;right:-10px;width:78px;height:78px;object-fit:contain;transform:rotate(12deg);filter:drop-shadow(2px 3px 0 rgba(43,58,102,0.4));pointer-events:none;">
           <div style="position:absolute;inset:7px;border:2px dashed rgba(252,236,96,0.3);border-radius:15px;pointer-events:none;"></div>
           <div style="position:relative;font-family:'Neighbor',system-ui,sans-serif;font-weight:900;font-size:22px;line-height:1.05;max-width:250px;">every drink = 1 stamp. 4 treats on the way.</div>
-          <div style="position:relative;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit — card valid for 2 months.</div>
+          <div style="position:relative;font-family:'futura-100-book',system-ui,sans-serif;font-size:14px;color:#cdd6ef;margin-top:6px;line-height:1.4;">sweeter every visit — claim each treat the day you earn it. card valid for 2 months.</div>
           <div style="position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:13px;">
             <span style="background:#FCEC60;color:#2b3a66;border:2px solid #FCEC60;border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(-2deg);">6 · 10% off</span>
             <span style="color:#FCEC60;border:2px dashed rgba(252,236,96,0.6);border-radius:999px;padding:3px 10px;font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:11px;transform:rotate(1.5deg);">10 · free drink</span>
@@ -224,7 +224,7 @@
             <span style="font-family:'Neighbor',system-ui,sans-serif;font-weight:700;font-size:26px;color:#4a5a8a;">/ 20</span>
             <span style="font-family:'futura-100-book',system-ui,sans-serif;font-weight:600;font-size:13px;color:#4a5a8a;align-self:flex-end;margin-bottom:8px;">stamps</span>
           </div>
-          <div style="position:relative;text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-bottom:2px;">1 stamp per drink · card valid for 2 months</div>
+          <div style="position:relative;text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-bottom:2px;">1 stamp per drink · treats expire at midnight on the day you earn them</div>
 
           <!-- stamp grid -->
           <div id="stamp-grid" style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0 6px;"></div>
@@ -283,6 +283,9 @@
             <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:12px;font-style:italic;color:#4a5a8a;margin-top:11px;">flash this at the counter — it's yours &#10024;</div>
           </div>
 
+          <!-- same-day rule: shown when a treat expired unclaimed -->
+          <div id="expired-note" class="hidden" style="position:relative;text-align:center;margin-top:10px;padding:9px 12px;background:#ffe0ec;border:2px dashed #c0392b;border-radius:14px;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;line-height:1.4;color:#2b3a66;"></div>
+
           <!-- progress line (not yet at reward) -->
           <div id="progress-line" style="position:relative;text-align:center;margin-top:8px;font-family:'futura-100-book',system-ui,sans-serif;font-size:15px;color:#4a5a8a;">
             <b id="progress-text" style="color:#2b3a66;"></b>
@@ -305,7 +308,7 @@
             <div id="member-code" data-member-code="" style="font-family:'Neighbor',system-ui,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em;color:#2b3a66;"></div>
           </div>
           <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:13px;font-style:italic;color:#4a5a8a;line-height:1.4;max-width:230px;">
-            <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free bingsu</span>
+            <span id="qr-hint-reward" class="hidden">show this to staff to redeem your free bingsu — today only!</span>
             <span id="qr-hint-normal">show this to the barista to collect a stamp</span>
           </div>
           <div style="text-align:center;font-family:'futura-100-book',system-ui,sans-serif;font-size:11px;font-style:italic;color:#8695ba;margin-top:10px;">tip: bookmark this page so your card is always one tap away</div>
@@ -387,20 +390,24 @@
     var goal = c.goal || GOAL;
     var tiers = (c.tiers && c.tiers.length ? c.tiers.slice() : TIERS.slice()).sort(function (a, b) { return a - b; });
     var claimed = c.claimed || [];
+    // tiers that expired unclaimed (same-day rule). expired = [goal] means the free bingsu
+    // expired and the server is already showing this as a fresh card.
+    var expired = c.expired || [];
+    var bingsuExpired = expired.indexOf(goal) !== -1;
     var stamps = Math.max(0, Math.min(goal, c.stamps || 0));
     var pending = [];
     var lastUnlocked = null, next = null;
     for (var i = 0; i < tiers.length; i++) {
       var t = tiers[i];
       if (stamps >= t) {
-        if (t < goal && claimed.indexOf(t) === -1) { lastUnlocked = t; pending.push(t); }
+        if (t < goal && claimed.indexOf(t) === -1 && expired.indexOf(t) === -1) { lastUnlocked = t; pending.push(t); }
       } else if (next === null) {
         next = t;
       }
     }
     var fresh = lastUnlocked !== null && stamps === lastUnlocked;
     var chip = lastUnlocked !== null && !fresh;
-    return { goal: goal, tiers: tiers, claimed: claimed, stamps: stamps, lastUnlocked: lastUnlocked, next: next, fresh: fresh, chip: chip, pending: pending };
+    return { goal: goal, tiers: tiers, claimed: claimed, expired: expired, bingsuExpired: bingsuExpired, stamps: stamps, lastUnlocked: lastUnlocked, next: next, fresh: fresh, chip: chip, pending: pending };
   }
 
   var pollTimer = null;
@@ -586,8 +593,10 @@
       var tier = TIERS[i];
       var meta = TIER_META[tier];
       var isClaimed = state.claimed.indexOf(tier) !== -1;
-      var isReady = !isClaimed && (tier === 20 ? !!rewardReady : state.stamps >= tier);
-      var isNext = !isClaimed && !isReady && state.next === tier;
+      // a fresh card after an expired bingsu shows no expired tiles — that was the old card
+      var isExpired = !isClaimed && !state.bingsuExpired && state.expired.indexOf(tier) !== -1;
+      var isReady = !isClaimed && !isExpired && (tier === 20 ? !!rewardReady : state.stamps >= tier);
+      var isNext = !isClaimed && !isExpired && !isReady && state.next === tier;
 
       var bg, border, shadow, fg, numBg, numFg, opacity, anim;
       if (isClaimed) {
@@ -596,6 +605,9 @@
       } else if (isReady) {
         bg = meta.soft; border = meta.accent; shadow = '3px 4px 0 ' + meta.accent; fg = '#2b3a66';
         numBg = meta.accent; numFg = '#2b3a66'; opacity = 1; anim = 'kr-wiggle 2.2s ease-in-out infinite';
+      } else if (isExpired) {
+        bg = 'rgba(255,255,255,0.3)'; border = '#d9a3a3'; shadow = 'none'; fg = '#a07a7a';
+        numBg = '#f3dede'; numFg = '#a07a7a'; opacity = 0.35; anim = 'none';
       } else if (isNext) {
         bg = 'rgba(255,255,255,0.55)'; border = '#9F8FEA'; shadow = '3px 4px 0 rgba(159,143,234,0.45)'; fg = '#7a68d4';
         numBg = '#9F8FEA'; numFg = '#FCEC60'; opacity = 0.85; anim = 'kr-wiggle 2.4s ease-in-out infinite';
@@ -620,7 +632,7 @@
 
       var label = document.createElement('div');
       label.style.cssText = 'font-family:\'Neighbor\',system-ui,sans-serif;font-weight:700;font-size:9px;line-height:1.15;text-align:center;color:' + fg + ';';
-      label.textContent = meta.short;
+      label.textContent = isExpired ? 'expired' : meta.short;
       item.appendChild(label);
 
       if (isClaimed) {
@@ -705,13 +717,23 @@
       $('milestone-fresh-icon').src = railIconFor(state.lastUnlocked);
       $('milestone-fresh-ticket').textContent = freshMeta.ticket;
       $('milestone-fresh-title').innerHTML = freshMeta.big + '<br>UNLOCKED!';
-      $('milestone-fresh-note').textContent = freshMeta.note;
+      $('milestone-fresh-note').textContent = freshMeta.note + ' · claim it today!';
       $('milestone-fresh-title').style.color = freshMeta.accent;
       $('milestone-fresh-edge').style.borderColor = freshMeta.soft;
     }
 
     // milestone chips — every other pending (reached-but-unclaimed) tier
     renderChips($('milestone-chips'), state);
+
+    var expiredNote = '';
+    if (state.bingsuExpired) {
+      expiredNote = 'your free bingsu expired — treats have to be claimed the day you earn them. fresh card, let\u2019s go!';
+    } else if (state.expired.length) {
+      expiredNote = 'missed: ' + state.expired.map(function (t) { return TIER_META[t] ? TIER_META[t].short : t; }).join(', ') +
+        ' — treats expire at midnight on the day you earn them.';
+    }
+    $('expired-note').textContent = expiredNote;
+    $('expired-note').classList.toggle('hidden', !expiredNote);
 
     if (!isFull) {
       var text;
