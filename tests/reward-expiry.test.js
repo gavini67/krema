@@ -5,7 +5,10 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+// Normalise CRLF: git checks these files out with \r\n on Windows, and several
+// lookups below match on bare "\n" (e.g. the trailing newline that tells the
+// one-arg customer_lookup apart from its two-arg overload).
+const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n');
 const setup = read('supabase-setup.sql');
 const migration = read('docs/migrations/2026-10-20-same-day-reward-expiry.sql');
 
